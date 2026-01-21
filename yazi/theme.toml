@@ -1,0 +1,17 @@
+# ~/.config/yazi/theme.toml
+
+[manager]
+cwd = { fg = "cyan" }
+
+# Важно: не задаем bg, либо ставим "reset"
+# hovered = { bg = "#262626" } # Можно оставить подсветку строки
+preview_hovered = { underline = true }
+
+[mode]
+normal_main = { fg = "black", bg = "blue", bold = true }
+normal_alt  = { fg = "blue",  bold = true }
+
+# СТИЛИ, ОТВЕЧАЮЩИЕ ЗА ФОН ПАНЕЛЕЙ
+[style]
+# Если какие-то элементы кажутся непрозрачными, можно попробовать добавить это:
+# Но обычно Yazi по умолчанию прозрачен, если терминал прозрачен.

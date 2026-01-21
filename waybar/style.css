@@ -1,0 +1,64 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font";
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(15, 15, 20, 0.9);
+    color: #cdd6f4;
+    border-radius: 14px;
+    margin: 8px;
+}
+
+#custom-ayugram {
+    font-size: 20px;
+    padding: 10px 0;
+    margin: 6px 6px 10px 6px;
+    border-radius: 10px;
+    background: rgba(137, 180, 250, 0.15);
+    color: #89b4fa;
+}
+
+#custom-ayugram:hover {
+    background: rgba(137, 180, 250, 0.35);
+}
+
+#workspaces {
+    margin: 6px;
+}
+
+#workspaces button {
+    padding: 6px 0;
+    margin: 3px 0;
+    border-radius: 8px;
+    color: #6c7086;
+}
+
+#workspaces button.active {
+    background: rgba(203, 166, 247, 0.25);
+    color: #cba6f7;
+}
+
+#workspaces button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#pulseaudio,
+#battery,
+#clock {
+    padding: 6px 0;
+    margin: 4px 6px;
+    border-radius: 8px;
+    background: rgba(30, 30, 46, 0.6);
+}
+
+#battery.warning {
+    color: #f9e2af;
+}
+
+#battery.critical {
+    color: #f38ba8;
+}

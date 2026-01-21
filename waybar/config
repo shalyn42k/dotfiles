@@ -1,0 +1,55 @@
+{
+  "layer": "top",
+  "position": "left",
+  "width": 52,
+  "spacing": 6,
+
+  "modules-left": [
+    "custom/ayugram",
+    "hyprland/workspaces"
+  ],
+
+  "modules-center": [],
+
+  "modules-right": [
+    "pulseaudio",
+    "battery",
+    "clock"
+  ],
+
+  "clock": {
+    "format": " {:%H:%M}",
+    "tooltip-format": "{:%A, %d %B %Y}",
+    "interval": 30
+  },
+
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon} {capacity}%",
+    "format-icons": ["", "", "", "", ""],
+    "format-charging": " {capacity}%",
+    "format-full": " {capacity}%",
+    "interval": 30
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "",
+    "format-icons": {
+      "default": ["", "", ""]
+    },
+    "on-click": "pavucontrol",
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5"
+  },
+
+  "custom/ayugram": {
+    "format": "",
+    "tooltip": "AyuGram",
+    "on-click": "AyuGram"
+  }
+}
+
