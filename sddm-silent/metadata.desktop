@@ -1,0 +1,27 @@
+; https://github.com/uiriansan/SilentSDDM
+
+[SddmGreeterTheme]
+Name=Silent
+Type=sddm-theme
+Description=A very customizable SDDM theme that actually looks good.
+License=GPL-3.0-or-later
+Version=1.4.0
+Theme-Id=silent
+Theme-API=2.0
+MainScript=Main.qml
+Screenshot=docs/previews/default.png
+TranslationsDirectory=translations
+QtVersion=6
+
+
+# MY CONFS
+# ConfigFile=configs/ds.conf
+ConfigFile=configs/yoruback.conf
+# ConfigFile=configs/yorufront.conf
+# ConfigFile=configs/sci-fi.conf
+# ConfigFile=configs/sci-fi-animated.conf
+# ConfigFile=configs/makima.conf
+
+# DEFAULT CONFS
+# ConfigFile=configs/rei.conf
+# ConfigFile=configs/default.conf
