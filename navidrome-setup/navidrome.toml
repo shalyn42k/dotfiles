@@ -1,7 +1,0 @@
-#
-# https://www.navidrome.org/docs/usage/configuration-options/
-#
-
-# Folder to store application data (DB, cache…)
-DataFolder = "/var/lib/navidrome"
-MusicFolder = "/home/shalyn42k/Music"
