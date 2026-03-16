@@ -14,6 +14,7 @@
 | **Shell** | `Fish` | Fish настроен так же по ублюдошному как и Foot, copium |
 | **System Info** | `Fastfetch` | Вот фастфеч работает заебата(у меня как минимум) |
 | **sddm-theme** | `silent` | Тут находятся конфиги мои с sddm-silent, беки будут лежать на сервере |
+| **Caelestia shell.json** | `Caelestia` | Мой кастомный shell.json + фолден с гифками на всякий
 
 ## Планы
 
