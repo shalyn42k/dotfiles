@@ -1,13 +1,13 @@
 {
   "appearance": {
     "rounding": {
-      "scale": 1
+      "scale": 1.0264509860183642
     },
     "spacing": {
       "scale": 1
     },
     "padding": {
-      "scale": 1
+      "scale": 1.0245656823873122
     },
     "font": {
       "family": {
@@ -34,7 +34,7 @@
     }
   },
   "general": {
-    "logo": "",
+    "logo": "caelestia",
     "excludedScreens": [],
     "apps": {
       "terminal": [
@@ -139,7 +139,7 @@
       "statusIcons": true
     },
     "workspaces": {
-      "shown": 3,
+      "shown": 5,
       "activeIndicator": true,
       "occupiedBg": true,
       "showWindows": false,
@@ -182,6 +182,8 @@
       "showLockStatus": false
     },
     "clock": {
+      "background": false,
+      "showDate": false,
       "showIcon": false
     },
     "entries": [
@@ -431,11 +433,13 @@
   },
   "notifs": {
     "expire": true,
+    "fullscreen": "on",
     "defaultExpireTimeout": 5000,
     "clearThreshold": 0.3,
     "expandThreshold": 1,
     "actionOnClick": false,
-    "groupPreviewNum": 1
+    "groupPreviewNum": 1,
+    "openExpanded": false
   },
   "osd": {
     "enabled": true,
@@ -485,6 +489,7 @@
     "maxToasts": 1,
     "toasts": {
       "configLoaded": true,
+      "fullscreen": "off",
       "chargingChanged": true,
       "gameModeChanged": true,
       "dndChanged": true,
@@ -499,7 +504,7 @@
     "vpn": {
       "enabled": false,
       "provider": [
-        "netbird"
+        {}
       ]
     },
     "quickToggles": [
@@ -538,8 +543,8 @@
     "dragThreshold": 80
   },
   "services": {
-    "weatherLocation": "",
-    "useFahrenheit": true,
+    "weatherLocation": "Katowice",
+    "useFahrenheit": false,
     "useFahrenheitPerformance": true,
     "useTwelveHourClock": true,
     "gpuType": "",
@@ -548,16 +553,19 @@
     "brightnessIncrement": 0.1,
     "maxVolume": 1,
     "smartScheme": true,
-    "defaultPlayer": "Spotify",
+    "defaultPlayer": "Feishin",
     "playerAliases": [
       {
         "from": "com.github.th_ch.youtube_music",
         "to": "YT Music"
       }
-    ]
+    ],
+    "showLyrics": true,
+    "lyricsBackend": "NetEase"
   },
   "paths": {
     "wallpaperDir": "/home/shalyn42k/Pictures/Wallpapers",
+    "lyricsDir": "/home/shalyn42k/Music/lyrics/",
     "sessionGif": "root:/assets/sam-hyde.gif",
     "mediaGif": "root:/assets/hyde.gif"
   }
