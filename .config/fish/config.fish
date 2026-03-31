@@ -1,44 +1,38 @@
 if status is-interactive
-    # Starship custom prompt
-    starship init fish | source
+    # 1. Прячем Hardware блок, если мы в Codium
+    # Проверяем и нашу переменную, и стандартную переменную VS Code
+    if not set -q IS_CODIUM; and test "$TERM_PROGRAM" != "vscode"
+        cat ~/.local/state/caelestia/sequences.txt 2>/dev/null
+    end
 
-    # Direnv + Zoxide
+    # 2. Активация venv
+    if test -f .venv/bin/activate.fish
+        source .venv/bin/activate.fish
+    end
+
+    # 3. Инструменты
+    starship init fish | source
     command -v direnv &>/dev/null && direnv hook fish | source
     command -v zoxide &>/dev/null && zoxide init fish --cmd cd | source
 
-    # Better ls
+    # Алиасы и аббревиатуры
     alias ls='eza --icons --group-directories-first -1'
-
-    # Abbrs
     abbr lg lazygit
     abbr gd 'git diff'
     abbr ga 'git add .'
     abbr gc 'git commit -am'
     abbr gl 'git log'
     abbr gs 'git status'
-    abbr gst 'git stash'
-    abbr gsp 'git stash pop'
-    abbr gp 'git push'
-    abbr gpl 'git pull'
-    abbr gsw 'git switch'
-    abbr gsm 'git switch main'
-    abbr gb 'git branch'
-    abbr gbd 'git branch -d'
-    abbr gco 'git checkout'
-    abbr gsh 'git show'
-
     abbr l ls
     abbr ll 'ls -l'
     abbr la 'ls -a'
     abbr lla 'ls -la'
 
-    # Custom colours
-    cat ~/.local/state/caelestia/sequences.txt 2>/dev/null
-
-    # For jumping between prompts in foot terminal
+    # 4. Функции
     function mark_prompt_start --on-event fish_prompt
         echo -en "\e]133;A\e\\"
     end
+
     function yy
         set tmp (mktemp -t "yazi-cwd.XXXXXX")
         yazi $argv --cwd-file="$tmp"
@@ -48,11 +42,12 @@ if status is-interactive
         rm -f -- "$tmp"
     end
 end
-# Created by `pipx` on 2025-12-27 17:59:33
-set PATH $PATH /home/shalyn42k/.local/bin
 
+# 5. Переменные окружения (вне блока interactive)
+set -gx PATH $PATH /home/shalyn42k/.local/bin
 fish_add_path /usr/lib/qt6/bin
-
-# Для хипр ленд
 set -gx QT_QPA_PLATFORM "wayland;xcb"
 set -gx QT_QPA_PLATFORMTHEME qt6ct
+
+# Убираем стандартное приветствие (на всякий случай)
+set -g fish_greeting ""
