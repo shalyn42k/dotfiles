@@ -7,7 +7,7 @@
       "scale": 1
     },
     "padding": {
-      "scale": 1.0245656823873122
+      "scale": 1.0395601321815153
     },
     "font": {
       "family": {
@@ -17,7 +17,7 @@
         "clock": "Rubik"
       },
       "size": {
-        "scale": 1
+        "scale": 0.999108231707317
       }
     },
     "anim": {
@@ -566,7 +566,9 @@
   "paths": {
     "wallpaperDir": "/home/shalyn42k/Pictures/Wallpapers",
     "lyricsDir": "/home/shalyn42k/Music/lyrics/",
-    "sessionGif": "root:/assets/sam-hyde.gif",
-    "mediaGif": "root:/assets/hyde.gif"
+    "sessionGif": "/home/shalyn42k/Pictures/Gifs/sam-hyde.gif",
+    "mediaGif": "/home/shalyn42k/Pictures/Gifs/hyde.gif",
+    "noNotifsPic": "root:/assets/dino.png",
+    "lockNoNotifsPic": "root:/assets/dino.png"
   }
 }
