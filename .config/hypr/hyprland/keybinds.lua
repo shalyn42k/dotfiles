@@ -31,15 +31,20 @@ end
 -- Special workspaces (scratchpads)
 hl.bind(vars.kbSpecialWs, hl.dsp.exec_cmd("caelestia toggle specialws"))
 hl.bind(vars.kbSystemMonitorWs, hl.dsp.exec_cmd("caelestia toggle sysmon"))
+-- NOTE: under the Lua config provider the legacy `togglespecialworkspace`
+-- dispatcher is renamed; toggle via the Lua dispatcher instead.
 hl.bind(vars.kbMusicWs,
-    hl.dsp.exec_cmd("pgrep -x feishin && hyprctl dispatch togglespecialworkspace music || feishin"))
+    hl.dsp.exec_cmd(
+        [[pgrep -x feishin && hyprctl dispatch 'hl.dsp.workspace.toggle_special("music")' || feishin]]))
 hl.bind(vars.kbCommunicationWs,
-    hl.dsp.exec_cmd("pgrep -x vesktop && hyprctl dispatch togglespecialworkspace communication || vesktop"))
+    hl.dsp.exec_cmd(
+        [[pgrep -x vesktop && hyprctl dispatch 'hl.dsp.workspace.toggle_special("communication")' || vesktop]]))
 hl.bind(vars.kbTodoWs,
     hl.dsp.exec_cmd(
-        [[pgrep -x obsidian && hyprctl dispatch togglespecialworkspace todo || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
+        [[pgrep -x obsidian && hyprctl dispatch 'hl.dsp.workspace.toggle_special("todo")' || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
 hl.bind(vars.kbMessangerWs,
-    hl.dsp.exec_cmd("pgrep -x AyuGram && hyprctl dispatch togglespecialworkspace messanger || AyuGram"))
+    hl.dsp.exec_cmd(
+        [[pgrep -x AyuGram && hyprctl dispatch 'hl.dsp.workspace.toggle_special("messanger")' || AyuGram]]))
 
 -- Application launchers (via app2unit)
 hl.bind(vars.kbTerminal, hl.dsp.exec_cmd("app2unit -- " .. vars.terminal))
