@@ -5,17 +5,6 @@
                 "scale": 1
             }
         },
-        "font": {
-            "family": {
-                "clock": "Rubik",
-                "material": "Material Symbols Outlined",
-                "mono": "CaskaydiaCove NF",
-                "sans": "Rubik"
-            },
-            "size": {
-                "scale": 0.999108231707317
-            }
-        },
         "padding": {
             "scale": 1.0395601321815153
         },
@@ -409,7 +398,7 @@
             }
         ],
         "dragThreshold": 50,
-        "enableDangerousActions": false,
+        "enableDangerousActions": true,
         "enabled": true,
         "favouriteApps": [
             "steam",
@@ -475,7 +464,6 @@
                 "to": "YT Music"
             }
         ],
-        "showLyrics": true,
         "smartScheme": true,
         "useFahrenheit": false,
         "useFahrenheitPerformance": true,
