@@ -351,9 +351,9 @@
             },
             {
                 "command": [
-                    "loginctl",
-                    "terminate-user",
-                    ""
+                    "hyprctl",
+                    "dispatch",
+                    "exit"
                 ],
                 "dangerous": true,
                 "description": "Log out of the current session",
@@ -478,9 +478,9 @@
                 "hibernate"
             ],
             "logout": [
-                "loginctl",
-                "terminate-user",
-                ""
+                "hyprctl",
+                "dispatch",
+                "exit"
             ],
             "reboot": [
                 "systemctl",
