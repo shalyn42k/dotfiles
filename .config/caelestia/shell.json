@@ -466,7 +466,7 @@
         ],
         "smartScheme": true,
         "useFahrenheit": false,
-        "useFahrenheitPerformance": true,
+        "useFahrenheitPerformance": false,
         "useTwelveHourClock": true,
         "visualiserBars": 45,
         "weatherLocation": "Katowice"
