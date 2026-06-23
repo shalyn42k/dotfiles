@@ -42,6 +42,7 @@ hl.bind(vars.kbMusicWs,
 hl.bind(vars.kbCommunicationWs,
     hl.dsp.exec_cmd(
         [[pgrep -x vesktop && hyprctl dispatch 'hl.dsp.workspace.toggle_special("communication")' || vesktop]]))
+hl.bind("SUPER + SHIFT + X", hl.dsp.window.move({ workspace = "e+0" }))  -- eject focused window from any special WS to current regular WS
 hl.bind(vars.kbTodoWs,
     hl.dsp.exec_cmd(
         [[pgrep -x obsidian && hyprctl dispatch 'hl.dsp.workspace.toggle_special("todo")' || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
