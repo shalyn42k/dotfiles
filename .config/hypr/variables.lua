@@ -92,6 +92,6 @@ return {
     -- Misc
     kbSession                  = "CTRL + ALT + Delete",
     kbClearNotifs              = "CTRL + ALT + C",
-    kbLock                     = "SUPER + SHIFT + L",
-    kbRestoreLock              = "SUPER + ALT + L",
+    kbLock                     = "SUPER + F1",
+    kbRestoreLock              = "SUPER + F1",
 }

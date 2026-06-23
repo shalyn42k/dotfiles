@@ -17,6 +17,14 @@ set offset (math "$mon_id * 10")
 
 # 3. Считаем итоговый номер воркспейса
 set target (math "$offset + $argv[2]")
+set dispatcher $argv[1]
 
-# 4. Выполняем команду
-hyprctl dispatch $argv[1] $target
+# 4. Выполняем команду.
+# Hyprland Lua config requires Lua syntax for hyprctl dispatch.
+if test $dispatcher = workspace
+    hyprctl dispatch "hl.dsp.focus({workspace = $target})"
+else if test $dispatcher = movetoworkspace
+    hyprctl dispatch "hl.dsp.window.move({workspace = $target})"
+else
+    hyprctl dispatch $dispatcher $target
+end

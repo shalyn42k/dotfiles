@@ -9,18 +9,24 @@ set specials specialws sysmon music communication todo messanger
 set direction $argv[1]
 set count (count $specials)
 
+# Under Hyprland Lua config, hyprctl dispatch uses Lua syntax.
+# togglespecialworkspace -> hl.dsp.workspace.toggle_special("name")
+function toggle_special
+    hyprctl dispatch "hl.dsp.workspace.toggle_special(\"$argv[1]\")"
+end
+
 # Get focused monitor ID, then its active special workspace
 set mon_id (hyprctl activeworkspace -j | jq '.monitorID')
 set raw (hyprctl monitors -j | jq -r ".[] | select(.id == $mon_id) | .specialWorkspace.name // \"\"")
 set active (string replace "special:" "" -- $raw)
 
 if test -z $active
-    hyprctl dispatch togglespecialworkspace $specials[1]
+    toggle_special $specials[1]
     exit 0
 end
 
 # Close current
-hyprctl dispatch togglespecialworkspace $active
+toggle_special $active
 
 # Find index of current in list (1-based)
 set idx 0
@@ -33,7 +39,7 @@ end
 
 if test $idx -eq 0
     # Not in list -> fall back to first
-    hyprctl dispatch togglespecialworkspace $specials[1]
+    toggle_special $specials[1]
     exit 0
 end
 
@@ -44,4 +50,4 @@ else
     set next_idx (math "(($idx - 2 + $count) % $count) + 1")
 end
 
-hyprctl dispatch togglespecialworkspace $specials[$next_idx]
+toggle_special $specials[$next_idx]

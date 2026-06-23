@@ -5,7 +5,7 @@ local wsaction     = home .. "/.config/hypr/scripts/wsaction.fish"
 local specialcycle = home .. "/.config/hypr/scripts/specialcycle.fish"
 
 -- Shell & Caelestia actions
-hl.bind("SHIFT + TAB", hl.dsp.global("caelestia:launcher"))
+hl.bind("SHIFT + TAB", hl.dsp.exec_cmd("caelestia shell drawers toggle launcher"))
 hl.bind("SUPER + M", hl.dsp.exec_cmd([[fish -c "qs -c caelestia kill && qs -c caelestia -d"]])) -- Restart shell
 hl.bind("SUPER + Escape", hl.dsp.exec_cmd("systemctl poweroff"))                                -- Full off
 hl.bind(vars.kbRestoreLock, hl.dsp.global("caelestia:lock"), { locked = true })                -- Lock screen
