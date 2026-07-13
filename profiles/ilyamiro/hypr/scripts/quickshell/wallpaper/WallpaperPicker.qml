@@ -174,8 +174,9 @@ Item {
                     export TARGET_MONITORS="${escOutputs}"
                     
                     cp "$DEST_FILE" ${paths.getCacheDir("wallpaper_picker")}/current_wallpaper.png || true
+                    printf '%s|%s|%s\\n' img "$DEST_FILE" "$TARGET_MONITORS" > ${paths.getStateDir("wallpaper_picker")}/last_wallpaper || true
                     pkill mpvpaper || true
-                    
+
                     echo "" >> ${logFile}
                     echo "[$(date +'%H:%M:%S.%3N')] APPLYING CACHED SEARCH: $DEST_FILE TO $TARGET_MONITORS" >> ${logFile}
                     
@@ -216,8 +217,9 @@ Item {
                         magick "$DEST_FILE" -resize x420 -quality 70 "$FINAL_THUMB" || true
                         
                         cp "$DEST_FILE" ${paths.getCacheDir("wallpaper_picker")}/current_wallpaper.png || true
+                        printf '%s|%s|%s\\n' img "$DEST_FILE" "$TARGET_MONITORS" > ${paths.getStateDir("wallpaper_picker")}/last_wallpaper || true
                         pkill mpvpaper || true
-                        
+
                         echo "" >> ${logFile}
                         echo "[$(date +'%H:%M:%S.%3N')] APPLYING NEW DOWNLOAD: $DEST_FILE TO $TARGET_MONITORS" >> ${logFile}
                         
@@ -273,6 +275,7 @@ Item {
 
         const fullScript = `
             cp "${isVideo ? escThumb : escOriginal}" ${paths.getCacheDir("wallpaper_picker")}/current_wallpaper.png || true
+            printf '%s|%s|%s\\n' "${isVideo ? "video" : "img"}" "${escOriginal}" "${escOutputs}" > ${paths.getStateDir("wallpaper_picker")}/last_wallpaper || true
             pkill mpvpaper || true
             
             ${wallpaperCmd}
