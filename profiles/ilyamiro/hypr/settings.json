@@ -6,7 +6,18 @@
   "wallpaperDir": "/home/shalyn42k/Pictures/Wallpapers",
   "language": "us",
   "kbOptions": "grp:alt_shift_toggle",
-  "monitors": [],
+  "monitors": [
+    {
+      "name": "eDP-1",
+      "resW": 1920,
+      "resH": 1080,
+      "rate": 144,
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "transform": 0
+    }
+  ],
   "keybinds": [
     {
       "type": "bind",
