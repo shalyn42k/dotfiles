@@ -13,3 +13,9 @@ hl.bind("SUPER + SHIFT + O",   hl.dsp.exec_cmd(dot .. "rigdo settings"))
 hl.bind("SUPER + ALT + M",     hl.dsp.exec_cmd(dot .. "rigdo music"))
 hl.bind("SUPER + ALT + S",     hl.dsp.exec_cmd(dot .. "rigdo calendar"))
 hl.bind("SUPER + ALT + P",     hl.dsp.exec_cmd(dot .. "rigdo movies"))
+
+-- Его личные виджеты (B батарея, N сеть, H гайд) — свободны в caelestia,
+-- работают после горячего свитча на ilyamiro.
+hl.bind("SUPER + B",           hl.dsp.exec_cmd(dot .. "rigdo battery"))
+hl.bind("SUPER + N",           hl.dsp.exec_cmd(dot .. "rigdo network"))
+hl.bind("SUPER + H",           hl.dsp.exec_cmd(dot .. "rigdo guide"))

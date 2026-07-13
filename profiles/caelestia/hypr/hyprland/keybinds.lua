@@ -4,11 +4,13 @@ local home = os.getenv("HOME")
 local wsaction     = home .. "/.config/hypr/scripts/wsaction.fish"
 local specialcycle = home .. "/.config/hypr/scripts/specialcycle.fish"
 
--- Shell & Caelestia actions
-hl.bind("SHIFT + TAB", hl.dsp.exec_cmd("caelestia shell drawers toggle launcher"))
-hl.bind("SUPER + M", hl.dsp.exec_cmd([[fish -c "qs -c caelestia kill && qs -c caelestia -d"]])) -- Restart shell
+-- Shell & Caelestia actions (риг-зависимые — через rigdo, чтобы работали
+-- и после горячего свитча на ilyamiro)
+local rigdo = os.getenv("HOME") .. "/dotfiles/bin/rigdo "
+hl.bind("SHIFT + TAB", hl.dsp.exec_cmd(rigdo .. "launcher"))
+hl.bind("SUPER + M", hl.dsp.exec_cmd(rigdo .. "shell"))                                        -- Restart shell
 hl.bind("SUPER + ALT + Escape", hl.dsp.exec_cmd("systemctl poweroff"))                                -- Full off
-hl.bind(vars.kbRestoreLock, hl.dsp.global("caelestia:lock"), { locked = true })                -- Lock screen
+hl.bind(vars.kbRestoreLock, hl.dsp.exec_cmd(rigdo .. "lock"), { locked = true })              -- Lock screen
 
 -- Window state & layout
 hl.bind(vars.kbWindowFullscreen, hl.dsp.window.fullscreen({ mode = "fullscreen" }))
@@ -62,7 +64,7 @@ hl.bind(vars.kbManagerApp, hl.dsp.exec_cmd("app2unit -- " .. vars.kbManager))
 hl.bind(vars.kbFileExplorer, hl.dsp.exec_cmd("app2unit -- " .. vars.fileExplorer))
 
 -- Utilities & tools
-hl.bind("SUPER + SHIFT + S", hl.dsp.global("caelestia:screenshotFreeze"))        -- Screenshot region (freeze)
+hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd(rigdo .. "screenshot"))             -- Screenshot region (freeze)
 hl.bind("ALT + SHIFT + R", hl.dsp.exec_cmd("caelestia record -s"))               -- Record + sound
 hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("caelestia record"))                   -- Record    -- Record region          -- Pause/resume recording                 -- Colour picker
 hl.bind("SUPER + O",         hl.dsp.exec_cmd("caelestia resizer pip"))            -- Picture-in-Picture
