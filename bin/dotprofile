@@ -81,6 +81,19 @@ apply_rig_colors() {
             [[ -d "$HOME/.config/$client/themes" ]] && cp "$dsrc" "$HOME/.config/$client/themes/rig.theme.css"
         done
     fi
+
+    # Obsidian: CSS-сниппет rig-theme в вольте, контент по ригу (как Discord)
+    local vault="$HOME/Documents/Obsidian Vault/Shalyn_Vault"
+    local osrc
+    if [[ "$name" == ilyamiro && -f "$HOME/.cache/matugen/obsidian-ilyamiro.css" ]]; then
+        osrc="$HOME/.cache/matugen/obsidian-ilyamiro.css"
+    else
+        osrc="$PROFILES/caelestia/obsidian.css"
+    fi
+    if [[ -d "$vault/.obsidian" && -f "$osrc" ]]; then
+        mkdir -p "$vault/.obsidian/snippets"
+        cp "$osrc" "$vault/.obsidian/snippets/rig-theme.css"
+    fi
 }
 
 hypr_provider() {

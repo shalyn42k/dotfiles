@@ -18,6 +18,10 @@ hl.window_rule({ match = { float = true, xwayland = false }, center = true })
 hl.window_rule({ match = { title = "^(Discord)$" }, float = true })
 hl.window_rule({ match = { class = "vesktop|discord|equibop" }, opacity = "0.80 0.70" })
 
+-- Thunar и Obsidian: умеренная прозрачность (текстовые — альфу не ниже 0.85)
+hl.window_rule({ match = { class = "(?i)thunar" }, opacity = "0.90 0.85" })
+hl.window_rule({ match = { class = "obsidian" }, opacity = "0.90 0.85" })
+
 -- Silent apps in special workspaces
 hl.window_rule({ match = { class = "(?i)spotify" }, workspace = "special:music silent" })
 hl.window_rule({ match = { class = "(?i)vesktop" }, workspace = "special:communication silent" })
