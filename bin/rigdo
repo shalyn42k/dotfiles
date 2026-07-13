@@ -6,8 +6,20 @@ set -u
 
 ACTIVE="$(basename "$(readlink -f "$HOME/dotfiles/profiles/active")" 2>/dev/null || echo caelestia)"
 QSM="$HOME/.config/hypr/scripts/qs_manager.sh"
+ILSCRIPTS="$HOME/dotfiles/profiles/ilyamiro/hypr/scripts"
 
 hint() { notify-send -u low "rigdo" "$1"; }
+
+# global-диспатчер caelestia-шелла: синтаксис зависит от конфиг-движка сессии
+hypr_global() {
+    local provider
+    provider="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
+    if [[ "$provider" == lua ]]; then
+        hyprctl dispatch "hl.dsp.global(\"$1\")"
+    else
+        hyprctl dispatch global "$1"
+    fi
+}
 
 case "${1:-}" in
     launcher)
@@ -31,5 +43,29 @@ case "${1:-}" in
     clipboard)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle clipboard
         else pkill fuzzel || caelestia clipboard; fi ;;
-    *) echo "usage: rigdo launcher|wallpaper|settings|music|calendar|movies|clipboard" >&2; exit 1 ;;
+    screenshot)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$ILSCRIPTS/screenshot.sh"
+        else hypr_global caelestia:screenshotFreeze; fi ;;
+    lock)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$ILSCRIPTS/lock.sh"
+        else hypr_global caelestia:lock; fi ;;
+    shell)  # рестарт шелла активного рига
+        if [[ "$ACTIVE" == ilyamiro ]]; then
+            pkill -f 'quickshell -p .*hypr/scripts/quickshell/Shell.qml'
+            sleep 0.5
+            hyprctl dispatch exec "quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml" 2>/dev/null \
+                || hyprctl dispatch "hl.dsp.exec_cmd(\"quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml\")"
+        else
+            qs -c caelestia kill; qs -c caelestia -d
+        fi ;;
+    battery)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle battery
+        else hint "виджет батареи — только в ilyamiro"; fi ;;
+    network)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle network
+        else hint "виджет сети — только в ilyamiro"; fi ;;
+    guide)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle guide
+        else hint "гайд — только в ilyamiro (в caelestia: SUPER+T hyprkcs)"; fi ;;
+    *) echo "usage: rigdo launcher|wallpaper|settings|music|calendar|movies|clipboard|screenshot|lock|shell|battery|network|guide" >&2; exit 1 ;;
 esac
