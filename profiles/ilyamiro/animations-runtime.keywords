@@ -1,0 +1,15 @@
+# Анимации рига ilyamiro для hyprlang-сессии (hyprctl keyword <имя> <знач>).
+# Формат: <keyword> <значение>. Перевод блока animations из settings.conf.
+bezier myBezier, 0.05, 0.9, 0.1, 1.05
+animation windowsIn, 1, 5, myBezier, popin 80%
+animation windowsOut, 1, 5, myBezier, popin 80%
+animation windowsMove, 1, 5, myBezier
+animation layersIn, 1, 5, myBezier, fade
+animation layersOut, 1, 5, myBezier, fade
+animation fadeLayers, 1, 5, myBezier
+animation fade, 1, 5, myBezier
+animation fadeDim, 1, 5, myBezier
+animation border, 1, 5, myBezier
+animation workspaces, 1, 5, myBezier, slide
+animation specialWorkspaceIn, 1, 5, myBezier, fade
+animation specialWorkspaceOut, 1, 5, myBezier, fade

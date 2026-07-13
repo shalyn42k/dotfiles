@@ -42,13 +42,32 @@ apply_rig_colors() {
     fi
     [[ -n "$active" && -n "$inactive" ]] || return 0
 
-    local provider
-    provider="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
-    if [[ "$provider" == lua ]]; then
+    if [[ "$(hypr_provider)" == lua ]]; then
         hyprctl eval "hl.config({ general = { col = { active_border = '$active', inactive_border = '$inactive' } } })" >/dev/null || true
     else
         hyprctl keyword general:col.active_border "$active" >/dev/null || true
         hyprctl keyword general:col.inactive_border "$inactive" >/dev/null || true
+    fi
+}
+
+hypr_provider() {
+    hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}'
+}
+
+# Анимации, как и рамки, живут в конфиг-движке — применяем набор активного
+# рига runtime-командами из заранее переведённых файлов профиля.
+apply_rig_animations() {
+    local name="$1"
+    if [[ "$(hypr_provider)" == lua ]]; then
+        local chunk="$PROFILES/$name/animations-runtime.lua"
+        [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
+    else
+        local kw="$PROFILES/$name/animations-runtime.keywords" k v
+        [[ -f "$kw" ]] || return 0
+        while read -r k v; do
+            [[ -z "$k" || "$k" == \#* ]] && continue
+            hyprctl keyword "$k" "$v" >/dev/null || true
+        done < "$kw"
     fi
 }
 
@@ -78,7 +97,10 @@ cmd_switch() {
             fi
         fi
         [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
-        command -v hyprctl >/dev/null && apply_rig_colors "$name"
+        if command -v hyprctl >/dev/null; then
+            apply_rig_colors "$name"
+            apply_rig_animations "$name"
+        fi
     fi
     echo "active: $name"
 }
