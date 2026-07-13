@@ -3,7 +3,7 @@
     "logo": null,
     "display": {
         "separator": "  ",
-        "color": "cyan",
+        "color": "{{ACCENT}}",
         "constants": ["\u001b[37m", "\u001b[38;5;16m", "\u001b[38;5;17m", "\u001b[38;5;18m"],
     },
     "modules": [
@@ -11,38 +11,38 @@
         {
             "type": "custom",
             "format": "     ┌──────────Hardware──────────┐",
-            "outputColor": "cyan"
+            "outputColor": "{{ACCENT}}"
         },
         {
             "type": "host",
             "key": " Host",
-            "keyColor": "cyan"
+            "keyColor": "{{ACCENT}}"
         },
         {
             "type": "command",
             "key": "└─  User",
-            "keyColor": "cyan",
+            "keyColor": "{{ACCENT}}",
             "text": "echo $USER"
         },
         {
             "type": "cpu",
             "key": "├─  CPU",
-            "keyColor": "cyan"
+            "keyColor": "{{ACCENT}}"
         },
         {
             "type": "gpu",
             "key": "├─  GPU",
-            "keyColor": "cyan"
+            "keyColor": "{{ACCENT}}"
         },
         {
             "type": "memory",
             "key": "├─  RAM",
-            "keyColor": "cyan"
+            "keyColor": "{{ACCENT}}"
         },
         {
             "type": "disk",
             "key": "└─  Disk",
-            "keyColor": "cyan"
+            "keyColor": "{{ACCENT}}"
         },
         "break",
         {
