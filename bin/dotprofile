@@ -37,7 +37,18 @@ cmd_switch() {
         if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
             "$PROFILES/$old/session.sh" stop || true
         fi
-        command -v hyprctl >/dev/null && hyprctl reload || true
+        # Провайдер конфига Hyprland (lua/hyprlang) выбирается при старте
+        # инстанса и на лету не меняется: reload чужого движка = ошибка.
+        if command -v hyprctl >/dev/null; then
+            local running target
+            running="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
+            [[ -f "$PROFILES/$name/hypr/hyprland.lua" ]] && target=lua || target=hyprlang
+            if [[ -z "$running" || "$running" == "$target" ]]; then
+                hyprctl reload || true
+            else
+                echo "note: конфиг-движок '$target' != запущенного '$running' — бинды/настройки WM применятся после relogin в сессию '$name'"
+            fi
+        fi
         [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
     fi
     echo "active: $name"
