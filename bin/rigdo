@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# rigdo — риг-зависимый диспетчер действий для горячего переключения.
+# Бинды обоих ригов зовут `rigdo <action>`; команда выбирается по активному
+# профилю (profiles/active), а не по тому, с чем стартовала сессия.
+set -u
+
+ACTIVE="$(basename "$(readlink -f "$HOME/dotfiles/profiles/active")" 2>/dev/null || echo caelestia)"
+QSM="$HOME/.config/hypr/scripts/qs_manager.sh"
+
+hint() { notify-send -u low "rigdo" "$1"; }
+
+case "${1:-}" in
+    launcher)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle applauncher
+        else caelestia shell drawers toggle launcher; fi ;;
+    wallpaper)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle wallpaper
+        else hint "пикер обоев — в риге ilyamiro (SUPER+SHIFT+D)"; fi ;;
+    settings)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle settings
+        else hint "настройки рига — только в ilyamiro"; fi ;;
+    music)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle music
+        else hint "музыка-виджет — только в ilyamiro (feishin: SUPER+Z)"; fi ;;
+    calendar)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle calendar
+        else hint "календарь — только в ilyamiro"; fi ;;
+    movies)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle movies
+        else hint "movies — только в ilyamiro"; fi ;;
+    clipboard)
+        if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle clipboard
+        else pkill fuzzel || caelestia clipboard; fi ;;
+    *) echo "usage: rigdo launcher|wallpaper|settings|music|calendar|movies|clipboard" >&2; exit 1 ;;
+esac
