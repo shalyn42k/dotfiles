@@ -24,6 +24,34 @@ ensure_links() {
     done
 }
 
+# Цвет рамок окон задаётся конфиг-движком при старте сессии; при горячем
+# свитче применяем цвета активного рига runtime-командой (lua: eval hl.config,
+# hyprlang: keyword). Источники: colors.conf (matugen ilyamiro) или
+# scheme/current.lua (caelestia: primary/onSurfaceVariant).
+apply_rig_colors() {
+    local name="$1" active="" inactive=""
+    local cconf="$PROFILES/$name/hypr/colors.conf"
+    local clua="$PROFILES/$name/hypr/scheme/current.lua"
+    if [[ -f "$cconf" ]]; then
+        active="$(awk -F' = ' '/^\$active_border/{print $2}' "$cconf")"
+        inactive="$(awk -F' = ' '/^\$inactive_border/{print $2}' "$cconf")"
+    elif [[ -f "$clua" ]] && command -v luajit >/dev/null; then
+        local p osv
+        read -r p osv < <(luajit -e "local s=dofile('$clua') print(s.primary, s.onSurfaceVariant)" 2>/dev/null) || true
+        [[ -n "${p:-}" && -n "${osv:-}" ]] && { active="rgba(${p}e6)"; inactive="rgba(${osv}11)"; }
+    fi
+    [[ -n "$active" && -n "$inactive" ]] || return 0
+
+    local provider
+    provider="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
+    if [[ "$provider" == lua ]]; then
+        hyprctl eval "hl.config({ general = { col = { active_border = '$active', inactive_border = '$inactive' } } })" >/dev/null || true
+    else
+        hyprctl keyword general:col.active_border "$active" >/dev/null || true
+        hyprctl keyword general:col.inactive_border "$inactive" >/dev/null || true
+    fi
+}
+
 cmd_switch() {
     local name="${1:-}"; [[ -n "$name" ]] || usage
     local links_only="${2:-}"
@@ -50,6 +78,7 @@ cmd_switch() {
             fi
         fi
         [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
+        command -v hyprctl >/dev/null && apply_rig_colors "$name"
     fi
     echo "active: $name"
 }
