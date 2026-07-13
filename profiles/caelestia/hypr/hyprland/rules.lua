@@ -22,6 +22,11 @@ hl.window_rule({ match = { class = "vesktop|discord|equibop" }, opacity = "0.80 
 hl.window_rule({ match = { class = "(?i)thunar" }, opacity = "0.90 0.85" })
 hl.window_rule({ match = { class = "obsidian" }, opacity = "0.90 0.85" })
 
+-- Feishin и AyuGram: прозрачность (тема-синк недоступен: feishin без
+-- кастомного CSS, telegram кэширует тему при импорте)
+hl.window_rule({ match = { class = "feishin" }, opacity = "0.90 0.85" })
+hl.window_rule({ match = { class = "com.ayugram.desktop" }, opacity = "0.90 0.85" })
+
 -- Silent apps in special workspaces
 hl.window_rule({ match = { class = "(?i)spotify" }, workspace = "special:music silent" })
 hl.window_rule({ match = { class = "(?i)vesktop" }, workspace = "special:communication silent" })
