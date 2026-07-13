@@ -54,11 +54,11 @@ body {
   --background-image-url: url(""); /* url of the background image */
   /* transparency/blur options */
   /* NOTE: TO USE TRANSPARENCY/BLUR, YOU MUST HAVE TRANSPARENT BG COLORS. FOR EXAMPLE: --bg-4: hsla(220, 15%, 10%, 0.7); */
-  --transparency-tweaks: off; /* turn on to remove some elements for better transparency */
-  --remove-bg-layer: off; /* turn on to remove the base --bg-3 layer for use with window transparency (WILL OVERRIDE BACKGROUND IMAGE) */
-  --panel-blur: off; /* turn on to blur the background of panels */
+  --transparency-tweaks: on; /* turn on to remove some elements for better transparency */
+  --remove-bg-layer: on; /* turn on to remove the base --bg-3 layer for use with window transparency (WILL OVERRIDE BACKGROUND IMAGE) */
+  --panel-blur: on; /* turn on to blur the background of panels */
   --blur-amount: 12px; /* amount of blur */
-  --bg-floating: #0a0f0f; /* you can set this to a more opaque color if floating panels look too transparent */
+  --bg-floating: rgba(10, 15, 15, 0.85); /* you can set this to a more opaque color if floating panels look too transparent */
   /* chatbar options */
   --custom-chatbar: off; /* off: default chatbar, separated: chatbar separated from chat */
   --chatbar-height: 47px; /* height of the chatbar (56px by default, 47px to align with user panel, 56px recommended for separated) */
@@ -77,10 +77,10 @@ body {
   --text-4: #6d7876; /* icon buttons and channels */
   --text-5: #6d7876; /* muted channels/chats and timestamps */
   /* background and dark colors */
-  --bg-1: #1d2827; /* dark buttons when clicked */
-  --bg-2: #192120; /* dark buttons */
-  --bg-3: #0a0f0f; /* spacing, secondary elements */
-  --bg-4: #131b1a; /* main background color */
+  --bg-1: rgba(29, 40, 39, 0.85); /* dark buttons when clicked */
+  --bg-2: rgba(25, 33, 32, 0.80); /* dark buttons */
+  --bg-3: rgba(10, 15, 15, 0.45); /* spacing, secondary elements */
+  --bg-4: rgba(19, 27, 26, 0.65); /* main background color */
   --hover: rgba(220, 232, 230, 0.08); /* channels and buttons when hovered */
   --active: rgba(220, 232, 230, 0.1); /* channels and buttons when clicked or selected */
   --active-2: rgba(220, 232, 230, 0.2); /* extra state for transparent buttons */
