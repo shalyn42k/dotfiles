@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Hyprland (ilyamiro)
+Comment=Hyprland with ilyamiro rig profile
+Exec=/home/shalyn42k/dotfiles/bin/start-hyprland-profile ilyamiro
+Type=Application

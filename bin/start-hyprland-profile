@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Запуск Hyprland с выбранным риг-профилем (аргумент 1 = имя профиля).
+"$HOME/dotfiles/bin/dotprofile" switch "${1:-caelestia}" --links-only
+exec /usr/bin/start-hyprland
