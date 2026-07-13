@@ -63,13 +63,37 @@ cmd_status() {
 
 # update: материализуем симлинки в реальные каталоги, чтобы чужой installer
 # писал в них, потом снимаем снапшот обратно в профиль и возвращаем симлинки.
+# При Ctrl+C/ошибке на любом шаге trap восстанавливает симлинки и прежний
+# профиль; снапшот пишется в $d.new и подменяется атомарно, поэтому отмена
+# оставляет профиль нетронутым.
+# restore вызывается и из trap EXIT (вне области local), поэтому prev — глобальная.
+# Best-effort: одна неудача не должна бросить остальные каталоги без симлинков.
+UPDATE_PREV=""
+restore() {
+    [[ -n "$UPDATE_PREV" ]] && ln -sfn "$UPDATE_PREV" "$ACTIVE" || true
+    for d in "${CONTESTED[@]}"; do
+        if [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]]; then
+            chmod -R u+w "$HOME/.config/$d" 2>/dev/null || true
+            rm -rf "$HOME/.config/${d:?}" 2>/dev/null || true
+        fi
+        if [[ ! -e "$HOME/.config/$d" || -L "$HOME/.config/$d" ]]; then
+            ln -sfn "$PROFILES/active/$d" "$HOME/.config/$d" || true
+        else
+            echo "warning: не смог восстановить ~/.config/$d — убери каталог руками и запусти: dotprofile switch $UPDATE_PREV --links-only" >&2
+        fi
+    done
+}
+
 cmd_update() {
-    local name="${1:-}"; [[ -d "$PROFILES/$name" ]] || { echo "no such profile: $name" >&2; exit 1; }
-    local prev; prev="$(current || echo caelestia)"
+    local name="${1:-}"; [[ -n "$name" ]] || usage
+    [[ -d "$PROFILES/$name" ]] || { echo "no such profile: $name" >&2; exit 1; }
+    UPDATE_PREV="$(current || echo caelestia)"
+
+    trap restore EXIT INT TERM
 
     ln -sfn "$name" "$ACTIVE"
     for d in "${CONTESTED[@]}"; do
-        rm -f "$HOME/.config/$d"
+        rm -rf "$HOME/.config/${d:?}"
         cp -a "$PROFILES/$name/$d" "$HOME/.config/$d"
     done
     echo ">>> Каталоги материализованы. Запусти installer профиля '$name'."
@@ -77,14 +101,15 @@ cmd_update() {
     read -r
 
     for d in "${CONTESTED[@]}"; do
+        rm -rf "$PROFILES/$name/${d:?}.new"
+        cp -a "$HOME/.config/$d" "$PROFILES/$name/$d.new"
         rm -rf "$PROFILES/$name/${d:?}"
-        cp -a "$HOME/.config/$d" "$PROFILES/$name/$d"
-        rm -rf "$HOME/.config/${d:?}"
+        mv "$PROFILES/$name/$d.new" "$PROFILES/$name/$d"
     done
-    ensure_links
-    ln -sfn "$prev" "$ACTIVE"
-    ensure_links
-    echo "profile '$name' updated; active: $prev"
+
+    trap - EXIT INT TERM
+    restore
+    echo "profile '$name' updated; active: $UPDATE_PREV"
 }
 
 case "${1:-}" in
