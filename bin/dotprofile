@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# dotprofile — переключатель риг-профилей (см. docs/specs/2026-07-13-*.md)
+set -euo pipefail
+
+DOTFILES="$HOME/dotfiles"
+PROFILES="$DOTFILES/profiles"
+ACTIVE="$PROFILES/active"
+CONTESTED=(hypr gtk-3.0 gtk-4.0 qt5ct qt6ct)
+
+usage() {
+    echo "usage: dotprofile switch <name> [--links-only] | menu | status | update <name>" >&2
+    exit 1
+}
+
+current() { [[ -L "$ACTIVE" ]] && basename "$(readlink -f "$ACTIVE")"; }
+
+list_profiles() {
+    find "$PROFILES" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort
+}
+
+ensure_links() {
+    for d in "${CONTESTED[@]}"; do
+        ln -sfn "$PROFILES/active/$d" "$HOME/.config/$d"
+    done
+}
+
+cmd_switch() {
+    local name="${1:-}"; [[ -n "$name" ]] || usage
+    local links_only="${2:-}"
+    [[ -d "$PROFILES/$name" ]] || { echo "no such profile: $name" >&2; exit 1; }
+    local old; old="$(current || true)"
+
+    ln -sfn "$name" "$ACTIVE"
+    ensure_links
+
+    if [[ "$links_only" != "--links-only" ]]; then
+        if [[ -n "$old" && "$old" != "$name" && -x "$PROFILES/$old/session.sh" ]]; then
+            "$PROFILES/$old/session.sh" stop || true
+        fi
+        command -v hyprctl >/dev/null && hyprctl reload || true
+        [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
+    fi
+    echo "active: $name"
+}
+
+cmd_menu() {
+    local cur choice
+    cur="$(current || true)"
+    choice="$(list_profiles | sed "s/^${cur}\$/& (active)/" \
+        | fuzzel --dmenu --prompt 'profile> ' --lines 4)" || exit 0
+    choice="${choice% (active)}"
+    [[ -z "$choice" || "$choice" == "$cur" ]] && exit 0
+    cmd_switch "$choice"
+}
+
+cmd_status() {
+    echo "active: $(current || echo '<none>')"
+    for d in "${CONTESTED[@]}"; do
+        local t; t="$(readlink "$HOME/.config/$d" 2>/dev/null || echo 'NOT A SYMLINK')"
+        printf '  %-8s -> %s\n' "$d" "$t"
+    done
+}
+
+# update: материализуем симлинки в реальные каталоги, чтобы чужой installer
+# писал в них, потом снимаем снапшот обратно в профиль и возвращаем симлинки.
+cmd_update() {
+    local name="${1:-}"; [[ -d "$PROFILES/$name" ]] || { echo "no such profile: $name" >&2; exit 1; }
+    local prev; prev="$(current || echo caelestia)"
+
+    ln -sfn "$name" "$ACTIVE"
+    for d in "${CONTESTED[@]}"; do
+        rm -f "$HOME/.config/$d"
+        cp -a "$PROFILES/$name/$d" "$HOME/.config/$d"
+    done
+    echo ">>> Каталоги материализованы. Запусти installer профиля '$name'."
+    echo ">>> Enter когда installer закончит (или Ctrl+C для отмены):"
+    read -r
+
+    for d in "${CONTESTED[@]}"; do
+        rm -rf "$PROFILES/$name/${d:?}"
+        cp -a "$HOME/.config/$d" "$PROFILES/$name/$d"
+        rm -rf "$HOME/.config/${d:?}"
+    done
+    ensure_links
+    ln -sfn "$prev" "$ACTIVE"
+    ensure_links
+    echo "profile '$name' updated; active: $prev"
+}
+
+case "${1:-}" in
+    switch) shift; cmd_switch "$@" ;;
+    menu)   cmd_menu ;;
+    status) cmd_status ;;
+    update) shift; cmd_update "$@" ;;
+    *) usage ;;
+esac
