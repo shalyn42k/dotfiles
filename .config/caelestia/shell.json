@@ -97,8 +97,7 @@
                 "id": "power"
             }
         ],
-        "excludedScreens": [
-        ],
+        "excludedScreens": [],
         "persistent": true,
         "popouts": {
             "activeWindow": true,
@@ -124,10 +123,8 @@
         "tray": {
             "background": false,
             "compact": true,
-            "hiddenIcons": [
-            ],
-            "iconSubs": [
-            ],
+            "hiddenIcons": [],
+            "iconSubs": [],
             "recolour": false
         },
         "workspaces": {
@@ -143,8 +140,7 @@
             "showWindows": false,
             "showWindowsOnSpecialWorkspaces": false,
             "shown": 5,
-            "specialWorkspaceIcons": [
-            ],
+            "specialWorkspaceIcons": [],
             "windowIcons": [
                 {
                     "icon": "sports_esports",
@@ -406,8 +402,7 @@
             "rog-control-center",
             "czkawka-gui"
         ],
-        "hiddenApps": [
-        ],
+        "hiddenApps": [],
         "maxShown": 7,
         "maxWallpapers": 9,
         "showOnHover": false,
@@ -478,9 +473,9 @@
                 "hibernate"
             ],
             "logout": [
-                "hyprctl",
-                "dispatch",
-                "exit"
+                "sh",
+                "-c",
+                "hyprctl dispatch exit; hyprctl dispatch \"hl.dsp.exit()\""
             ],
             "reboot": [
                 "systemctl",
@@ -555,8 +550,7 @@
         "vpn": {
             "enabled": false,
             "provider": [
-                {
-                }
+                {}
             ]
         }
     }
