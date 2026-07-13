@@ -34,7 +34,7 @@ cmd_switch() {
     ensure_links
 
     if [[ "$links_only" != "--links-only" ]]; then
-        if [[ -n "$old" && "$old" != "$name" && -x "$PROFILES/$old/session.sh" ]]; then
+        if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
             "$PROFILES/$old/session.sh" stop || true
         fi
         command -v hyprctl >/dev/null && hyprctl reload || true
