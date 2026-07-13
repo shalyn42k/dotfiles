@@ -1,0 +1,17 @@
+/* rig-theme — стеклянная тема под активный риг (генерится dotprofile) */
+.theme-dark {
+  --background-primary: rgba(19, 27, 26, 0.65);
+  --background-primary-alt: rgba(25, 33, 32, 0.75);
+  --background-secondary: rgba(10, 15, 15, 0.55);
+  --background-secondary-alt: rgba(14, 21, 20, 0.65);
+  --titlebar-background: rgba(10, 15, 15, 0.55);
+  --titlebar-background-focused: rgba(10, 15, 15, 0.55);
+  --color-accent: #9bd0cc;
+  --color-accent-1: #9bd0cc;
+  --color-accent-2: #9bd0cc;
+  --interactive-accent: #9bd0cc;
+  --text-accent: #9bd0cc;
+  --text-normal: #dce8e6;
+  --text-muted: #6d7876;
+  --tab-background-active: rgba(19, 27, 26, 0.65);
+}

@@ -86,9 +86,9 @@ echo "== 4/6 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
 xdg-user-dirs-update 2>/dev/null || true
 
-# matugen-шаблон Vencord-темы (риг ilyamiro)
+# matugen-шаблоны тем приложений (риг ilyamiro)
 if [[ -d "$HOME/.config/matugen/templates" ]]; then
-    cp "$DOTFILES/profiles/ilyamiro/matugen/discord.css.template" "$HOME/.config/matugen/templates/"
+    cp "$DOTFILES/profiles/ilyamiro/matugen/"*.template "$HOME/.config/matugen/templates/"
     if ! grep -q 'templates.discord' "$HOME/.config/matugen/config.toml" 2>/dev/null; then
         cat >> "$HOME/.config/matugen/config.toml" <<'MEOF'
 
@@ -96,6 +96,11 @@ if [[ -d "$HOME/.config/matugen/templates" ]]; then
 [templates.discord]
 input_path = "~/.config/matugen/templates/discord.css.template"
 output_path = "~/.cache/matugen/discord-ilyamiro.theme.css"
+
+# тема Obsidian для рига ilyamiro — dotprofile копирует в vault/.obsidian/snippets/
+[templates.obsidian]
+input_path = "~/.config/matugen/templates/obsidian.css.template"
+output_path = "~/.cache/matugen/obsidian-ilyamiro.css"
 MEOF
     fi
 fi
