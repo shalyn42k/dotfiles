@@ -5,3 +5,5 @@ __pycache__
 .mypy_cache
 .superpowers/
 profiles/active
+# секреты его виджетов (API-ключи) — живут только локально
+profiles/*/hypr/scripts/quickshell/calendar/.env
