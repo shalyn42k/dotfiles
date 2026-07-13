@@ -22,6 +22,17 @@ mkdir -p "$CONF_DIR" "$TMPL_DIR" "$(dirname "$SETTINGS_FILE")" "$(dirname "$ENV_
 CACHE_DIR="$HOME/.cache/settings_watcher"
 mkdir -p "$CACHE_DIR"
 
+# Reload only when the running Hyprland uses the hyprlang provider — under a
+# lua session (hot-switched from caelestia) reload fails on missing hyprland.lua
+# and leaves an error overlay. Config applies on next login into this rig.
+safe_reload() {
+    if hyprctl systeminfo 2>/dev/null | grep -q 'configProvider: lua'; then
+        echo "Lua config provider session — skipping reload (applies on next login)."
+    else
+        hyprctl reload
+    fi
+}
+
 compile_settings() {
     echo "Regenerating configurations from templates..."
 
@@ -107,11 +118,11 @@ compile_settings() {
     if [ "$OLD_MON_HASH" != "$NEW_MON_HASH" ]; then
         # Monitor layout actually changed — full reload needed
         echo "Monitor config changed, reloading Hyprland..."
-        hyprctl reload
+        safe_reload
     elif [ "$OLD_NONMON_HASH" != "$NEW_NONMON_HASH" ]; then
         # Non-monitor settings changed (keybinds, autostart, input, env) — reload safe, no display flicker
         echo "Non-monitor config changed, reloading Hyprland..."
-        hyprctl reload
+        safe_reload
     else
         # Nothing that affects Hyprland changed (e.g. uiScale, weatherApiKey) — skip reload entirely
         echo "No Hyprland config changes detected, skipping reload."

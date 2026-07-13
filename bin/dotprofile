@@ -171,6 +171,12 @@ cmd_update() {
 
     trap - EXIT INT TERM
     restore
+
+    # Пост-обработка снапшота (например, вернуть source-строки, которые
+    # затирает installer профиля)
+    if [[ -x "$PROFILES/$name/post-update.sh" ]]; then
+        "$PROFILES/$name/post-update.sh" || echo "warning: post-update.sh завершился с ошибкой" >&2
+    fi
     echo "profile '$name' updated; active: $UPDATE_PREV"
 }
 
@@ -179,5 +185,8 @@ case "${1:-}" in
     menu)   cmd_menu ;;
     status) cmd_status ;;
     update) shift; cmd_update "$@" ;;
+    # Переприменить цвета рамок активного рига (зовётся из matugen-пайплайна
+    # после смены обоев)
+    colors) apply_rig_colors "$(current || echo caelestia)" ;;
     *) usage ;;
 esac

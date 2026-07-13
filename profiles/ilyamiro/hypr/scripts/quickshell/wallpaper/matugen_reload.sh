@@ -100,3 +100,7 @@ if command -v gsettings &> /dev/null; then
     gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 fi
 
+
+# Переприменить цвета рамок окон (dotfiles profile switcher): matugen обновил
+# colors.conf, но при кросс-движковой сессии reload его не подхватит.
+"$HOME/dotfiles/bin/dotprofile" colors 2>/dev/null || true
