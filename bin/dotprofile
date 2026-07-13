@@ -66,6 +66,21 @@ apply_rig_colors() {
         local r=$((16#${hex:0:2})) g=$((16#${hex:2:2})) b=$((16#${hex:4:2}))
         sed "s/{{ACCENT}}/38;2;$r;$g;$b/g" "$tmpl" > "$DOTFILES/.config/fastfetch/config.jsonc"
     fi
+
+    # Vencord-тема Discord (rig.theme.css в vesktop/equibop): контент по ригу.
+    # ilyamiro-вариант генерит его matugen (обновляется со сменой обоев).
+    local dsrc
+    if [[ "$name" == ilyamiro && -f "$HOME/.cache/matugen/discord-ilyamiro.theme.css" ]]; then
+        dsrc="$HOME/.cache/matugen/discord-ilyamiro.theme.css"
+    else
+        dsrc="$PROFILES/caelestia/discord.theme.css"
+    fi
+    if [[ -f "$dsrc" ]]; then
+        local client
+        for client in vesktop equibop Vencord; do
+            [[ -d "$HOME/.config/$client/themes" ]] && cp "$dsrc" "$HOME/.config/$client/themes/rig.theme.css"
+        done
+    fi
 }
 
 hypr_provider() {
@@ -109,8 +124,22 @@ cmd_switch() {
             running="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
             [[ -f "$PROFILES/$name/hypr/hyprland.lua" ]] && target=lua || target=hyprlang
             if [[ -z "$running" || "$running" == "$target" ]]; then
+                # Родной движок: вернуть autoreload и перечитать конфиг
+                if [[ "$running" == lua ]]; then
+                    hyprctl eval 'hl.config({ misc = { disable_autoreload = false } })' >/dev/null || true
+                else
+                    hyprctl keyword misc:disable_autoreload false >/dev/null || true
+                fi
                 hyprctl reload || true
             else
+                # Кросс-движок: Hyprland следит за файлами, загруженными при
+                # старте — правка конфигов неактивного рига вызвала бы reload
+                # и ошибку "cannot open hyprland.lua". Глушим autoreload.
+                if [[ "$running" == lua ]]; then
+                    hyprctl eval 'hl.config({ misc = { disable_autoreload = true } })' >/dev/null || true
+                else
+                    hyprctl keyword misc:disable_autoreload true >/dev/null || true
+                fi
                 echo "note: конфиг-движок '$target' != запущенного '$running' — бинды/настройки WM применятся после relogin в сессию '$name'"
             fi
         fi

@@ -86,6 +86,20 @@ echo "== 4/6 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
 xdg-user-dirs-update 2>/dev/null || true
 
+# matugen-шаблон Vencord-темы (риг ilyamiro)
+if [[ -d "$HOME/.config/matugen/templates" ]]; then
+    cp "$DOTFILES/profiles/ilyamiro/matugen/discord.css.template" "$HOME/.config/matugen/templates/"
+    if ! grep -q 'templates.discord' "$HOME/.config/matugen/config.toml" 2>/dev/null; then
+        cat >> "$HOME/.config/matugen/config.toml" <<'MEOF'
+
+# тема Discord (Vencord) для рига ilyamiro — dotprofile копирует в themes/rig.theme.css
+[templates.discord]
+input_path = "~/.config/matugen/templates/discord.css.template"
+output_path = "~/.cache/matugen/discord-ilyamiro.theme.css"
+MEOF
+    fi
+fi
+
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 5/6 SDDM-сессии =="
 # В репо Exec захардкожен на /home/shalyn42k — подставляем текущий $HOME.
