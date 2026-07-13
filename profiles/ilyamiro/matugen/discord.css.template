@@ -54,11 +54,11 @@ body {
   --background-image-url: url(""); /* url of the background image */
   /* transparency/blur options */
   /* NOTE: TO USE TRANSPARENCY/BLUR, YOU MUST HAVE TRANSPARENT BG COLORS. FOR EXAMPLE: --bg-4: hsla(220, 15%, 10%, 0.7); */
-  --transparency-tweaks: off; /* turn on to remove some elements for better transparency */
-  --remove-bg-layer: off; /* turn on to remove the base --bg-3 layer for use with window transparency (WILL OVERRIDE BACKGROUND IMAGE) */
-  --panel-blur: off; /* turn on to blur the background of panels */
+  --transparency-tweaks: on; /* turn on to remove some elements for better transparency */
+  --remove-bg-layer: on; /* turn on to remove the base --bg-3 layer for use with window transparency (WILL OVERRIDE BACKGROUND IMAGE) */
+  --panel-blur: on; /* turn on to blur the background of panels */
   --blur-amount: 12px; /* amount of blur */
-  --bg-floating: #0a0f0f; /* you can set this to a more opaque color if floating panels look too transparent */
+  --bg-floating: {{colors.surface.default.rgba | set_alpha: 0.85}}; /* you can set this to a more opaque color if floating panels look too transparent */
   /* chatbar options */
   --custom-chatbar: off; /* off: default chatbar, separated: chatbar separated from chat */
   --chatbar-height: 47px; /* height of the chatbar (56px by default, 47px to align with user panel, 56px recommended for separated) */
@@ -77,10 +77,10 @@ body {
   --text-4: {{colors.outline.default.hex}};
   --text-5: {{colors.outline.default.hex}};
   /* background and dark colors */
-  --bg-1: {{colors.surface_container_highest.default.hex}};
-  --bg-2: {{colors.surface_container_high.default.hex}};
-  --bg-3: {{colors.surface.default.hex}};
-  --bg-4: {{colors.surface_container.default.hex}};
+  --bg-1: {{colors.surface_container_highest.default.rgba | set_alpha: 0.85}};
+  --bg-2: {{colors.surface_container_high.default.rgba | set_alpha: 0.80}};
+  --bg-3: {{colors.surface.default.rgba | set_alpha: 0.45}};
+  --bg-4: {{colors.surface_container.default.rgba | set_alpha: 0.65}};
   --hover: color-mix(in srgb, var(--text-3), transparent 92%);
   --active: color-mix(in srgb, var(--text-3), transparent 90%);
   --active-2: color-mix(in srgb, var(--text-3), transparent 80%);
