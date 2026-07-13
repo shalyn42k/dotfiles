@@ -14,6 +14,9 @@ hl.window_rule({ match = { class = "krita|gimp|inkscape|darktable|resolve|kdenli
 -- Center all floating windows (not xwayland, to avoid breaking context menus)
 hl.window_rule({ match = { float = true, xwayland = false }, center = true })
 
+-- Discord (vencord/vesktop)
+hl.window_rule({ match = { title = "^(Discord)$" }, float = true })
+
 -- Silent apps in special workspaces
 hl.window_rule({ match = { class = "(?i)spotify" }, workspace = "special:music silent" })
 hl.window_rule({ match = { class = "(?i)vesktop" }, workspace = "special:communication silent" })
