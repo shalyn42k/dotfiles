@@ -43,10 +43,28 @@ apply_rig_colors() {
     [[ -n "$active" && -n "$inactive" ]] || return 0
 
     if [[ "$(hypr_provider)" == lua ]]; then
-        hyprctl eval "hl.config({ general = { col = { active_border = '$active', inactive_border = '$inactive' } } })" >/dev/null || true
+        hyprctl eval "hl.config({
+            general = { col = { active_border = '$active', inactive_border = '$inactive' } },
+            group = { col = {
+                border_active = '$active', border_inactive = '$inactive',
+                border_locked_active = '$active', border_locked_inactive = '$inactive',
+            } },
+        })" >/dev/null || true
     else
         hyprctl keyword general:col.active_border "$active" >/dev/null || true
         hyprctl keyword general:col.inactive_border "$inactive" >/dev/null || true
+        hyprctl keyword group:col.border_active "$active" >/dev/null || true
+        hyprctl keyword group:col.border_inactive "$inactive" >/dev/null || true
+        hyprctl keyword group:col.border_locked_active "$active" >/dev/null || true
+        hyprctl keyword group:col.border_locked_inactive "$inactive" >/dev/null || true
+    fi
+
+    # fastfetch: акцент рига в конфиг из шаблона (truecolor 38;2;R;G;B)
+    local tmpl="$DOTFILES/.config/fastfetch/config.jsonc.template"
+    local hex="${active#rgba(}"; hex="${hex#rgb(}"; hex="${hex%)}"; hex="${hex:0:6}"
+    if [[ -f "$tmpl" && "$hex" =~ ^[0-9a-fA-F]{6}$ ]]; then
+        local r=$((16#${hex:0:2})) g=$((16#${hex:2:2})) b=$((16#${hex:4:2}))
+        sed "s/{{ACCENT}}/38;2;$r;$g;$b/g" "$tmpl" > "$DOTFILES/.config/fastfetch/config.jsonc"
     fi
 }
 

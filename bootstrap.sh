@@ -103,6 +103,8 @@ rm -rf "$tmpd"
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 6/6 Статус =="
+# первичный рендер генерируемых конфигов (fastfetch)
+"$DOTFILES/bin/dotprofile" colors 2>/dev/null || true
 "$DOTFILES/bin/dotprofile" status
 echo
 echo "Готово. Дальше:"
