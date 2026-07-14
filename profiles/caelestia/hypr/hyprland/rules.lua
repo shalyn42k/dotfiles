@@ -14,19 +14,20 @@ hl.window_rule({ match = { class = "krita|gimp|inkscape|darktable|resolve|kdenli
 -- Center all floating windows (not xwayland, to avoid breaking context menus)
 hl.window_rule({ match = { float = true, xwayland = false }, center = true })
 
--- Discord (vencord/vesktop): float главного окна + прозрачность
+-- Discord (vencord/vesktop): float главного окна; прозрачность нативная
+-- (vesktop transparencyOption=transparent + CSS-тема), множитель Hyprland
+-- убран — он давал видимый переход при старте
 hl.window_rule({ match = { title = "^(Discord)$" }, float = true })
--- active == inactive: разные значения мигают при смене фокуса
-hl.window_rule({ match = { class = "vesktop|discord|equibop" }, opacity = "0.90 0.90" })
+hl.window_rule({ match = { class = "vesktop|discord|equibop" }, opacity = "1.0 override 1.0 override" })
 
--- Thunar и Obsidian: умеренная прозрачность (текстовые — альфу не ниже 0.85)
+-- Thunar: умеренная прозрачность
 hl.window_rule({ match = { class = "(?i)thunar" }, opacity = "0.90 0.90" })
-hl.window_rule({ match = { class = "obsidian" }, opacity = "0.90 0.90" })
 
--- Feishin и AyuGram: прозрачность (тема-синк недоступен: feishin без
--- кастомного CSS, telegram кэширует тему при импорте)
-hl.window_rule({ match = { class = "feishin" }, opacity = "0.90 0.90" })
-hl.window_rule({ match = { class = "com.ayugram.desktop" }, opacity = "0.90 0.90" })
+-- Obsidian/Feishin/AyuGram: без прозрачности Hyprland (переход при
+-- старте раздражает; override освобождает и от общего правила 0.95)
+hl.window_rule({ match = { class = "obsidian" }, opacity = "1.0 override 1.0 override" })
+hl.window_rule({ match = { class = "feishin" }, opacity = "1.0 override 1.0 override" })
+hl.window_rule({ match = { class = "com.ayugram.desktop" }, opacity = "1.0 override 1.0 override" })
 
 -- Silent apps in special workspaces
 hl.window_rule({ match = { class = "(?i)spotify" }, workspace = "special:music silent" })
