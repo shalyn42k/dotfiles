@@ -28,5 +28,8 @@ hl.animation({
     style   = "slidefadevert 15%"
 })
 hl.animation({ leaf = "fade", enabled = true, speed = 6, bezier = "standard" })
+-- fadeIn выключен: прозрачные окна иначе «доезжают» до целевой альфы
+-- пол-секунды после открытия, а нужен финальный вид с первого кадра
+hl.animation({ leaf = "fadeIn", enabled = false })
 hl.animation({ leaf = "fadeDim", enabled = true, speed = 6, bezier = "standard" })
 hl.animation({ leaf = "border", enabled = true, speed = 6, bezier = "standard" })
