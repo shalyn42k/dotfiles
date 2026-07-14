@@ -11,7 +11,6 @@ return {
     editor                     = "codium",
     fileExplorer               = "thunar",
     kbManager                  = "hyprkcs",
-    audioSettings              = "pavucontrol",
 
     -- Touchpad
     touchpadDisableTyping      = true,
@@ -49,7 +48,7 @@ return {
     inactiveWindowBorderColour = "rgba(" .. scheme.onSurfaceVariant .. "11)",
 
     -- Misc
-    volumeStep                 = 10,
+    volumeStep                 = 5,
     cursorTheme                = "volantes_cursors",
     cursorSize                 = 24,
     sleepGestureCmd            = "systemctl suspend-then-hibernate",
@@ -60,9 +59,7 @@ return {
 
     -- Workspaces
     kbMoveWinToWs              = "SUPER + SHIFT",
-    kbMoveWinToWsGroup         = "CTRL + SUPER + ALT",
     kbGoToWs                   = "SUPER",
-    kbGoToWsGroup              = "CTRL + SUPER",
 
     -- Window Group
     kbToggleGroup              = "ALT + Q",
@@ -90,8 +87,5 @@ return {
     kbFileExplorer             = "SUPER + E",
 
     -- Misc
-    kbSession                  = "CTRL + ALT + Delete",
-    kbClearNotifs              = "CTRL + ALT + C",
-    kbLock                     = "SUPER + F1",
     kbRestoreLock              = "SUPER + F1",
 }

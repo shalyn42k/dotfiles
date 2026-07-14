@@ -74,7 +74,7 @@ hl.window_rule({ match = { title = "Library" }, float = true })
 
 -- Picture in picture
 hl.window_rule({ match = { title = "Picture(-| )in(-| )[Pp]icture" }, float = true })
-hl.window_rule({ match = { title = "Picture(-| )in(-| )[Pp]icture" }, move = "100%-w-2% 100%-w-3%" })
+hl.window_rule({ match = { title = "Picture(-| )in(-| )[Pp]icture" }, move = "100%-w-2% 100%-h-3%" })
 hl.window_rule({ match = { title = "Picture(-| )in(-| )[Pp]icture" }, keep_aspect_ratio = true })
 hl.window_rule({ match = { title = "Picture(-| )in(-| )[Pp]icture" }, pin = true })
 

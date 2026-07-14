@@ -15,5 +15,8 @@ animation workspaces, 1, 5, standard
 animation specialWorkspaceIn, 1, 4, specialWorkSwitch, slidefadevert 15%
 animation specialWorkspaceOut, 1, 4, specialWorkSwitch, slidefadevert 15%
 animation fade, 1, 6, standard
+# fadeIn задаётся ПОСЛЕ fade (это его лист) — иначе наследует 600ms и
+# возвращается вспышка первого кадра электронов
+animation fadeIn, 1, 2, standard
 animation fadeDim, 1, 6, standard
 animation border, 1, 6, standard

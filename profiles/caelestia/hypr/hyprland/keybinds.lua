@@ -70,7 +70,7 @@ hl.bind(vars.kbFileExplorer, hl.dsp.exec_cmd("app2unit -- " .. vars.fileExplorer
 -- Utilities & tools
 hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd(rigdo .. "screenshot"))             -- Screenshot region (freeze)
 hl.bind("ALT + SHIFT + R", hl.dsp.exec_cmd("caelestia record -s"))               -- Record + sound
-hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("caelestia record"))                   -- Record    -- Record region          -- Pause/resume recording                 -- Colour picker
+hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("caelestia record"))                 -- Record
 hl.bind("SUPER + O",         hl.dsp.exec_cmd("caelestia resizer pip"))            -- Picture-in-Picture
 hl.bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("caelestia scheme set -r"))         -- Random colour scheme
 hl.bind("SUPER + ALT + N",                                                        -- Toggle dark/light theme
@@ -81,9 +81,11 @@ hl.bind("SUPER + ALT + N",                                                      
 hl.bind("SUPER + grave", hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard"))
 
 -- Hardware keys (TUF laptop)
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"),
+hl.bind("XF86AudioRaiseVolume",
+    hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ " .. vars.volumeStep .. "%+"),
     { repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
+hl.bind("XF86AudioLowerVolume",
+    hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ " .. vars.volumeStep .. "%-"),
     { repeating = true })
 hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
 
@@ -140,9 +142,11 @@ hl.define_submap("gamemode", function()
         hl.dispatch(hl.dsp.exec_cmd("notify-send -u low 'GAMEMODE' 'OFF'"))
         hl.dispatch(hl.dsp.submap("reset"))
     end)
-    hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"),
+    hl.bind("XF86AudioRaiseVolume",
+        hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ " .. vars.volumeStep .. "%+"),
         { repeating = true })
-    hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
+    hl.bind("XF86AudioLowerVolume",
+        hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ " .. vars.volumeStep .. "%-"),
         { repeating = true })
     hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
     hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
