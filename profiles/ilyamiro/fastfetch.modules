@@ -1,0 +1,10 @@
+        {
+            "type": "media",
+            "key": "󰂪 media",
+            "keyColor": "{{ACCENT}}"
+        },
+        {
+            "type": "battery",
+            "key": "󰁹 bat  ",
+            "keyColor": "{{ACCENT}}"
+        },
