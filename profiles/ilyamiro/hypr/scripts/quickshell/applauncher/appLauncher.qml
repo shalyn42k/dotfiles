@@ -146,7 +146,10 @@ Item {
     }
 
     function launchApp(execStr) {
-        Quickshell.execDetached(["hyprctl", "dispatch", "exec", "--", execStr]);
+        // hypr-exec: `hyprctl dispatch exec` breaks under the lua config
+        // provider (hot-switch from caelestia) — the helper picks the right
+        // dispatcher for the running engine.
+        Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/bin/hypr-exec", execStr]);
         Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "close"]);
     }
 

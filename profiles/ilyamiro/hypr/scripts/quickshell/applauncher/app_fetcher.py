@@ -52,6 +52,23 @@ def fetch_apps():
             except Exception:
                 pass
                 
+    # Icon names that exist only in /usr/share/pixmaps are invisible to
+    # QIcon::fromTheme (image://icon/ in QML) — resolve them to absolute
+    # paths, which the QML side already handles via file://.
+    theme_icons = set()
+    for base in ('/usr/share/icons', f'{home}/.local/share/icons', f'{home}/.icons'):
+        for root, _, files in os.walk(base):
+            for fn in files:
+                theme_icons.add(os.path.splitext(fn)[0])
+    for app in apps.values():
+        icon = app['icon']
+        if icon and not icon.startswith('/') and icon not in theme_icons:
+            for ext in ('svg', 'png', 'xpm'):
+                p = f'/usr/share/pixmaps/{icon}.{ext}'
+                if os.path.exists(p):
+                    app['icon'] = p
+                    break
+
     # Sort alphabetically and return as JSON
     res = list(apps.values())
     res.sort(key=lambda x: x['name'].lower())
