@@ -1,0 +1,9 @@
+[Unit]
+Description=Fade keyboard backlight to the active rig's wallpaper colour
+# A wallpaper change rewrites several watched files in a burst; the default
+# start limit would trip and wedge the unit.
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/kbd-theme-sync

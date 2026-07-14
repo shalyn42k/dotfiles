@@ -1,0 +1,6 @@
+[Unit]
+Description=Strip broken fade-in animation from caelestia thunar.css
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/thunar-css-fix

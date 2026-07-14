@@ -9,7 +9,7 @@ DOTFILES="$HOME/dotfiles"
 cd "$DOTFILES"
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 1/6 Пакеты =="
+echo "== 1/7 Пакеты =="
 # ВАЖНО: hyprland нужен с lua config provider (0.55+; сборка CachyOS или git) —
 # профиль caelestia использует hyprland.lua.
 PKGS=(
@@ -33,6 +33,9 @@ PKGS=(
     ttf-jetbrains-mono-nerd
     # утилиты скриптов
     jq inotify-tools luajit imagemagick curl
+    # kbd-theme-sync: PIL читает обои, asusctl красит подсветку (только ASUS —
+    # на другом железе скрипт молча ничего не делает)
+    python-pillow asusctl
     # кастомное
     hyprkcs-git
 )
@@ -53,7 +56,7 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 2/6 Caelestia shell =="
+echo "== 2/7 Caelestia shell =="
 if [[ -d /etc/xdg/quickshell/caelestia || -d "$HOME/.config/quickshell/caelestia" ]]; then
     echo "caelestia shell найден"
 else
@@ -64,7 +67,7 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 3/6 Симлинки профилей =="
+echo "== 3/7 Симлинки профилей =="
 [[ -L "$DOTFILES/profiles/active" ]] || ln -sfn caelestia "$DOTFILES/profiles/active"
 for d in hypr gtk-3.0 gtk-4.0 qt5ct qt6ct; do
     if [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]]; then
@@ -82,7 +85,7 @@ for d in caelestia fish foot fastfetch; do
 done
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 4/6 Каталоги =="
+echo "== 4/7 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
 xdg-user-dirs-update 2>/dev/null || true
 
@@ -106,7 +109,23 @@ MEOF
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 5/6 SDDM-сессии =="
+echo "== 5/7 Скрипты и systemd-юниты =="
+# Скрипты живут в репо; ~/.local/bin — симлинки на них, потому что юниты и
+# session.sh зовут их по %h/.local/bin/<имя>.
+mkdir -p "$HOME/.local/bin" "$HOME/.config/systemd/user"
+for s in kbd-theme-sync thunar-css-fix; do
+    ln -sfn "$DOTFILES/bin/$s" "$HOME/.local/bin/$s"
+done
+# kbd-theme-sync.path  — подсветка клавиатуры за цветом обоев активного рига
+# thunar-css-fix.path  — откатывает thunar.css, который caelestia CLI
+#                        перерендеривает на каждой смене схемы (upstream PR #122)
+cp "$DOTFILES"/.config/systemd/user/*.{service,path} "$HOME/.config/systemd/user/"
+systemctl --user daemon-reload 2>/dev/null || true
+systemctl --user enable --now kbd-theme-sync.path thunar-css-fix.path 2>/dev/null \
+    || echo ">>> нет systemd --user сессии — юниты включатся после relogin"
+
+# ─────────────────────────────────────────────────────────────────────────
+echo "== 6/7 SDDM-сессии =="
 # В репо Exec захардкожен на /home/shalyn42k — подставляем текущий $HOME.
 tmpd="$(mktemp -d)"
 for f in "$DOTFILES"/sddm/hyprland-*.desktop; do
@@ -121,7 +140,7 @@ fi
 rm -rf "$tmpd"
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 6/6 Статус =="
+echo "== 7/7 Статус =="
 # первичный рендер генерируемых конфигов (fastfetch)
 "$DOTFILES/bin/dotprofile" colors 2>/dev/null || true
 "$DOTFILES/bin/dotprofile" status

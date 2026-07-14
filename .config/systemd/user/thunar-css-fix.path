@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch caelestia-rendered thunar.css for regeneration
+
+[Path]
+PathChanged=%h/.config/gtk-3.0/thunar.css
+PathChanged=%h/.config/gtk-4.0/thunar.css
+
+[Install]
+WantedBy=default.target

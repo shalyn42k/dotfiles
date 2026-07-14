@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""Sync ASUS TUF keyboard backlight with the active rig's wallpaper.
+
+The colour is the wallpaper's dominant hue, saturation-boosted so the
+keyboard visibly matches the wallpaper (red walls -> red keys). Mostly
+achromatic wallpapers map to a grey of matching brightness (black walls
+-> dim keys, white walls -> white keys). If the wallpaper can't be read,
+falls back to the rig's material-scheme primary as before.
+
+Rig detection: caelestia (qs -c caelestia) or ilyamiro (quickshell -p
+.../hypr/scripts/quickshell/Shell.qml); falls back to whichever colour
+file changed last. The target colour fades in over FADE_SECONDS instead
+of snapping. A newer invocation kills a fade already in progress and
+takes over from the colour it reached.
+
+Triggered by kbd-theme-sync{,-ilyamiro}.path on colour-file changes and
+by each rig's session.sh on login/rig switch.
+"""
+
+import colorsys
+import json
+import os
+import re
+import signal
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+HOME = Path.home()
+CAELESTIA = HOME / ".local/state/caelestia/scheme.json"
+ILYAMIRO = HOME / ".config/hypr/scripts/quickshell/qs_colors.json"
+CAELESTIA_WALL = HOME / ".local/state/caelestia/wallpaper/path.txt"
+ILYAMIRO_WALL = HOME / ".local/state/quickshell/wallpaper_picker/last_wallpaper"
+ILYAMIRO_WALL_FRAME = HOME / ".cache/quickshell/wallpaper_picker/current_wallpaper.png"
+STATE_DIR = HOME / ".local/state/kbd-theme-sync"
+CURRENT = STATE_DIR / "current"   # last colour actually sent to the keyboard
+PIDFILE = STATE_DIR / "pid"
+
+FADE_SECONDS = 3.0
+STEPS = 20
+HEX_RE = re.compile(r"^[0-9a-fA-F]{6}$")
+
+CHASE_LIMIT = 5       # max fades per run while chasing a moving target
+SAMPLE_SIZE = 128     # wallpaper is downscaled to fit this box before analysis
+HUE_BINS = 36         # 10-degree hue histogram buckets
+CHROMA_CUTOFF = 0.05  # mean s*v below this = wallpaper is effectively greyscale
+GREY_FLOOR = 0.06     # keep a faint glow even on pitch-black wallpapers
+
+
+def detect_rig() -> str:
+    # Match the shell binary by exact name, then inspect its argv; a full
+    # cmdline pgrep -f would false-positive on any process whose command
+    # line merely mentions these strings.
+    out = subprocess.run(["pgrep", "-x", "qs|quickshell"],
+                         capture_output=True, text=True).stdout
+    for pid in out.split():
+        try:
+            argv = Path(f"/proc/{pid}/cmdline").read_bytes() \
+                .decode(errors="replace").split("\0")
+        except OSError:
+            continue
+        for flag, value in zip(argv, argv[1:]):
+            if flag == "-c" and value == "caelestia":
+                return "caelestia"
+            if flag == "-p" and "hypr/scripts/quickshell" in value:
+                return "ilyamiro"
+    # No shell running (early login) — newest colour file wins.
+    c = CAELESTIA.stat().st_mtime if CAELESTIA.exists() else 0
+    i = ILYAMIRO.stat().st_mtime if ILYAMIRO.exists() else 0
+    return "caelestia" if c >= i else "ilyamiro"
+
+
+def wallpaper_path(rig: str) -> Path | None:
+    try:
+        if rig == "caelestia":
+            wall = Path(CAELESTIA_WALL.read_text().strip())
+        else:
+            kind, path, _ = ILYAMIRO_WALL.read_text().strip().split("|", 2)
+            # Video wallpapers can't be decoded here; the picker keeps a
+            # still frame of whatever is current.
+            wall = Path(path) if kind == "img" else ILYAMIRO_WALL_FRAME
+    except (OSError, ValueError):
+        return None
+    return wall if wall.is_file() else None
+
+
+def dominant_colour(wall: Path) -> str | None:
+    try:
+        from PIL import Image
+        img = Image.open(wall)
+        img.draft("RGB", (SAMPLE_SIZE, SAMPLE_SIZE))
+        img = img.convert("RGB")
+        img.thumbnail((SAMPLE_SIZE, SAMPLE_SIZE))
+        raw = img.tobytes()
+        pixels = list(zip(raw[0::3], raw[1::3], raw[2::3]))
+    except Exception:
+        return None
+    if not pixels:
+        return None
+
+    weight = [0.0] * HUE_BINS   # chroma mass per hue bucket
+    sat = [0.0] * HUE_BINS
+    val = [0.0] * HUE_BINS
+    v_total = w_total = 0.0
+    for r, g, b in pixels:
+        h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        v_total += v
+        w = s * v
+        w_total += w
+        i = int(h * HUE_BINS) % HUE_BINS
+        weight[i] += w
+        sat[i] += s * w
+        val[i] += v * w
+
+    if w_total / len(pixels) < CHROMA_CUTOFF:
+        grey = round(max(GREY_FLOOR, v_total / len(pixels)) * 255)
+        return f"{grey:02x}" * 3
+
+    best = max(range(HUE_BINS),
+               key=lambda i: weight[(i - 1) % HUE_BINS] + weight[i]
+               + weight[(i + 1) % HUE_BINS])
+    idxs = [(best - 1) % HUE_BINS, best, (best + 1) % HUE_BINS]
+    w = sum(weight[i] for i in idxs)
+    s = sum(sat[i] for i in idxs) / w
+    v = sum(val[i] for i in idxs) / w
+    hue = 0.0
+    for i in idxs:
+        offset = ((i - best + HUE_BINS // 2) % HUE_BINS) - HUE_BINS // 2
+        hue += (best + offset + 0.5) * weight[i]
+    hue = (hue / w / HUE_BINS) % 1.0
+
+    # Push towards vivid so the theme reads clearly on the LEDs.
+    s = min(1.0, max(0.65, s * 1.35))
+    v = min(1.0, max(0.30, v * 1.25))
+    r, g, b = colorsys.hsv_to_rgb(hue, s, v)
+    return "".join(f"{round(c * 255):02x}" for c in (r, g, b))
+
+
+def scheme_colour(rig: str) -> str | None:
+    try:
+        if rig == "caelestia":
+            col = json.loads(CAELESTIA.read_text())["colours"]["primary"]
+        else:
+            col = json.loads(ILYAMIRO.read_text())["blue"]
+    except (OSError, KeyError, ValueError):
+        return None
+    col = col.lstrip("#")
+    return col if HEX_RE.match(col) else None
+
+
+def target_colour(rig: str) -> str | None:
+    wall = wallpaper_path(rig)
+    if wall is not None:
+        col = dominant_colour(wall)
+        if col is not None:
+            return col
+    return scheme_colour(rig)
+
+
+def take_over() -> None:
+    """Kill a fade in progress, register ourselves."""
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        old = int(PIDFILE.read_text())
+        if old != os.getpid():
+            os.kill(old, signal.SIGTERM)
+            time.sleep(0.05)
+    except (OSError, ValueError):
+        pass
+    PIDFILE.write_text(str(os.getpid()))
+
+
+def to_linear(hexcol: str) -> list[float]:
+    return [(int(hexcol[i:i + 2], 16) / 255) ** 2.2 for i in (0, 2, 4)]
+
+
+def to_hex(linear: list[float]) -> str:
+    return "".join(f"{round(max(0.0, min(1.0, c)) ** (1 / 2.2) * 255):02x}"
+                   for c in linear)
+
+
+def apply(hexcol: str) -> None:
+    subprocess.run(["asusctl", "aura", "effect", "static", "-c", hexcol],
+                   capture_output=True)
+    CURRENT.write_text(hexcol)
+
+
+def fade_to(target: str) -> None:
+    start = None
+    try:
+        cur = CURRENT.read_text().strip()
+        if HEX_RE.match(cur):
+            start = cur.lower()
+    except OSError:
+        pass
+
+    if start is None or start == target:
+        apply(target)
+        return
+
+    a, b = to_linear(start), to_linear(target)
+    pause = FADE_SECONDS / STEPS
+    for step in range(1, STEPS + 1):
+        t = step / STEPS
+        apply(to_hex([x + (y - x) * t for x, y in zip(a, b)]))
+        if step < STEPS:
+            time.sleep(pause)
+
+
+def main() -> int:
+    take_over()
+
+    # systemd's .path unit stops watching while this service is active, so
+    # a wallpaper change landing mid-fade fires no new trigger. Re-read the
+    # target after each fade and chase it until it settles.
+    for _ in range(CHASE_LIMIT):
+        rig = detect_rig()
+        target = target_colour(rig)
+        if target is None:
+            return 0
+        target = target.lower()
+        if CURRENT.exists() and CURRENT.read_text().strip().lower() == target:
+            return 0
+        fade_to(target)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

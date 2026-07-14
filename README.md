@@ -58,8 +58,12 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 | `bin/dotprofile` | Ядро: переключение ригов (симлинк `profiles/active`), рендер цветов/тем, снапшоты после чужих installer'ов |
 | `bin/rigdo` | Диспетчер действий по активному ригу: один бинд — разные команды (launcher, screenshot, lock…) |
 | `bin/hypr-exec` | Запуск команд через Hyprland независимо от конфиг-движка (`dispatch exec` сломан под lua) |
+| `bin/kbd-theme-sync` | Подсветка клавиатуры (ASUS TUF) плавно уезжает в доминирующий цвет обоев активного рига |
+| `bin/thunar-css-fix` | Возвращает канон `thunar.css` поверх рендера caelestia CLI (тот вшивает свои hex и ломающий панели fade-in) |
 | `profiles/<rig>/` | Полный снапшот рига: hypr, gtk, qt5ct/qt6ct, `session.sh` (старт/стоп шелла), `role`, `fastfetch.modules` |
 | `.config/hypr-shared/` | Общие бинды и порт-конфиги, сорсятся обоими ригами |
+| `.config/gtk-shared/thunar.css` | Канон темы Thunar: один на оба рига (цвета из `@define-color` активного `gtk.css`, без hex) |
+| `.config/systemd/user/` | `*.path`-юниты: следят за обоями/схемами (kbd) и за перерендером `thunar.css` |
 | `.config/{fish,foot,fastfetch,caelestia}/` | Не-контестируемые конфиги — общие для всех ригов |
 | Тем-пайплайн | Рамки, Discord, Obsidian, fastfetch следуют акценту активного рига |
 
@@ -70,6 +74,8 @@ bin/
   dotprofile   переключатель ригов (switch/menu/status/update/colors)
   rigdo        риг-зависимый диспетчер действий (лаунчер, скриншот, лок...)
   hypr-exec    запуск команды через Hyprland независимо от конфиг-движка
+  kbd-theme-sync  подсветка клавиатуры за цветом обоев (bootstrap линкует
+  thunar-css-fix  их в ~/.local/bin — юниты зовут по этому пути)
 profiles/
   active -> caelestia|ilyamiro   симлинк активного рига
   caelestia/   снапшот рига: hypr, gtk-3.0/4.0, qt5ct/qt6ct + session.sh
@@ -78,6 +84,9 @@ profiles/
                + role (daily) + fastfetch.modules (media, battery)
 .config/
   hypr-shared/ общие бинды + порт-конфиги для ilyamiro (binds/rules/settings)
+  gtk-shared/  канон thunar.css (копии в профилях — цель записи caelestia CLI,
+               path-юнит откатывает их к канону; симлинками делать нельзя)
+  systemd/user/  path-юниты: kbd-theme-sync, thunar-css-fix
   caelestia/ fish/ foot/ fastfetch/   не-контестируемые конфиги (общие)
 sddm/          .desktop-файлы двух wayland-сессий
 docs/specs/    спеки на фичи
