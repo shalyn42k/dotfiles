@@ -1,0 +1,11 @@
+[Unit]
+Description=Watch rig wallpapers and colour schemes for keyboard backlight sync
+
+[Path]
+PathChanged=%h/.local/state/caelestia/wallpaper/path.txt
+PathChanged=%h/.local/state/quickshell/wallpaper_picker/last_wallpaper
+PathChanged=%h/.local/state/caelestia/scheme.json
+PathChanged=%h/.config/hypr/scripts/quickshell/qs_colors.json
+
+[Install]
+WantedBy=default.target

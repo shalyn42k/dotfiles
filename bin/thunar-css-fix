@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Восстановить каноничный thunar.css поверх версии, которую рендерит caelestia.
+#
+# caelestia CLI (utils/theme.py: apply_gtk) на каждой смене схемы пишет
+# ~/.config/gtk-{3,4}.0/thunar.css из своего шаблона. Этот рендер:
+#   1) вшивает hex активной схемы — на риге ilyamiro палитра берётся из
+#      matugen, и вшитые caelestia-цвета с ней расходятся;
+#   2) содержит fade-in, из-за которого панели Thunar остаются с opacity:0
+#      на нативном Wayland GTK3 (upstream caelestia-cli PR #122).
+# Канон в dotfiles обе проблемы снимает: цвета берутся из @define-color,
+# которые объявляет gtk.css активного рига, анимации нет.
+#
+# ~/.config/gtk-{3,4}.0 — симлинки в profiles/active/, поэтому запись сюда
+# попадает в профиль активного рига; канон один на оба рига, т.к. в нём нет
+# hex. Правки вносить в CANON, а не в ~/.config — иначе path-юнит откатит.
+#
+# Триггерится thunar-css-fix.path по PathChanged. cmp-guard: пишем только при
+# расхождении, иначе запись сама себя перевызовет по циклу.
+set -euo pipefail
+
+CANON="$HOME/dotfiles/.config/gtk-shared/thunar.css"
+[[ -r $CANON ]] || exit 0
+
+for f in "$HOME/.config/gtk-3.0/thunar.css" "$HOME/.config/gtk-4.0/thunar.css"; do
+    [[ -w $f ]] || continue
+    cmp -s "$CANON" "$f" || cp "$CANON" "$f"
+done
