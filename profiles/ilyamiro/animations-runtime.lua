@@ -11,9 +11,9 @@ hl.animation({ leaf = "layersIn",            enabled = true, speed = 5, bezier =
 hl.animation({ leaf = "layersOut",           enabled = true, speed = 5, bezier = "myBezier", style = "fade" })
 hl.animation({ leaf = "fadeLayers",          enabled = true, speed = 5, bezier = "myBezier" })
 hl.animation({ leaf = "fade",                enabled = true, speed = 5, bezier = "myBezier" })
--- fadeIn выключен: прозрачные окна иначе «доезжают» до целевой альфы
--- пол-секунды после открытия, а нужен финальный вид с первого кадра
-hl.animation({ leaf = "fadeIn",              enabled = false })
+-- fadeIn быстрый (200ms): маскирует первый кадр электронов (сплошной фон
+-- до загрузки CSS-темы), не затягивая «доезд» прозрачности
+hl.animation({ leaf = "fadeIn",              enabled = true, speed = 2, bezier = "myBezier" })
 hl.animation({ leaf = "fadeDim",             enabled = true, speed = 5, bezier = "myBezier" })
 hl.animation({ leaf = "border",              enabled = true, speed = 5, bezier = "myBezier" })
 hl.animation({ leaf = "workspaces",          enabled = true, speed = 5, bezier = "myBezier", style = "slide" })

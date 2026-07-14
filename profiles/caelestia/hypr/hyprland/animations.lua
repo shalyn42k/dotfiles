@@ -28,8 +28,9 @@ hl.animation({
     style   = "slidefadevert 15%"
 })
 hl.animation({ leaf = "fade", enabled = true, speed = 6, bezier = "standard" })
--- fadeIn выключен: прозрачные окна иначе «доезжают» до целевой альфы
--- пол-секунды после открытия, а нужен финальный вид с первого кадра
-hl.animation({ leaf = "fadeIn", enabled = false })
+-- fadeIn быстрый (200ms вместо унаследованных ~600): маскирует первый
+-- кадр электронов (сплошной фон до загрузки CSS-темы), но не тянет
+-- «доезд» прозрачности как раньше
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 2, bezier = "standard" })
 hl.animation({ leaf = "fadeDim", enabled = true, speed = 6, bezier = "standard" })
 hl.animation({ leaf = "border", enabled = true, speed = 6, bezier = "standard" })
