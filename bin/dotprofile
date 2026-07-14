@@ -94,6 +94,17 @@ apply_rig_colors() {
         mkdir -p "$vault/.obsidian/snippets"
         cp "$osrc" "$vault/.obsidian/snippets/rig-theme.css"
     fi
+
+    # Запущенные GTK-приложения (Thunar и пр.) не перечитывают gtk.css сами —
+    # форсим перепарс каскада переключением темы туда-обратно (краткий блик
+    # Adwaita, зато цвета применяются без рестарта приложений).
+    local gtheme
+    gtheme="$(awk -F= '/^gtk-theme-name/{print $2}' "$PROFILES/$name/gtk-3.0/settings.ini" 2>/dev/null)"
+    if [[ -n "$gtheme" ]] && command -v gsettings >/dev/null; then
+        gsettings set org.gnome.desktop.interface gtk-theme Adwaita 2>/dev/null || true
+        sleep 0.2
+        gsettings set org.gnome.desktop.interface gtk-theme "$gtheme" 2>/dev/null || true
+    fi
 }
 
 hypr_provider() {
