@@ -8,6 +8,8 @@ animation layersIn, 1, 5, myBezier, fade
 animation layersOut, 1, 5, myBezier, fade
 animation fadeLayers, 1, 5, myBezier
 animation fade, 1, 5, myBezier
+# fadeIn выключен: прозрачные окна иначе «доезжают» до целевой альфы после открытия
+animation fadeIn, 0
 animation fadeDim, 1, 5, myBezier
 animation border, 1, 5, myBezier
 animation workspaces, 1, 5, myBezier, slide
