@@ -4,6 +4,7 @@ set -u
 case "${1:-}" in
     start)
         qs -c caelestia -d
+        "$HOME/.local/bin/kbd-theme-sync" &
         ;;
     stop)
         qs -c caelestia kill 2>/dev/null || true

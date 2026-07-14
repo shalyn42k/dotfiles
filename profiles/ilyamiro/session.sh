@@ -11,6 +11,7 @@ case "${1:-}" in
         "$HOME/.config/hypr/scripts/settings_watcher.sh" &
         "$HOME/.config/hypr/scripts/volume_listener.sh" &
         "$HOME/.config/hypr/scripts/init.sh" &
+        "$HOME/.local/bin/kbd-theme-sync" &
         ;;
     stop)
         pkill -f 'quickshell -p .*hypr/scripts/quickshell' 2>/dev/null || true
