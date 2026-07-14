@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# hypr-exec — запуск команды через Hyprland независимо от конфиг-движка.
+# Под hyprlang: `dispatch exec`, под lua-провайдером он падает — там нужен
+# hl.dsp.exec_cmd(). Используется quickshell-лаунчером ilyamiro (и любым
+# скриптом, который может работать после горячего свитча ригов).
+set -u
+[[ $# -gt 0 ]] || { echo "usage: hypr-exec <command...>" >&2; exit 1; }
+cmd="$*"
+
+provider="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
+if [[ "$provider" == lua ]]; then
+    esc="${cmd//\\/\\\\}"
+    esc="${esc//\"/\\\"}"
+    hyprctl dispatch "hl.dsp.exec_cmd(\"$esc\")"
+else
+    hyprctl dispatch exec -- "$cmd"
+fi

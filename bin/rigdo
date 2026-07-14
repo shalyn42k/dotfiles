@@ -53,8 +53,9 @@ case "${1:-}" in
         if [[ "$ACTIVE" == ilyamiro ]]; then
             pkill -f 'quickshell -p .*hypr/scripts/quickshell/Shell.qml'
             sleep 0.5
-            hyprctl dispatch exec "quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml" 2>/dev/null \
-                || hyprctl dispatch "hl.dsp.exec_cmd(\"quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml\")"
+            # hyprctl возвращает 0 даже при ошибке диспатча, поэтому
+            # `|| fallback` не работал — hypr-exec сам выбирает движок.
+            "$HOME/dotfiles/bin/hypr-exec" "quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml"
         else
             qs -c caelestia kill; qs -c caelestia -d
         fi ;;
