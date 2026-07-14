@@ -1,0 +1,6 @@
+        {
+            "type": "command",
+            "key": "󰃰 date ",
+            "keyColor": "{{ACCENT}}",
+            "text": "date '+%a %d %b · %H:%M'"
+        },

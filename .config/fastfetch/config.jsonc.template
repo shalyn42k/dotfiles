@@ -3,89 +3,94 @@
     "logo": null,
     "display": {
         "separator": "  ",
-        "color": "{{ACCENT}}",
-        "constants": ["\u001b[37m", "\u001b[38;5;16m", "\u001b[38;5;17m", "\u001b[38;5;18m"],
+        "color": "{{ACCENT}}"
     },
     "modules": [
         "break",
         {
             "type": "custom",
-            "format": "     ┌──────────Hardware──────────┐",
+            "format": "    ███████╗██╗  ██╗ █████╗ ██╗     ██╗   ██╗███╗   ██╗██╗  ██╗██████╗ ██╗  ██╗",
             "outputColor": "{{ACCENT}}"
         },
         {
-            "type": "host",
-            "key": " Host",
-            "keyColor": "{{ACCENT}}"
+            "type": "custom",
+            "format": "    ██╔════╝██║  ██║██╔══██╗██║     ╚██╗ ██╔╝████╗  ██║██║  ██║╚════██╗██║ ██╔╝",
+            "outputColor": "{{ACCENT}}"
+        },
+        {
+            "type": "custom",
+            "format": "    ███████╗███████║███████║██║      ╚████╔╝ ██╔██╗ ██║███████║ █████╔╝█████╔╝ ",
+            "outputColor": "{{ACCENT}}"
+        },
+        {
+            "type": "custom",
+            "format": "    ╚════██║██╔══██║██╔══██║██║       ╚██╔╝  ██║╚██╗██║╚════██║██╔═══╝ ██╔═██╗ ",
+            "outputColor": "{{ACCENT}}"
+        },
+        {
+            "type": "custom",
+            "format": "    ███████║██║  ██║██║  ██║███████╗   ██║   ██║ ╚████║     ██║███████╗██║  ██╗",
+            "outputColor": "{{ACCENT}}"
+        },
+        {
+            "type": "custom",
+            "format": "    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝     ╚═╝╚══════╝╚═╝  ╚═╝",
+            "outputColor": "{{ACCENT}}"
+        },
+        "break",
+        {
+            "type": "command",
+            "key": "󰜗 rig  ",
+            "keyColor": "{{ACCENT}}",
+            "text": "n=$(basename $(readlink -f ~/dotfiles/profiles/active)); r=$(cat ~/dotfiles/profiles/$n/role 2>/dev/null); echo \"$n${r:+ · $r}\""
         },
         {
             "type": "command",
-            "key": "└─  User",
+            "key": " os   ",
             "keyColor": "{{ACCENT}}",
-            "text": "echo $USER"
+            "text": ". /etc/os-release; echo \"$PRETTY_NAME · $(uname -r)\""
+        },
+        {
+            "type": "command",
+            "key": "󰊠 wm   ",
+            "keyColor": "{{ACCENT}}",
+            "text": "echo \"$XDG_CURRENT_DESKTOP · $(basename $(getent passwd $USER | cut -d: -f7))\""
         },
         {
             "type": "cpu",
-            "key": "├─  CPU",
+            "key": "󰍛 cpu  ",
             "keyColor": "{{ACCENT}}"
         },
         {
             "type": "gpu",
-            "key": "├─  GPU",
-            "keyColor": "{{ACCENT}}"
+            "key": "󰢮 gpu  ",
+            "keyColor": "{{ACCENT}}",
+            "hideType": "integrated"
         },
         {
             "type": "memory",
-            "key": "├─  RAM",
+            "key": "󰑭 ram  ",
             "keyColor": "{{ACCENT}}"
         },
         {
             "type": "disk",
-            "key": "└─  Disk",
-            "keyColor": "{{ACCENT}}"
-        },
-        "break",
-        {
-            "type": "custom",
-            "format": "     ┌──────────Software──────────┐",
-            "outputColor": "red"
+            "key": "󰋊 root ",
+            "keyColor": "{{ACCENT}}",
+            "folders": "/"
         },
         {
-            "type": "os",
-            "key": " OS",
-            "keyColor": "red"
-        },
-        {
-            "type": "kernel",
-            "key": "├─  Kernel",
-            "keyColor": "red"
-        },
-        {
-            "type": "packages",
-            "key": "├─  Pkgs",
-            "keyColor": "red"
-        },
-        {
-            "type": "shell",
-            "key": "├─  Shell",
-            "keyColor": "red"
-        },
-        {
-            "type": "wm",
-            "key": "├─  WM",
-            "keyColor": "red"
+            "type": "disk",
+            "key": "󰋊 data ",
+            "keyColor": "{{ACCENT}}",
+            "folders": "/mnt/data"
         },
         {
             "type": "command",
-            "key": "├─  Dots",
-            "keyColor": "red",
-            "text": "echo 'caelestia dots'"
-        },        
-        {
-            "type": "uptime",
-            "key": "└─  Uptime",
-            "keyColor": "red"
+            "key": "󰏗 pkgs ",
+            "keyColor": "{{ACCENT}}",
+            "text": "echo \"$(pacman -Qq | wc -l) pkgs · up $(uptime -p | sed 's/^up //')\""
         },
+{{RIG_MODULES}}
         "break",
         {
             "type": "colors",

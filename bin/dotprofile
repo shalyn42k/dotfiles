@@ -64,7 +64,12 @@ apply_rig_colors() {
     local hex="${active#rgba(}"; hex="${hex#rgb(}"; hex="${hex%)}"; hex="${hex:0:6}"
     if [[ -f "$tmpl" && "$hex" =~ ^[0-9a-fA-F]{6}$ ]]; then
         local r=$((16#${hex:0:2})) g=$((16#${hex:2:2})) b=$((16#${hex:4:2}))
-        sed "s/{{ACCENT}}/38;2;$r;$g;$b/g" "$tmpl" > "$DOTFILES/.config/fastfetch/config.jsonc"
+        # два прохода: сниппет рига вставляется первым (текст из r-файла не
+        # проходит через s-команды того же sed), акцент красит и сниппет
+        sed -e "/{{RIG_MODULES}}/r $PROFILES/$name/fastfetch.modules" \
+            -e "/{{RIG_MODULES}}/d" "$tmpl" \
+            | sed "s/{{ACCENT}}/38;2;$r;$g;$b/g" \
+            > "$DOTFILES/.config/fastfetch/config.jsonc"
     fi
 
     # Vencord-тема Discord (rig.theme.css в vesktop/equibop): контент по ригу.
