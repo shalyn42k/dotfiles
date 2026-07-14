@@ -1,8 +1,12 @@
 local vars = require("variables")
 local fn   = require("hyprland.functions")
 local home = os.getenv("HOME")
-local wsaction     = home .. "/.config/hypr/scripts/wsaction.fish"
-local specialcycle = home .. "/.config/hypr/scripts/specialcycle.fish"
+-- Absolute profile paths: ~/.config/hypr is the ACTIVE rig's symlink — after
+-- a hot switch to ilyamiro these scripts vanish from there and the binds
+-- silently break.
+local cscripts     = home .. "/dotfiles/profiles/caelestia/hypr/scripts"
+local wsaction     = cscripts .. "/wsaction.fish"
+local specialcycle = cscripts .. "/specialcycle.fish"
 
 -- Shell & Caelestia actions (риг-зависимые — через rigdo, чтобы работали
 -- и после горячего свитча на ilyamiro)
