@@ -227,6 +227,38 @@ WARN: quickshell.hyprland.ipc: Got openwindow ...  ← Hyprland-IPC работа
   авто-сорсом → custom переживает апдейты нативно (как caelestia, у него тоже
   нет post-update). Восстанавливать нечего.
 
+### Task 5 — порт биндов: ВХОДЫ СОБРАНЫ (готово к написанию)
+
+**hl-API (hyprkcs-git, стаб `/usr/share/hypr/stubs/hl.meta.lua`):**
+- `hl.bind(keys, disp, opts) -> HL.Keybind`. `hl.unbind(...)` ЕСТЬ (top-level,
+  L814). `HL.Keybind` имеет `:remove()/:unbind()` (L615-619).
+- Арг-форма unbind в стабе размыта (`...`); инференс: `hl.unbind("SUPER + Tab")`
+  (строка комбо, как в bind). **ПОДТВЕРДИТЬ nested-тестом (hyprctl binds) —**
+  ре-бинд в hyprkcs вероятно СТЕКАЕТСЯ, unbind дефолтов обязателен.
+- Диспатчеры (из caelestia-эталона): `hl.dsp.exec_cmd`, `hl.dsp.global`,
+  `hl.dsp.window.{fullscreen{mode=},float,pin,close,drag,resize,move{direction=}}`,
+  `hl.dsp.focus({workspace=|direction=})`, `hl.dsp.workspace.toggle_special(name)`.
+
+**Эталон порта:** `profiles/caelestia/hypr/hyprland/keybinds.lua` (та же hl-API,
+абсолютные пути к scripts, wsaction.fish-цикл, специалы через pgrep+toggle_special).
+
+**ii-дефолты под UNBIND (конфликт с §2, из `hyprland/keybinds.lua`):**
+SUPER+Tab(overview), SUPER+V(clipboard), SUPER+Period(emoji), SUPER+A/B/O/N
+(сайдбары), SUPER+Slash(cheatsheet), SUPER+K(osk), SUPER+M(media), SUPER+G(overlay),
+SUPER+J(bar), SUPER+SUPER_L/R(search), CTRL+ALT+Delete(session), брайтнес/audio
+(если наш OSD), + мышь SUPER+mouse:273/274. Полный список — сверить перед портом.
+
+**Порт §2 (что писать в custom/keybinds.lua):**
+- §2.1 rigdo: `hl.bind("<combo>", hl.dsp.exec_cmd(rigdo.."<action>"))` — 14 биндов.
+  wsaction/специалы — скопировать `wsaction.fish` в `profiles/end4/hypr/scripts/`.
+- §2.2 окна: fullscreen/float/pin/close/focus IJKL/move/resize — как caelestia.
+- §2.3 воркспейсы: focus{workspace±1}, цикл 1..10 через wsaction, специалы Z/X/C/V/S.
+- §2.4 apps: TAB=foot, W=zen, R=codium, E=thunar, T=hyprkcs (exec_cmd).
+- §2.5 мышь, §2.6 poweroff+gamemode submap, §2.7 XF86 (оставить ii-нативные —
+  у ii свой OSD через `qsIpcCall brightness/volume`, см. keybinds.lua:40-46).
+- **ОТКРЫТО (execs):** `custom/execs.lua` переопределить старт шелла на
+  `~/qs-test-prefix/usr/bin/quickshell -c ii` (ii-дефолт зовёт системный qs).
+
 ### IPC-вокабуляр end4 (`quickshell:*`) — СОБРАНО
 
 Из `~/src/dots-hyprland/dots/.config/hypr/hyprland/keybinds.lua` (`hl.dsp.global`).
