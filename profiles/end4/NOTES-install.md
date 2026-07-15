@@ -145,6 +145,31 @@ conflicts=(quickshell quickshell-git)
 **Мина упирается в:** совместимость кастомного ilyamiro Shell.qml + caelestia-конфига
 с quickshell API март-билда (7511545). Март→май был реорг toplevel-management.
 
+#### РЕЗУЛЬТАТ NESTED-ТЕСТА (2026-07-15): ✅ ii ГРУЗИТСЯ НА МАРТ-БИЛДЕ
+
+Метод: nested Hyprland (`nested-ii-test.conf`), `~/qs-test-prefix/usr/bin/quickshell
+-c ii`, авто-выход 25с, лог stderr.
+
+**Провал №1 (устранён):** `module qs.modules.common.widgets.shapes is not installed`
+— `shapes/` это git-submodule (`github.com/end-4/rounded-polygon-qmljs`), наш
+`clone --depth=1` его не инитил. Фикс: `git submodule update --init <path>`.
+**bootstrap ОБЯЗАН делать `--recurse-submodules` или явный submodule init.**
+
+**Итог (после submodule init):**
+```
+INFO: Configuration Loaded          ← QML полностью загрузился
+DEBUG: [GlobalFocusGrab] Initialized
+WARN: quickshell.hyprland.ipc: Got openwindow ...  ← Hyprland-IPC работает
+```
+- **Ни одной ToplevelManager/API-ошибки.** Шелл дошёл до рантайма, запустил
+  сервисы (focus-grab, notifications, hyprland-ipc, todo, updates).
+- Прочие WARN — отсутствующие user-state (`config.json`, `colors.json`,
+  `states.json`) → чинятся реальным install+matugen, НЕ API-мина.
+- **Вывод: гипотеза сосуществования ПОДТВЕРЖДЕНА. ii совместим с локальным
+  март-quickshell 7511545.** Мина №1 закрыта.
+- Побочно: `~/.config/quickshell/ii` был скопирован для теста — почищен, Task 3
+  сделает чистый снапшот из `~/src/dots-hyprland/dots/` с submodule.
+
 #### ВЕРДИКТ (2026-07-15): СОСУЩЕСТВОВАНИЕ, НЕ ДАУНГРЕЙД
 
 Статик-замер использования toplevel-API (то что реорганизовали март→май):
