@@ -24,8 +24,9 @@
 
 ## Решения (зафиксированы с пользователем)
 
-1. **Бинд-набор**: end4 зеркалит **текущий** набор caelestia как есть. Отдельный
-   dedupe-пасс биндов ilyamiro/caelestia — потом; end4 позже подтянем под новый.
+1. **Бинд-набор**: end4 реализует **кросс-риг контракт `KEYBINDS.md` §2**
+   (актуальный набор после dedupe caelestia/ilyamiro 2026-07-15) на тех же комбо.
+   `KEYBINDS.md` в корне — источник правды для биндов, держать в синхроне.
 2. **Подход к биндам — B (независимый end4-порт)**: end4 получает свой
    `custom/keybinds.lua` = порт набора + unbind дефолтов. caelestia НЕ трогаем.
    Унификация двух lua-ригов в общий модуль — отдельный tech-debt пункт потом
@@ -52,54 +53,77 @@
 
 ## 2. Бинды (подход B)
 
-### `profiles/end4/hypr/custom/keybinds.lua` — lua-порт нашего набора
+**Источник правды — `KEYBINDS.md` в корне репо** (кросс-риг контракт, сверен
+2026-07-15). Целим НЕ старый набор, а актуальный контракт §2. end4 обязан
+реализовать все бинды §2 (через `rigdo` или нативно) на **тех же** комбо.
+При добавлении end4 — обновить `KEYBINDS.md` (см. §9).
 
-- **unbind** конфликтных дефолтов end4: overview `SUPER+Tab`, сайдбары
-  `SUPER+A/B/N/O`, буфер `SUPER+V`, эмодзи `SUPER+Period`, медиа `SUPER+M`,
-  бар `SUPER+J`, cheatsheet `SUPER+Slash`, OSK `SUPER+K`, overlay `SUPER+G`,
-  и прочие пересечения с нашими клавишами (полный список — при клоне, из
-  `hyprland/keybinds.lua`).
-- **порт наших клавиш** (тот же `hl.bind`): окна (`F`/`Q`/`P`/фуллскрин/флоат),
-  фокус IJKL+стрелки, move SHIFT+IJKL, resize ALT+IJKL, apps (`TAB`=foot,
-  `W`=zen, `R`=codium, `T`=hyprkcs, `E`=thunar), спец-воркспейсы
-  (`Z`/`X`/`C`/`V`/`S`), группы (`ALT+Q`/`ALT+TAB`), gamemode (`SUPER+G` submap),
-  громкость/медиа-клавиши, мышь.
+### `profiles/end4/hypr/custom/keybinds.lua` — lua-порт контракта
+
+- **unbind** конфликтных дефолтов end4 (полный список из `hyprland/keybinds.lua`
+  при клоне): overview `SUPER+Tab`, сайдбары `SUPER+A/B/N/O`, буфер `SUPER+V`,
+  эмодзи `SUPER+Period`, медиа `SUPER+M`, бар `SUPER+J`, cheatsheet `SUPER+Slash`,
+  OSK `SUPER+K`, overlay `SUPER+G`, поиск `SUPER+SUPER_L/R`, и прочие пересечения.
+- **порт клавиш контракта** (тот же `hl.bind`), по `KEYBINDS.md`:
+  - Окна §2.2: `Q`=close, `F`=fullscreen, `ALT+F`=maximized, `ALT+Space`/`SHIFT+F`
+    =float, `P`=pin, фокус `IJKL` (стрелки-соло убраны), move `SHIFT+IJKL`,
+    resize `ALT+IJKL`, `ALT+Q`=группа, `ALT+TAB`=цикл вкладок.
+  - Воркспейсы §2.3: `A`/`D`=−1/+1, scroll, `1..0`, `SHIFT+1..0`, `S`=scratchpad,
+    спец `Z`/`X`/`C`/`V`, `SHIFT+X`=вытащить, `CTRL+J`/`CTRL+L`=цикл спец.
+  - Apps §2.4: `TAB`=foot, `W`=zen, `R`=codium, `E`=thunar, `T`=hyprkcs.
+  - Мышь §2.5, gamemode `SUPER+G` submap §2.6, poweroff `SUPER+ALT+Escape`.
 - **switcher** `SUPER+SHIFT+D` → `~/dotfiles/bin/dotprofile menu`.
-- **риг-действия через rigdo** (та же клавиша, работает после хот-свитча):
-  `Y`=wallpaper, `U`=launcher, `SHIFT+O`=settings, `ALT+M`=music,
-  `ALT+S`=calendar, `ALT+P`=movies, `B`=battery, `N`=network, `H`=guide,
-  `SHIFT+S`=screenshot, `F1`=lock, `grave`=clipboard, `M`=shell.
-- **уникальные end4-фичи** на свободные клавиши (задать при импле):
-  OCR `regionOcr`, Google Lens `regionSearch`, screen-translate,
-  OSK `oskToggle`, light/dark `toggleLightDark`, widget-overlay `overlayToggle`,
-  panel-cycle `panelFamilyCycle`, emoji-overview `overviewEmojiToggle`.
+- **риг-действия через rigdo** §2.1 — та же комбо, работает после хот-свитча
+  (мап в таблице ниже).
+- **громкость/яркость** §2.7/§5: XF86-железные клавиши те же. У end4 свой
+  quickshell-OSD → вешаем на его нативный путь если есть; иначе
+  `wpctl`/`brightnessctl`. Проверить при клоне, есть ли у него свой обработчик
+  медиа-клавиш (тогда не дублировать).
 
-Воркспейс-навигация: у end4 свой `workspace_in_group`/`workspaceGroupSize`;
-у нас — `wsaction.fish` (мультимонитор). Решить при импле: наш скрипт или его
-механизм. Профиль-специфичные пути (`$csScripts`) в шаред НЕ идут — это часть,
-которая осознанно остаётся пер-риговой.
+Воркспейс-навигация: у end4 свой `workspace_in_group`/`workspaceGroupSize`,
+у нас `wsaction.fish` (мультимонитор). Решить при импле: наш скрипт или его
+механизм. Профиль-специфичные пути (`$csScripts`) в шаред НЕ идут — осознанно
+пер-риговое.
 
-### `bin/rigdo` — третья ветка `end4`
+### `bin/rigdo` — третья ветка `end4` (контракт §2.1)
 
-Каждый action получает ветку end4. Диспатч через существующий `hypr_global()`
-(выбирает lua-форму `hl.dsp.global(...)` для end4-сессии). Мап:
+Каждый action §2.1 получает ветку end4. Диспатч через существующий
+`hypr_global()` (lua-форма `hl.dsp.global(...)` для end4-сессии). Мап:
 
-| action | end4 |
+| Комбо (контракт) | action | end4 |
+| :--- | :--- | :--- |
+| `SHIFT+TAB` | launcher | `quickshell:searchToggleRelease` |
+| `SUPER+Y` | wallpaper | `quickshell:wallpaperSelectorToggle` |
+| `SUPER+SHIFT+O` | settings | `quickshell:sidebarRightToggle` (у него настройки в правом сайдбаре — верифицировать) |
+| `SUPER+M` | shell restart | `killall qs quickshell; qs -c ii &` |
+| `SUPER+F1` | lock | `loginctl lock-session` |
+| `SUPER+SHIFT+S` | screenshot | `quickshell:regionScreenshot` |
+| `SUPER+grave` | clipboard | `quickshell:overviewClipboardToggle` |
+| `SUPER+B` | battery | правый сайдбар end4 (`sidebarRightToggle` или спец-IPC) |
+| `SUPER+N` | network | правый сайдбар end4 |
+| `SUPER+H` | guide | `quickshell:cheatsheetToggle` |
+| `SUPER+ALT+M` | music | `quickshell:mediaControlsToggle` |
+| `SUPER+ALT+S` | calendar | правый сайдбар end4 (календарь/нотификации) |
+| `SUPER+ALT+P` | movies | нет 1:1 у end4 → `hint` (или маппинг при клоне) |
+
+`battery/network/calendar` — контракт §2.1 требует их. У end4 они в **правом
+сайдбаре** (не отдельные виджеты). Дефолт: все три → `sidebarRightToggle`; если у
+шелла есть отдельные IPC под них — уточнить при клоне и уточнить мап. Только
+`movies` реально без аналога → `hint`. Точные IPC-имена верифицировать при клоне
+(`hyprland/keybinds.lua` + shell-конфиг); часть может быть `qs -c ii ipc call`.
+
+### Уникальные end4-фичи → свободные слоты (`KEYBINDS.md` §7)
+
+Свободно: `SUPER+U` (освобождён), `SUPER+O` (в end4-сессии), `SUPER+CTRL+стрелки`.
+Где семантика совпадает с caelestia-уникальными (§4) — держим **те же комбо** для
+единообразия:
+
+| Комбо | end4-действие |
 | :--- | :--- |
-| launcher | `quickshell:searchToggleRelease` |
-| wallpaper | `quickshell:wallpaperSelectorToggle` |
-| settings | `quickshell:sidebarRightToggle` |
-| music | `quickshell:mediaControlsToggle` |
-| clipboard | `quickshell:overviewClipboardToggle` |
-| screenshot | `quickshell:regionScreenshot` |
-| lock | `loginctl lock-session` |
-| guide | `quickshell:cheatsheetToggle` |
-| shell | `killall qs quickshell; qs -c ii &` |
-| battery / network / calendar / movies | его сайдбар (`sidebarRightToggle`) или `hint` — у end4 нет 1:1-виджетов; уточнить какие есть при клоне |
-
-Точные IPC-имена верифицировать при клоне (`hyprland/keybinds.lua` +
-его shell-конфиг); часть действий может быть через `qs -c ii ipc call`, а не
-`global`.
+| `SUPER+ALT+N` | `toggleLightDark` (как dark/light у caelestia) |
+| `SUPER+SHIFT+R` | `regionRecord` (как запись caelestia) |
+| `SUPER+SHIFT+N` | `wallpaperSelectorRandom` (как рандом-схема caelestia) |
+| свободные (`U`/`O`/`CTRL+стрелки`) | OCR `regionOcr`, Lens `regionSearch`, screen-translate, OSK `oskToggle`, widget-overlay `overlayToggle`, panel-cycle `panelFamilyCycle`, emoji `overviewEmojiToggle` — раскидать при импле, не пересекая §2 |
 
 ## 3. Rules + анимации
 
@@ -164,7 +188,11 @@
 
 ## 9. Финализация
 
-- e2e: relogin во все 3 сессии + 6 направлений хот-свитча.
+- e2e: relogin во все 3 сессии + 6 направлений хот-свитча. Отдельно прогнать
+  весь кросс-риг контракт `KEYBINDS.md` §2 в end4-сессии (каждая комбо жмётся,
+  делает ожидаемое).
+- **`KEYBINDS.md`**: добавить end4 (колонка/пометки), обновить §3–4 (уникальные),
+  §7 (свободные слоты после раскидки end4-фич), дату сверки.
 - `bootstrap.sh`: AUR-метапакеты `illogical-impulse-*` (фактический список из
   setup), симлинки новых контестируемых каталогов, SDDM-запись.
 - README: таблица ригов + новые оговорки.
