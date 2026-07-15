@@ -268,6 +268,19 @@ settings/battery/network/calendar→sidebarRightToggle, music→mediaControlsTog
 clipboard→overviewClipboardToggle, screenshot→regionScreenshot, guide→cheatsheetToggle,
 lock→loginctl lock-session, movies→hint.
 
+**Task 8 ✓ (7d753b6 + 9978e18):** custom/rules.lua (transparency-оверрайды Thunar
+0.90 / Discord/Obsidian/Feishin/AyuGram/zen + спец-воркспейсы music/communication/
+todo/messanger под бинды Z/X/C/V) + animations-runtime.{lua,keywords} (перевод
+general.lua анимаций для хот-свитча).
+
+**Наблюдение (2026-07-15):** "не все бинды работают" после reload — подтверждена
+оговорка **lua require-кэш**: `hyprctl reload` не подхватывает custom/ полностью,
+полный свитч рига чинит. НЕ end4-баг. Занести в README-оговорки (Task 12).
+
+**⚠ Task 9-10 РИСК:** мутируют ЖИВОЕ состояние — Task 9 переносит `~/.config/matugen`
+(ilyamiro-овский) в профили, Task 10 трогает color-пайплайн. Проверять что
+ilyamiro-цвета не сломались. Делать когда пользователь может верифицировать.
+
 **Task 7 ✓ (9ec5eee):** §7 уникальные в custom/keybinds.lua — toggleLightDark
 (SUPER+ALT+N), regionRecord (SUPER+SHIFT+R), wallpaperSelectorRandom (SUPER+SHIFT+N),
 regionSearch/Lens (SUPER+O), regionOcr (SUPER+U). Прочие end4-эксклюзивы остались
