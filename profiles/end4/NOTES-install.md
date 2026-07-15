@@ -189,8 +189,17 @@ WARN: quickshell.hyprland.ipc: Got openwindow ...  ← Hyprland-IPC работа
   PKGBUILD'ов). ii-шелл запускать локальным бинарём.
 - **Последствие для спеки/плана:** `session.sh` для end4 зовёт
   `~/qs-test-prefix/usr/bin/qs -c ii`, НЕ системный `qs`. bootstrap собирает
-  март-quickshell в префикс воспроизводимо. Проверить роль пакета
-  `quickshell-wrapper` (может уже решать мульти-версийность). ОБНОВИТЬ спеку.
+  март-quickshell в префикс воспроизводимо (`--recurse-submodules`!).
+- **`quickshell-wrapper` — только Nix** (`sdata/dist-nix/home-manager`), на Arch
+  НЕ существует. Мульти-версийность на Arch решаем локальным префиксом сами.
+- **Arch-пакеты для установки** = `sdata/dist-arch/illogical-impulse-*` МИНУС
+  `illogical-impulse-quickshell-git`:
+  audio, backlight, basic, bibata-modern-classic-bin, fonts-themes, hyprland,
+  kde, microtex-git, portal, python, screencapture, toolkit, widgets.
+  (+ их upstream-депы из `install-deps.sh`/`previous_dependencies.conf`.)
+- **Config-clobber:** НЕ давать `3.files.sh` затирать общие `~/.config`
+  (fish/foot/fuzzel/matugen/…). Вместо `./setup install` целиком — deps-only,
+  а конфиги end4 брать снапшотом в `profiles/end4/` (Task 3) под dotprofile.
 - cli11-гейт — зелёный свет (деплой-стратегия, не просто тест).
 - Метод теста: nested Hyprland (изолирует, без дубль-слоёв).
 
