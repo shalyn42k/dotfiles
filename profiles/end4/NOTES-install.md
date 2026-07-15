@@ -289,6 +289,11 @@ custom/keybinds.lua → `hyprctl binds` дамп. Итог:
 - Визуал-скрин nested НЕ вышел: NVIDIA open-kernel + windowed nested = pixman BUG
   (рендер флейкует). Реальный скрин = relogin когда юзер за машиной.
 
+**Task 11 ✓ (d8b21d2):** bootstrap — cli11+build-депы в PKGS, секция 2b/7 собирает
+март-quickshell в ~/qs-test-prefix (клон+checkout 7511545+cmake), инструкция по
+ii-депам (`./setup install-deps` минус quickshell-git, --recurse-submodules), SDDM
+глобит hyprland-*.desktop (end4 подхватится). Осталось: matugen-симлинк (за Task 9).
+
 **⚠ Task 9-10 РИСК:** мутируют ЖИВОЕ состояние — Task 9 переносит `~/.config/matugen`
 (ilyamiro-овский) в профили, Task 10 трогает color-пайплайн. Проверять что
 ilyamiro-цвета не сломались. Делать когда пользователь может верифицировать.
