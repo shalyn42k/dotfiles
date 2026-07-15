@@ -174,3 +174,22 @@ end)
 -- §2.7 XF86 железные клавиши: НЕ переопределяем — ii-дефолт держит громкость/
 -- яркость через свой OSD (hyprland/keybinds.lua:40-46, qsIpcCall brightness/volume
 -- + wpctl фолбэк). Дубль сломал бы OSD (как было в ilyamiro). Оставлено ii-нативным.
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- §7 УНИКАЛЬНЫЕ end4-фичи (прямые quickshell-глобалы, риг-нативные)
+-- ─────────────────────────────────────────────────────────────────────────
+-- Аналоги caelestia-уникальных на ТЕ ЖЕ комбо (мышечная память §4):
+hl.bind("SUPER + ALT + N",   hl.dsp.global("quickshell:toggleLightDark"))        -- тёмная/светлая
+hl.bind("SUPER + SHIFT + R", hl.dsp.global("quickshell:regionRecord"), { locked = true })  -- запись
+hl.bind("SUPER + SHIFT + N", hl.dsp.global("quickshell:wallpaperSelectorRandom"))-- рандом обои
+
+-- В освобождённые слоты §7 (SUPER+O свободен вне caelestia, SUPER+U — снят дубль):
+hl.bind("SUPER + O", hl.dsp.global("quickshell:regionSearch"))  -- Google Lens
+hl.bind("SUPER + U", hl.dsp.global("quickshell:regionOcr"))     -- OCR региона
+
+-- Остальные end4-эксклюзивы ОСТАВЛЕНЫ на ii-нативных комбо (не unbind'ились):
+--   emoji=SUPER+Period, panelFamily=CTRL+SUPER+P, session=CTRL+ALT+Delete,
+--   wallpaperSelector=CTRL+SUPER+T, screenTranslate=SUPER+SHIFT+T,
+--   overview=SUPER+Tab был unbind (терминал) → доступен через SUPER+SHIFT+D менюлибо
+--   добавить в свободный слот при желании. OSK/overlay/bar — ii-дефолты сняты
+--   (K/G/J заняты §2); при нужде повесить на SUPER+CTRL+стрелки.
