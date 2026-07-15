@@ -173,32 +173,51 @@ conflicts=(quickshell quickshell-git)
 
 - TODO
 
-### IPC-вокабуляр end4 (`quickshell:*`)
+### IPC-вокабуляр end4 (`quickshell:*`) — СОБРАНО
 
-Из `~/.config/hypr/hyprland/keybinds.lua` (`hl.dsp.global` / `ipc call`):
+Из `~/src/dots-hyprland/dots/.config/hypr/hyprland/keybinds.lua` (`hl.dsp.global`).
+Диспатч в rigdo end4-ветке: `hyprctl dispatch "hl.dsp.global(\"quickshell:<X>\")"`.
 
-- launcher (search): TODO
-- wallpaperSelector: TODO
-- sidebarRight / sidebarLeft: TODO
-- mediaControls: TODO
-- overviewClipboard: TODO
-- regionScreenshot: TODO
-- cheatsheet: TODO
-- session: TODO
-- regionRecord: TODO
-- toggleLightDark: TODO
-- regionOcr / regionSearch: TODO
-- oskToggle: TODO
-- overlay: TODO
-- panelFamily: TODO
-- overviewEmoji: TODO
-- battery / network / calendar: отдельный IPC или только сайдбар? TODO
+Мап под наш rigdo (контракт §2.1):
+- launcher → `searchToggleRelease`
+- wallpaper → `wallpaperSelectorToggle` (рандом: `wallpaperSelectorRandom`)
+- settings → `sidebarRightToggle` (настройки/система в правом сайдбаре)
+- music → `mediaControlsToggle`
+- clipboard → `overviewClipboardToggle`
+- screenshot → `regionScreenshot`
+- guide → `cheatsheetToggle`
+- lock → `loginctl lock-session` (НЕ quickshell-глобал, keybinds.lua:335)
+- shell → `killall quickshell; ~/qs-test-prefix/usr/bin/quickshell -c ii &`
+- **battery / network / calendar → `sidebarRightToggle`** (отдельных IPC НЕТ —
+  всё в правом сайдбаре; подтверждено: в keybinds нет отдельных глобалов)
+- movies → нет аналога → `hint`
 
-### Файл итоговой палитры end4
+Уникальные end4 (Task 7, свободные слоты §7 / аналоги caelestia на тех же комбо):
+- light/dark → `toggleLightDark` | record → `regionRecord` | OCR → `regionOcr`
+- Google Lens → `regionSearch` | screen-translate → `screenTranslate`
+- OSK → `oskToggle` | widget-overlay → `overlayToggle` | bar → `barToggle`
+- panel-cycle → `panelFamilyCycle` | emoji → `overviewEmojiToggle`
+- overview → `overviewWorkspacesToggle` | sidebarLeft → `sidebarLeftToggle`
+  (+`sidebarLeftToggleDetach`) | session-меню → `sessionToggle`
 
-- Путь (для Task 10): TODO
-- Откуда accent/border: TODO
+### Файл итоговой палитры end4 — СОБРАНО (для Task 10)
 
-### matugen-конфиг end4
+matugen-пайплайн ii (`~/src/dots-hyprland/dots/.config/matugen/config.toml`):
+- **m3-палитра (accent/фон, JSON):**
+  `~/.local/state/quickshell/user/generated/colors.json`
+  ← ГЛАВНЫЙ для `apply_rig_colors` end4-ветки (парсить отсюда accent).
+  Читается шеллом ii через `services/MaterialThemeLoader.qml` (FileView).
+- **border-цвета Hyprland (lua):** `~/.config/hypr/hyprland/colors.lua`
+  (matugen пишет напрямую — можно переиспользовать для active/inactive border).
+- **wallpaper-state (путь обоев):**
+  `~/.local/state/quickshell/user/generated/wallpaper/path.txt`
+  ← ЗАКРЫВАЕТ плейсхолдер end4-обоев в [[rig-switcher-overlay]] Rigs.qml.
 
-- Путь: TODO
+### matugen-конфиг end4 — СОБРАНО (для Task 9)
+
+- Путь: `~/src/dots-hyprland/dots/.config/matugen/config.toml` (+ `templates/`:
+  colors.json, hyprland/, fuzzel/, gtk-3.0/, gtk-4.0/, kde/, wallpaper.txt).
+- **КОНФЛИКТ подтверждён**: его config.toml пишет в ОБЩИЕ пути —
+  `~/.config/fuzzel/fuzzel_theme.ini`, `~/.config/gtk-3.0/gtk.css`,
+  `~/.config/gtk-4.0/gtk.css`. Пересекается с ilyamiro-matugen → **обязателен
+  контестируемый matugen (Task 9)**, иначе риги дерутся за эти файлы.
