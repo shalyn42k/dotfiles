@@ -106,6 +106,42 @@ conflicts=(quickshell quickshell-git)
    поверх текущего (мешает, `pkill` убивает). Решить: тестить в отдельном
    nested-compositor (Hyprland/labwc в окне) vs live-прогон с pkill-подчисткой.
 
+#### СТАТУС СБОРКИ (2026-07-15, обновление)
+
+- **cli11 гейт ЗАКРЫТ:** `cli11 2.6.2-1` установлен (cpptrace 1.0.4, vulkan-headers
+  1.4.350 тоже на месте). Sudo не понадобился отдельным шагом.
+- **cmake config ✓** (exit 0): `cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_INSTALL_PREFIX=~/qs-test-prefix/usr`. Все депы найдены (Wayland 1.25,
+  Qt6, XCB, pipewire, polkit, jemalloc, libdrm/gbm/egl). Каталог сборки:
+  `~/src/quickshell-test/build`.
+- **ninja build ЗАПУЩЕН** (фон, долгий). Лог: см. task-output.
+- **МЕТОД ТЕСТА РЕШЁН: nested Hyprland** (изолирует, без дубль-слоёв на рабочем
+  столе). НЕ live-прогон.
+
+#### ШАГИ ДЛЯ АГЕНТА (после завершения сборки)
+
+1. Проверить сборку удалась: `ls ~/src/quickshell-test/build/quickshell` (бинарь).
+2. `cmake --install ~/src/quickshell-test/build` → встанет в `~/qs-test-prefix/usr`.
+   Проверить: `~/qs-test-prefix/usr/bin/quickshell --version` → ревизия `7511545`.
+3. **Материализовать ii-конфиг** (нужен для `qs -c ii`): его qml в
+   `~/src/dots-hyprland/dots/.config/quickshell/ii/`. Симлинк/копия в
+   `~/.config/quickshell/ii` (Task 3 снапшот всё равно потребует). ОСТОРОЖНО: не
+   затереть чужое — `~/.config/quickshell/` сейчас пуст (проверено).
+4. **Nested-тест ii на март-билде** (интерактивно, пользователь смотрит экран):
+   - запустить nested: `Hyprland` из терминала (авто-windowed при живом
+     WAYLAND_DISPLAY) с минимальным конфигом;
+   - внутри: `~/qs-test-prefix/usr/bin/quickshell -c ii` (или `-p .../ii/shell.qml`);
+   - наблюдать: стартует ли бар/виджеты, ошибки ToplevelManager-API в stderr.
+   - Ожидание по гипотезе: ii ДОЛЖЕН работать на март-билде (он под него пинован);
+     это подтверждает деплой-стратегию сосуществования.
+5. Симметрично (опционально): `qs -c caelestia` на март-билде НЕ обязателен —
+   caelestia остаётся на системном (май) quickshell, март-билд только для ii.
+   Прогонять caelestia на марте нужно ТОЛЬКО если рассматривать даунгрейд (он
+   отвергнут, см. ВЕРДИКТ выше).
+6. Если ii стартует чисто → продолжить план: снапшот профиля (Task 3),
+   `session.sh` зовёт `~/qs-test-prefix/usr/bin/quickshell -c ii`, дальше бинды/
+   rigdo/цвета. ОБНОВИТЬ спеку под локальный бинарь (см. ВЕРДИКТ).
+
 **Мина упирается в:** совместимость кастомного ilyamiro Shell.qml + caelestia-конфига
 с quickshell API март-билда (7511545). Март→май был реорг toplevel-management.
 
