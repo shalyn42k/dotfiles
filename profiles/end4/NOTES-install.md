@@ -256,8 +256,22 @@ SUPER+J(bar), SUPER+SUPER_L/R(search), CTRL+ALT+Delete(session), брайтне�
 - §2.4 apps: TAB=foot, W=zen, R=codium, E=thunar, T=hyprkcs (exec_cmd).
 - §2.5 мышь, §2.6 poweroff+gamemode submap, §2.7 XF86 (оставить ii-нативные —
   у ii свой OSD через `qsIpcCall brightness/volume`, см. keybinds.lua:40-46).
-- **ОТКРЫТО (execs):** `custom/execs.lua` переопределить старт шелла на
-  `~/qs-test-prefix/usr/bin/quickshell -c ii` (ii-дефолт зовёт системный qs).
+- **РЕШЕНО (execs):** НЕ через custom/execs.lua, а `custom/env.lua` PATH-префикс
+  `~/qs-test-prefix/usr/bin:$PATH` → `qs`/`quickshell` резолвятся в март-бинарь
+  ВЕЗДЕ (execs shell-start, cliphist ipc). Март-префикс имеет и `qs` и `quickshell`.
+  Грузится ДО hyprland.execs. Коммит 2ff1178.
+
+**Task 6 ✓ (658ffb4):** rigdo 3-я ветка end4 — `hypr_global quickshell:*` (провайдер-
+детект уже отдаёт `hl.dsp.global` для lua), шелл-рестарт через локальный `$QS_II`.
+Мап: launcher→searchToggleRelease, wallpaper→wallpaperSelectorToggle,
+settings/battery/network/calendar→sidebarRightToggle, music→mediaControlsToggle,
+clipboard→overviewClipboardToggle, screenshot→regionScreenshot, guide→cheatsheetToggle,
+lock→loginctl lock-session, movies→hint.
+
+**Task 7 ✓ (9ec5eee):** §7 уникальные в custom/keybinds.lua — toggleLightDark
+(SUPER+ALT+N), regionRecord (SUPER+SHIFT+R), wallpaperSelectorRandom (SUPER+SHIFT+N),
+regionSearch/Lens (SUPER+O), regionOcr (SUPER+U). Прочие end4-эксклюзивы остались
+на ii-нативных комбо (emoji/panelFamily/session/wallpaperSelector — не unbind'ились).
 
 **Task 5 СТАТУС: НАПИСАН (luac -p ✓, 176 строк).**
 - `custom/keybinds.lua`: unbind 13 ii-конфликтов + порт всего §2 (rigdo×14,
