@@ -259,6 +259,15 @@ SUPER+J(bar), SUPER+SUPER_L/R(search), CTRL+ALT+Delete(session), брайтне�
 - **ОТКРЫТО (execs):** `custom/execs.lua` переопределить старт шелла на
   `~/qs-test-prefix/usr/bin/quickshell -c ii` (ii-дефолт зовёт системный qs).
 
+**Task 5 СТАТУС: НАПИСАН (luac -p ✓, 176 строк).**
+- `custom/keybinds.lua`: unbind 13 ii-конфликтов + порт всего §2 (rigdo×14,
+  окна, фокус/move/resize IJKL, группы, воркспейсы+специалы, apps app2unit,
+  мышь, poweroff, gamemode submap). §2.7 XF86 оставлены ii-нативными (OSD).
+- `hypr/scripts/{wsaction,specialcycle}.fish` скопированы из caelestia.
+- resize инлайнен (end4 без hyprland.functions).
+- **НЕ верифицировано** — Task 13 relogin: `hyprctl binds`, жать бинды, проверить
+  что unbind сработал (нет дублей SUPER+Tab overview) + hl.unbind арг-форма ок.
+
 ### IPC-вокабуляр end4 (`quickshell:*`) — СОБРАНО
 
 Из `~/src/dots-hyprland/dots/.config/hypr/hyprland/keybinds.lua` (`hl.dsp.global`).
