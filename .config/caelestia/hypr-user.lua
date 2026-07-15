@@ -8,7 +8,6 @@ hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(dot .. "dotprofile menu"))
 -- в ilyamiro (диспетчер смотрит profiles/active). Те же комбо, что в
 -- binds-ilyamiro.conf.
 hl.bind("SUPER + Y",           hl.dsp.exec_cmd(dot .. "rigdo wallpaper"))
-hl.bind("SUPER + U",           hl.dsp.exec_cmd(dot .. "rigdo launcher"))
 hl.bind("SUPER + SHIFT + O",   hl.dsp.exec_cmd(dot .. "rigdo settings"))
 hl.bind("SUPER + ALT + M",     hl.dsp.exec_cmd(dot .. "rigdo music"))
 hl.bind("SUPER + ALT + S",     hl.dsp.exec_cmd(dot .. "rigdo calendar"))
