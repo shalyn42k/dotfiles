@@ -88,6 +88,12 @@ hl.bind("XF86AudioLowerVolume",
     hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ " .. vars.volumeStep .. "%-"),
     { repeating = true })
 hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
+-- Яркость: те же XF86-клавиши, что в ilyamiro. Через shell-global (как upstream
+-- caelestia) — шелл сам меняет через brightnessctl и рисует свой OSD. Прямой
+-- exec обходил хендлер шелла (не было OSD).
+hl.bind("XF86MonBrightnessUp",   hl.dsp.global("caelestia:brightnessUp"),   { locked = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.global("caelestia:brightnessDown"), { locked = true })
 
 -- Mouse bindings
 hl.bind("SHIFT + mouse:274", hl.dsp.window.drag(), { mouse = true })
@@ -97,35 +103,23 @@ hl.bind("SUPER + mouse:273", hl.dsp.window.move({ workspace = "+1" }))
 hl.bind("SUPER + SHIFT + mouse:272", hl.dsp.window.move({ workspace = "e+0" }))
 hl.bind("SUPER + SHIFT + mouse:273", hl.dsp.window.move({ workspace = "special:secret" }))
 
--- Focus navigation (IJKL + arrows)
-hl.bind("SUPER + I",     hl.dsp.focus({ direction = "up" }))
-hl.bind("SUPER + J",     hl.dsp.focus({ direction = "left" }))
-hl.bind("SUPER + K",     hl.dsp.focus({ direction = "down" }))
-hl.bind("SUPER + L",     hl.dsp.focus({ direction = "right" }))
-hl.bind("SUPER + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind("SUPER + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind("SUPER + down",  hl.dsp.focus({ direction = "down" }))
-hl.bind("SUPER + right", hl.dsp.focus({ direction = "right" }))
+-- Focus navigation (только IJKL)
+hl.bind("SUPER + I", hl.dsp.focus({ direction = "up" }))
+hl.bind("SUPER + J", hl.dsp.focus({ direction = "left" }))
+hl.bind("SUPER + K", hl.dsp.focus({ direction = "down" }))
+hl.bind("SUPER + L", hl.dsp.focus({ direction = "right" }))
 
--- Move window (SHIFT + IJKL + arrows)
-hl.bind("SUPER + SHIFT + I",     hl.dsp.window.move({ direction = "up" }))
-hl.bind("SUPER + SHIFT + J",     hl.dsp.window.move({ direction = "left" }))
-hl.bind("SUPER + SHIFT + K",     hl.dsp.window.move({ direction = "down" }))
-hl.bind("SUPER + SHIFT + L",     hl.dsp.window.move({ direction = "right" }))
-hl.bind("SUPER + SHIFT + up",    hl.dsp.window.move({ direction = "up" }))
-hl.bind("SUPER + SHIFT + left",  hl.dsp.window.move({ direction = "left" }))
-hl.bind("SUPER + SHIFT + down",  hl.dsp.window.move({ direction = "down" }))
-hl.bind("SUPER + SHIFT + right", hl.dsp.window.move({ direction = "right" }))
+-- Move window (SHIFT + IJKL)
+hl.bind("SUPER + SHIFT + I", hl.dsp.window.move({ direction = "up" }))
+hl.bind("SUPER + SHIFT + J", hl.dsp.window.move({ direction = "left" }))
+hl.bind("SUPER + SHIFT + K", hl.dsp.window.move({ direction = "down" }))
+hl.bind("SUPER + SHIFT + L", hl.dsp.window.move({ direction = "right" }))
 
--- Resize active window (ALT + IJKL + arrows)
-hl.bind("SUPER + ALT + I", hl.dsp.window.resize(fn.resize_active_window(0, -10)),  { repeating = true })
-hl.bind("SUPER + ALT + K", hl.dsp.window.resize(fn.resize_active_window(0, 10)),   { repeating = true })
-hl.bind("SUPER + ALT + J", hl.dsp.window.resize(fn.resize_active_window(-10, 0)),  { repeating = true })
-hl.bind("SUPER + ALT + L", hl.dsp.window.resize(fn.resize_active_window(10, 0)),   { repeating = true })
-hl.bind("SUPER + ALT + left",  hl.dsp.window.resize(fn.resize_active_window(-10, 0)), { repeating = true })
-hl.bind("SUPER + ALT + right", hl.dsp.window.resize(fn.resize_active_window(10, 0)),  { repeating = true })
-hl.bind("SUPER + ALT + up",    hl.dsp.window.resize(fn.resize_active_window(0, -10)), { repeating = true })
-hl.bind("SUPER + ALT + down",  hl.dsp.window.resize(fn.resize_active_window(0, 10)),  { repeating = true })
+-- Resize active window (ALT + IJKL)
+hl.bind("SUPER + ALT + I", hl.dsp.window.resize(fn.resize_active_window(0, -10)), { repeating = true })
+hl.bind("SUPER + ALT + K", hl.dsp.window.resize(fn.resize_active_window(0, 10)),  { repeating = true })
+hl.bind("SUPER + ALT + J", hl.dsp.window.resize(fn.resize_active_window(-10, 0)), { repeating = true })
+hl.bind("SUPER + ALT + L", hl.dsp.window.resize(fn.resize_active_window(10, 0)),  { repeating = true })
 
 -- Window groups
 hl.bind(vars.kbToggleGroup, hl.dsp.group.toggle())               -- Stack windows into tabs
