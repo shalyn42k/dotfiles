@@ -205,7 +205,27 @@ WARN: quickshell.hyprland.ipc: Got openwindow ...  ← Hyprland-IPC работа
 
 ### Diff — перезаписанные общие конфиги (fish/foot/fuzzel/matugen)
 
-- TODO
+- Прямой `./setup install` ОТМЕНЁН (см. вердикт). Общие конфиги НЕ клобберим —
+  end4 конфиги идут снапшотом в `profiles/end4/` под dotprofile.
+
+### ОТКРЫТО: execs-оверрайд шелла (для custom-задачи)
+
+- ii-дефолт `hypr/hyprland/execs.lua` стартует шелл СИСТЕМНЫМ `qs`/`quickshell`.
+  При сосуществовании нужен март-бинарь → **`custom/execs.lua` должен
+  переопределить старт шелла на `~/qs-test-prefix/usr/bin/quickshell -c ii`**
+  (или заглушить дефолтный exec, а старт отдать session.sh).
+- Проверить `hypr/hyprland/execs.lua` снапшота: какой exec-once поднимает шелл,
+  как его подавить/переопределить в custom.
+
+### Task 4 — session.sh / SDDM / post-update (статус)
+
+- `session.sh` ✓: стартует локальный март-quickshell `-c ii`, стоп матчит по
+  локальному бинарю (не трогает системный qs). Путь `QS_II` — единый ISTOCHNIK.
+- `sddm/hyprland-end4.desktop` ✓: Exec = `start-hyprland-profile end4`.
+- **post-update.sh ПРОПУЩЕН** (осознанно, отход от плана): `hyprland.lua`
+  авто-грузит `custom/*.lua`, ii-updater перезапишет hyprland.lua тем же
+  авто-сорсом → custom переживает апдейты нативно (как caelestia, у него тоже
+  нет post-update). Восстанавливать нечего.
 
 ### IPC-вокабуляр end4 (`quickshell:*`) — СОБРАНО
 
