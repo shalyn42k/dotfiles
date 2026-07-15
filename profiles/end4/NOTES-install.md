@@ -81,6 +81,34 @@ conflicts=(quickshell quickshell-git)
 - **Rollback дешёвый:** quickshell-git из AUR, `paru -S quickshell-git`
   пересоберёт latest (май) → восстановит текущий шелл. Worst-case обратимо.
 
+#### Test-first — статус (2026-07-15, для другой сессии)
+
+Выбран путь test-first: собрать `7511545` в локальный префикс (БЕЗ install),
+прогнать шеллы на нём.
+
+**Уточнение — quickshell юзают ДВА рига (оба под риском даунгрейда):**
+- ilyamiro: `quickshell -p ~/.config/hypr/scripts/quickshell/Shell.qml` (кастом)
+- caelestia: `qs -c caelestia`
+- end4 будет: `qs -c ii`
+
+**Прогресс сборки:**
+- Клон upstream → `~/src/quickshell-test`, checkout `7511545` ✓.
+- Build-депсы: все есть КРОМЕ `cli11` → нужен `sudo pacman -S cli11` (гейт).
+- cmake-config доходит до `find_package(CLI11)` и падает ТОЛЬКО на нём;
+  Wayland 1.25.0 / Qt6 / XKB найдены. cli11 — единственный блокер конфига.
+
+**Дальше (после cli11):**
+1. `cmake -GNinja -B build ...` (config добьётся) → `cmake --build build` (долгая C++/Qt сборка).
+2. `cmake --install build --prefix ~/qs-test-prefix` (локальный, без /usr).
+3. Прогон: `~/qs-test-prefix/usr/bin/quickshell -p .../Shell.qml` +
+   `qs -c caelestia` — стартуют ли на март-билде.
+4. **ОГОВОРКА:** live-прогон на активном рабочем столе создаст дубль-слои
+   поверх текущего (мешает, `pkill` убивает). Решить: тестить в отдельном
+   nested-compositor (Hyprland/labwc в окне) vs live-прогон с pkill-подчисткой.
+
+**Мина упирается в:** совместимость кастомного ilyamiro Shell.qml + caelestia-конфига
+с quickshell API март-билда (7511545). Март→май был реорг toplevel-management.
+
 ### Diff — перезаписанные общие конфиги (fish/foot/fuzzel/matugen)
 
 - TODO
