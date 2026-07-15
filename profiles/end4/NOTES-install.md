@@ -31,15 +31,41 @@ Quickshell 0.3.0 (revision 7d1c9a9c6721606b129829134d6f614f015621e2, AUR quicksh
 
 ### setup: что пишет в ~/.config
 
-- TODO
+`sdata/subcmd-install/3.files*.sh` копирует в `~/.config`:
+`chrome-flags.conf, code-flags.conf, darklyrc, dolphinrc, fish, fontconfig,
+foot, fuzzel, hypr, kdeglobals, kde-material-you-colors, kitty, Kvantum,
+matugen, mpv, qt5ct, qt6ct, quickshell, starship.toml, thorium-flags.conf,
+wlogout, xdg-desktop-portal, zshrc.d`.
+
+**Общие с другими ригами (перезапишутся!):** fish, foot, fuzzel, matugen,
+fontconfig, Kvantum, qt5ct, qt6ct, kde-material-you-colors, hypr, quickshell,
+kitty, mpv, wlogout, starship.toml.
+Task 1 бэкапнул только fish/foot/fuzzel/matugen — **дыра закрыта** доп-бэкапом
+всего списка в `~/end4-preinstall-backup/`.
 
 ### Список пакетов (`illogical-impulse-*`)
 
-- TODO
+`ags, audio, backlight, basic, bibata-modern-classic-bin, fonts-themes,
+hyprland, kde, microtex-git, portal, python, quickshell-git,
+quickshell-wrapper, repo, screencapture, toolkit, widgets`.
 
-### Требование ii к quickshell
+### Требование ii к quickshell — МИНА №1 СРАБОТАЛА
 
-- TODO (см. мину №1 выше)
+`sdata/dist-arch/illogical-impulse-quickshell-git/PKGBUILD`:
+```
+_commit='7511545ee20664e3b8b8d3322c0ffe7567c56f7a'
+pkgver=0.1.0.r1
+provides=(quickshell quickshell-git)
+conflicts=(quickshell quickshell-git)
+```
+- ii пинит quickshell коммит `7511545`, **conflicts+provides** системный
+  `quickshell-git`.
+- Система сейчас: `quickshell-git 0.3.0.r3.g7d1c9a9` (коммит `7d1c9a9`) — на нём
+  крутится шелл ilyamiro (`qs`).
+- **Установка ii ЗАМЕНИТ системный quickshell-git → риск поломки ilyamiro-шелла.**
+- РЕШЕНИЕ ДО УСТАНОВКИ (план §мина №1): проверить, работает ли ilyamiro-шелл на
+  ii-пиновом quickshell (7511545). Если нет — держать обе версии / решить стратегию.
+  **Ожидает решения пользователя.**
 
 ### Diff — перезаписанные общие конфиги (fish/foot/fuzzel/matugen)
 
