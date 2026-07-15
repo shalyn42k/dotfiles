@@ -67,6 +67,20 @@ conflicts=(quickshell quickshell-git)
   ii-пиновом quickshell (7511545). Если нет — держать обе версии / решить стратегию.
   **Ожидает решения пользователя.**
 
+#### Разведка коммитов (2026-07-15)
+
+| commit | author date | |
+|---|---|---|
+| `7d1c9a9` (система) | 2026-05-10 | текущий, "wayland/toplevel: reorganize toplevel management" |
+| `7511545` (ii пин)  | 2026-03-18 | "build: add missing wayland-client CFLAGS" |
+
+- **Это ДАУНГРЕЙД ~2 мес** (май→март). Не ii требует новее — ii пинит старее.
+- Между ними реорг toplevel-management (API-changes) → текущий qs-шелл может
+  юзать пост-мартовский API → риск поломки на ii-билде.
+- Upstream: `git.outfoxxed.me/quickshell/quickshell`.
+- **Rollback дешёвый:** quickshell-git из AUR, `paru -S quickshell-git`
+  пересоберёт latest (май) → восстановит текущий шелл. Worst-case обратимо.
+
 ### Diff — перезаписанные общие конфиги (fish/foot/fuzzel/matugen)
 
 - TODO
