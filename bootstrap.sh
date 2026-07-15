@@ -38,6 +38,8 @@ PKGS=(
     python-pillow asusctl
     # кастомное
     hyprkcs-git
+    # end4: build-депы локального март-quickshell (мина №1 — сосуществование)
+    cli11 cmake ninja qt6-shadertools spirv-tools vulkan-headers wayland-protocols
 )
 missing=()
 for p in "${PKGS[@]}"; do pacman -Qi "$p" &>/dev/null || missing+=("$p"); done
@@ -65,6 +67,34 @@ else
     echo ">>>   или: git clone https://github.com/caelestia-dots/shell ~/caelestia"
     echo ">>>        cd ~/caelestia && cmake -B build && cmake --build build && sudo cmake --install build"
 fi
+
+# ─────────────────────────────────────────────────────────────────────────
+echo "== 2b/7 end4 (illogical-impulse) — локальный март-quickshell =="
+# Мина №1 (см. profiles/end4/NOTES-install.md): ii пинит quickshell на март-коммит
+# 7511545 (conflicts с системным). Система остаётся май (caelestia/ilyamiro), ii
+# крутится на ЛОКАЛЬНОМ март-quickshell в ~/qs-test-prefix. Систему НЕ трогаем.
+QS_II_PIN="7511545ee20664e3b8b8d3322c0ffe7567c56f7a"
+QS_II_SRC="$HOME/src/quickshell-test"
+QS_II_PREFIX="$HOME/qs-test-prefix"
+if [[ -x "$QS_II_PREFIX/usr/bin/quickshell" ]]; then
+    echo "март-quickshell найден: $QS_II_PREFIX"
+else
+    echo ">>> собираю март-quickshell ($QS_II_PIN) в $QS_II_PREFIX ..."
+    if [[ ! -d "$QS_II_SRC" ]]; then
+        git clone https://git.outfoxxed.me/quickshell/quickshell "$QS_II_SRC" || true
+    fi
+    if [[ -d "$QS_II_SRC" ]]; then
+        ( cd "$QS_II_SRC" && git checkout "$QS_II_PIN" \
+          && cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX="$QS_II_PREFIX/usr" -DINSTALL_QML_PREFIX=lib/qt6/qml \
+          && cmake --build build && cmake --install build ) \
+          || echo ">>> сборка март-quickshell не удалась — см. NOTES-install.md"
+    fi
+fi
+echo ">>> ii runtime-пакеты (illogical-impulse-*) ставятся ЕГО setup'ом:"
+echo ">>>   git clone --recurse-submodules https://github.com/end-4/dots-hyprland ~/src/dots-hyprland"
+echo ">>>   cd ~/src/dots-hyprland && ./setup install-deps   # НО исключи illogical-impulse-quickshell-git"
+echo ">>>   (--recurse-submodules ОБЯЗАТЕЛЕН: shapes=rounded-polygon-qmljs, иначе шелл не грузится)"
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 3/7 Симлинки профилей =="
@@ -147,5 +177,5 @@ echo "== 7/7 Статус =="
 echo
 echo "Готово. Дальше:"
 echo "  1. Положи обои (jpg/png/mp4) в ~/Pictures/Wallpapers"
-echo "  2. Relogin через SDDM → сессия 'Hyprland (caelestia)' или 'Hyprland (ilyamiro)'"
+echo "  2. Relogin через SDDM → 'Hyprland (caelestia)' / '(ilyamiro)' / '(end4)'"
 echo "  3. Переключение на лету: SUPER+SHIFT+D"
