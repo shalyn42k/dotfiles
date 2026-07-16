@@ -139,7 +139,7 @@ done
 #                        перерендеривает на каждой смене схемы (upstream PR #122)
 cp "$DOTFILES"/.config/systemd/user/*.{service,path} "$HOME/.config/systemd/user/"
 systemctl --user daemon-reload 2>/dev/null || true
-systemctl --user enable --now kbd-theme-sync.path thunar-css-fix.path 2>/dev/null \
+systemctl --user enable --now kbd-theme-sync.path thunar-css-fix.path end4-colors.path 2>/dev/null \
     || echo ">>> нет systemd --user сессии — юниты включатся после relogin"
 
 # ─────────────────────────────────────────────────────────────────────────
