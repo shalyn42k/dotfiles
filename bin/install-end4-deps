@@ -19,7 +19,9 @@ set -euo pipefail
 REPO="${DOTS_HYPRLAND:-$HOME/src/dots-hyprland}"
 ARCH_DIR="$REPO/sdata/dist-arch"
 [[ -d "$ARCH_DIR" ]] || { echo "нет $ARCH_DIR — склонь: git clone --recurse-submodules https://github.com/end-4/dots-hyprland $REPO" >&2; exit 1; }
-command -v yay >/dev/null || { echo "нужен yay (AUR-хелпер)" >&2; exit 1; }
+AUR="$(command -v yay || command -v paru || true)"
+[[ -n "$AUR" ]] || { echo "нужен AUR-хелпер (yay или paru)" >&2; exit 1; }
+echo "AUR-хелпер: $AUR"
 
 # Нужные meta-пакеты — ВСЕ кроме quickshell-git (сосуществование).
 METAS=(audio backlight basic fonts-themes kde portal python screencapture
@@ -38,10 +40,10 @@ done
 mapfile -t DEPS < <(printf '%s\n' "${DEPS[@]}" | grep -v '^$' | sort -u)
 echo "  всего уникальных: ${#DEPS[@]}"
 
-echo "== Установка (yay --needed --asdeps; уже стоящее пропускается) =="
+echo "== Установка ($AUR --needed --asdeps; уже стоящее пропускается) =="
 # --asdeps: ставятся как зависимости (осиротеют чисто, если удалить риг).
 # НЕТ --noconfirm намеренно: KDE-пакеты тяжёлые, дай глазами проверить.
-yay -S --needed --asdeps "${DEPS[@]}"
+"$AUR" -S --needed --asdeps "${DEPS[@]}"
 
 echo "== Python-venv ii (uv, python 3.12) =="
 VENV="${XDG_STATE_HOME:-$HOME/.local/state}/quickshell/.venv"
