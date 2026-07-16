@@ -38,6 +38,8 @@ PKGS=(
     python-pillow asusctl
     # кастомное
     hyprkcs-git
+    # end4: build-депы локального март-quickshell (мина №1 — сосуществование)
+    cli11 cmake ninja qt6-shadertools spirv-tools vulkan-headers wayland-protocols
 )
 missing=()
 for p in "${PKGS[@]}"; do pacman -Qi "$p" &>/dev/null || missing+=("$p"); done
@@ -67,9 +69,43 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
+echo "== 2b/7 end4 (illogical-impulse) — локальный март-quickshell =="
+# Мина №1 (см. profiles/end4/NOTES-install.md): ii пинит quickshell на март-коммит
+# 7511545 (conflicts с системным). Система остаётся май (caelestia/ilyamiro), ii
+# крутится на ЛОКАЛЬНОМ март-quickshell в ~/qs-test-prefix. Систему НЕ трогаем.
+QS_II_PIN="7511545ee20664e3b8b8d3322c0ffe7567c56f7a"
+QS_II_SRC="$HOME/src/quickshell-test"
+QS_II_PREFIX="$HOME/qs-test-prefix"
+if [[ -x "$QS_II_PREFIX/usr/bin/quickshell" ]]; then
+    echo "март-quickshell найден: $QS_II_PREFIX"
+else
+    echo ">>> собираю март-quickshell ($QS_II_PIN) в $QS_II_PREFIX ..."
+    if [[ ! -d "$QS_II_SRC" ]]; then
+        git clone https://git.outfoxxed.me/quickshell/quickshell "$QS_II_SRC" || true
+    fi
+    if [[ -d "$QS_II_SRC" ]]; then
+        ( cd "$QS_II_SRC" && git checkout "$QS_II_PIN" \
+          && cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX="$QS_II_PREFIX/usr" -DINSTALL_QML_PREFIX=lib/qt6/qml \
+          && cmake --build build && cmake --install build ) \
+          || echo ">>> сборка март-quickshell не удалась — см. NOTES-install.md"
+    fi
+fi
+echo ">>> ii runtime-депы — БЕЗОПАСНЫМ скриптом (НЕ ./setup install-deps!):"
+echo ">>>   git clone --recurse-submodules https://github.com/end-4/dots-hyprland ~/src/dots-hyprland"
+echo ">>>   $DOTFILES/bin/install-end4-deps"
+echo ">>>   (--recurse-submodules ОБЯЗАТЕЛЕН: shapes=rounded-polygon-qmljs, иначе шелл не грузится)"
+echo ">>>   ВНИМАНИЕ: ./setup install-deps НЕЛЬЗЯ — его remove_deprecated делает"
+echo ">>>   pacman -Rdd на системный quickshell/matugen/hypr (снесёт caelestia+ilyamiro)."
+echo ">>>   install-end4-deps ставит depend'ы meta-пакетов кроме quickshell-git, без сноса."
+
+# ─────────────────────────────────────────────────────────────────────────
 echo "== 3/7 Симлинки профилей =="
 [[ -L "$DOTFILES/profiles/active" ]] || ln -sfn caelestia "$DOTFILES/profiles/active"
-for d in hypr gtk-3.0 gtk-4.0 qt5ct qt6ct; do
+# CONTESTED-каталоги (см. bin/dotprofile): свой у каждого рига, симлинк на active.
+# matugen тоже контестируемый — ilyamiro и end4 держат разные config.toml,
+# пишущие в общие пути (gtk.css, fuzzel, colors.lua); caelestia matugen не юзает.
+for d in hypr gtk-3.0 gtk-4.0 qt5ct qt6ct matugen; do
     if [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]]; then
         echo "бэкап живого ~/.config/$d -> $d.pre-bootstrap"
         mv "$HOME/.config/$d" "$HOME/.config/$d.pre-bootstrap"
@@ -89,24 +125,9 @@ echo "== 4/7 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
 xdg-user-dirs-update 2>/dev/null || true
 
-# matugen-шаблоны тем приложений (риг ilyamiro)
-if [[ -d "$HOME/.config/matugen/templates" ]]; then
-    cp "$DOTFILES/profiles/ilyamiro/matugen/"*.template "$HOME/.config/matugen/templates/"
-    if ! grep -q 'templates.discord' "$HOME/.config/matugen/config.toml" 2>/dev/null; then
-        cat >> "$HOME/.config/matugen/config.toml" <<'MEOF'
-
-# тема Discord (Vencord) для рига ilyamiro — dotprofile копирует в themes/rig.theme.css
-[templates.discord]
-input_path = "~/.config/matugen/templates/discord.css.template"
-output_path = "~/.cache/matugen/discord-ilyamiro.theme.css"
-
-# тема Obsidian для рига ilyamiro — dotprofile копирует в vault/.obsidian/snippets/
-[templates.obsidian]
-input_path = "~/.config/matugen/templates/obsidian.css.template"
-output_path = "~/.cache/matugen/obsidian-ilyamiro.css"
-MEOF
-    fi
-fi
+# matugen теперь контестируемый (симлинк на profiles/active/matugen выше) —
+# config.toml + templates/ живут в профиле целиком, копировать в живой каталог
+# не нужно. Discord/Obsidian-шаблоны и их [templates.*] уже в снапшоте ilyamiro.
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 5/7 Скрипты и systemd-юниты =="
@@ -121,7 +142,7 @@ done
 #                        перерендеривает на каждой смене схемы (upstream PR #122)
 cp "$DOTFILES"/.config/systemd/user/*.{service,path} "$HOME/.config/systemd/user/"
 systemctl --user daemon-reload 2>/dev/null || true
-systemctl --user enable --now kbd-theme-sync.path thunar-css-fix.path 2>/dev/null \
+systemctl --user enable --now kbd-theme-sync.path thunar-css-fix.path end4-colors.path 2>/dev/null \
     || echo ">>> нет systemd --user сессии — юниты включатся после relogin"
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -147,5 +168,5 @@ echo "== 7/7 Статус =="
 echo
 echo "Готово. Дальше:"
 echo "  1. Положи обои (jpg/png/mp4) в ~/Pictures/Wallpapers"
-echo "  2. Relogin через SDDM → сессия 'Hyprland (caelestia)' или 'Hyprland (ilyamiro)'"
+echo "  2. Relogin через SDDM → 'Hyprland (caelestia)' / '(ilyamiro)' / '(end4)'"
 echo "  3. Переключение на лету: SUPER+SHIFT+D"

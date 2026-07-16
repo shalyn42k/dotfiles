@@ -15,6 +15,7 @@
 |---|---|---|
 | **ilyamiro** | hyprlang | 1) `profiles/ilyamiro/hypr/config/keybindings.conf` — **АВТОГЕН** из `settings.json`; 2) `.config/hypr-shared/binds-ilyamiro.conf` — грузится **последним**, `unbind`+`bind` перекрывает автоген; 3) `.config/hypr-shared/binds.conf` — общий свитчер |
 | **caelestia** | hyprkcs (Lua) | 1) `profiles/caelestia/hypr/hyprland/keybinds.lua` — **живой**; 2) `.config/caelestia/hypr-user.lua` — пользовательский аппенд (rigdo, свитчер) |
+| **end4** | hyprkcs (Lua) | 1) `profiles/end4/hypr/hyprland/keybinds.lua` — **ii-дефолты** (не редактировать, снесётся ii-апдейтом); 2) `profiles/end4/hypr/custom/keybinds.lua` — **наш порт §2**, грузится последним (`hl.unbind` конфликтов + `hl.bind` контракта) |
 
 ⚠️ **Ловушки правки:**
 - ilyamiro: не редактируй автоген `keybindings.conf` напрямую — снесётся при `dotprofile update`.
@@ -23,6 +24,12 @@
   до-hyprkcs сетап). Не грузится. Правь только `keybinds.lua`.
 - Свитчер `SUPER+SHIFT+D` продублирован в двух местах (hyprkcs не умеет `source=`):
   `binds.conf` **и** `hypr-user.lua`. Менять В ОБОИХ.
+- end4: `custom/keybinds.lua` — единственное место наших биндов. `hl.unbind`
+  снимает ii-дефолты, потом наши `hl.bind`. XF86 громкость/яркость НЕ трогаем
+  (ii-нативный OSD). Уникальные end4-фичи — §7.
+- **Оговорка lua require-кэш:** `hyprctl reload` может не подхватить правки
+  `custom/*.lua` (кэш модулей) — часть биндов «не работает» до **полного свитча
+  рига** (`dotprofile menu`). Касается caelestia и end4 (оба hyprkcs).
 
 **Кросс-риг механизм:** риг-зависимые действия идут через `~/dotfiles/bin/rigdo <action>` —
 диспетчер смотрит `profiles/active` и вызывает нужный шелл. Поэтому одна комбо работает в

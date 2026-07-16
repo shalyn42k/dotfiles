@@ -8,6 +8,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **caelestia** | [caelestia-dots](https://github.com/caelestia-dots/caelestia) | work | lua (`hyprland.lua`) | caelestia shell (quickshell) |
 | **ilyamiro** | [ilyamiro/imperative-dots](https://github.com/ilyamiro/imperative-dots) | daily | hyprlang (`hyprland.conf`) | кастомный quickshell |
+| **end4** | [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (illogical-impulse) | third | lua (`hyprland.lua`) | ii-шелл `qs -c ii` на **локальном** март-quickshell |
 
 Переключение — `SUPER+SHIFT+D` (меню fuzzel) или из SDDM (две отдельные сессии).
 
@@ -49,7 +50,21 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 3. Переключение на лету: `SUPER+SHIFT+D`.
 
 > Hyprland нужен с lua config provider (0.55+, сборка CachyOS или git) —
-> риг caelestia живёт на `hyprland.lua`.
+> риги caelestia и end4 живут на `hyprland.lua`.
+
+### Оговорки end4 (illogical-impulse)
+
+- **quickshell-сосуществование:** ii пинит quickshell на март-коммит `7511545`
+  (conflicts с системным), а caelestia/ilyamiro крутятся на системном (май).
+  Решение: ii-шелл запускается **локальным** март-quickshell (`~/qs-test-prefix`),
+  систему не трогаем. `session.sh`/`rigdo`/`env.lua` зовут локальный бинарь.
+  Пакеты: ставить `illogical-impulse-*` КРОМЕ `illogical-impulse-quickshell-git`.
+- **matugen контестируемый:** ii-matugen пишет в общие пути (fuzzel/gtk) →
+  каждый риг держит свой matugen (симлинк `~/.config/matugen` по активному ригу).
+- **lua require-кэш:** `hyprctl reload` может не подхватить `custom/*.lua` —
+  правки видны после полного свитча рига (`dotprofile menu`), не reload.
+- **клон с submodule:** `git clone --recurse-submodules` (ii-шелл зависит от
+  `rounded-polygon-qmljs` — без него шелл не грузится).
 
 ## Что в системе и за что отвечает
 
