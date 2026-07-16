@@ -360,3 +360,43 @@ matugen-пайплайн ii (`~/src/dots-hyprland/dots/.config/matugen/config.to
   `~/.config/fuzzel/fuzzel_theme.ini`, `~/.config/gtk-3.0/gtk.css`,
   `~/.config/gtk-4.0/gtk.css`. Пересекается с ilyamiro-matugen → **обязателен
   контестируемый matugen (Task 9)**, иначе риги дерутся за эти файлы.
+
+## Прогресс 2026-07-16 (за машиной) — Tasks 9, 10 + разводка ГОТОВЫ, осталось sudo/relogin
+
+**Task 9 (matugen контест) — DONE + верифицирован живьём:**
+- CONTESTED += matugen; `~/.config/matugen` → симлинк на активный риг.
+- `profiles/ilyamiro/matugen/` полный миррор, `profiles/end4/matugen/` = ii-конфиг
+  (+добавлены discord/obsidian шаблоны), `profiles/caelestia/matugen/` пустой.
+- Проверка: `matugen image <обои>` через симлинк → EXIT 0, colors.conf+discord
+  пересозданы. Пайплайн ilyamiro цел.
+
+**Task 10 (apply_rig_colors end4) — DONE:**
+- Ветка end4 парсит `colors.json`: бордюры outline_variant/77+surface_container_low/33
+  (как его hyprland/colors.lua), fastfetch accent = primary (отдельный accent_hex).
+- Discord/Obsidian → discord-end4/obsidian-end4 (кэш ii-matugen).
+- Хук: systemd --user `end4-colors.path` на colors.json → `dotprofile colors`
+  (переживает переустановку ii; switchwall.sh НЕ патчим). Enabled+active.
+- Логика проверена на синтетике (rgba/accent/truecolor корректны).
+
+**РАЗВОДКА (найден пробел, закрыт):**
+- session.sh запускал `qs -c ii`, но НИКТО не клал ii-конфиг в ~/.config/quickshell/ii,
+  а не-контест каталоги (quickshell-ii, fontconfig, Kvantum, kde-material-you-colors)
+  end4-эксклюзивны. На relogin session.sh start НЕ зовётся (только хот-свитч).
+- Решение: `OPTIONAL_LINKS` в dotprofile ensure_links — разворачивает по наличию у
+  активного рига, снимает при уходе (самокоррекция, без протечки в др. риги).
+  Бежит и на relogin (--links-only), и на свитче. Проверено в песочнице.
+
+**МИНА №2 (deps) — найдена, обойдена:** `./setup install-deps` из dots-hyprland зовёт
+`remove_deprecated_dependencies()` = `sudo pacman -Rdd` по системным
+{quickshell,hyprpicker,hyprlock,hypridle,hyprland}-git + matugen-bin → СНЕСЛО БЫ
+caelestia+ilyamiro. + ставит quickshell-git (conflicts). ЗАМЕНА: `bin/install-end4-deps`
+— ставит depends 13 meta (кроме quickshell-git) через yay --needed --asdeps, без
+remove-шага, +venv (uv 3.12). 80 depends (~48 стоят). НИ ОДИН не тянет quickshell.
+
+### ОСТАЛОСЬ (только руки юзера, sudo/relogin):
+1. `~/dotfiles/bin/install-end4-deps`  ← ~32 новых пакета (KDE/шрифты/tesseract), sudo
+2. `sudo cp ~/dotfiles/sddm/hyprland-end4.desktop /usr/share/wayland-sessions/`
+   (Exec захардкожен на /home/shalyn42k — если HOME другой, прогнать через bootstrap sed)
+3. Relogin SDDM → 'Hyprland (end4)'. Проверить: шелл поднялся (март-qs), бинды §2,
+   смена обоев → цвета/fastfetch/Discord следуют. Потом 6 хот-свитчей.
+Предпосылки готовы: март-qs собран, shapes-сабмодуль в снапшоте, venv создаст скрипт.
