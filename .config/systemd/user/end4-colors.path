@@ -1,0 +1,12 @@
+[Unit]
+Description=Watch end4 (illogical-impulse) generated palette, reapply rig colours
+# colors.json пишет только ii-шелл при смене обоев (switchwall.sh → matugen),
+# поэтому юнит фактически срабатывает лишь в сессии end4. В caelestia/ilyamiro
+# файл не меняется — ложных срабатываний нет. Аналог matugen_reload.sh ilyamiro,
+# но переживает переустановку ii (switchwall.sh — часть ii-конфига, затирается).
+
+[Path]
+PathChanged=%h/.local/state/quickshell/user/generated/colors.json
+
+[Install]
+WantedBy=default.target
