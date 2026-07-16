@@ -6,6 +6,16 @@ DOTFILES="$HOME/dotfiles"
 PROFILES="$DOTFILES/profiles"
 ACTIVE="$PROFILES/active"
 CONTESTED=(hypr gtk-3.0 gtk-4.0 qt5ct qt6ct matugen)
+# OPTIONAL_LINKS — каталоги, которые есть НЕ у всех ригов (end4-эксклюзив: ii-шелл
+# и его Qt/шрифт-тема). Формат «источник-в-профиле:цель-в-.config». ensure_links
+# ставит симлинк, если у активного рига каталог есть, иначе снимает наш симлинк
+# (самокоррекция: relogin в ilyamiro после end4 не тащит его fontconfig/Kvantum).
+OPTIONAL_LINKS=(
+    "quickshell-ii:quickshell/ii"
+    "fontconfig:fontconfig"
+    "Kvantum:Kvantum"
+    "kde-material-you-colors:kde-material-you-colors"
+)
 
 usage() {
     echo "usage: dotprofile switch <name> [--links-only] | menu | status | update <name>" >&2
@@ -21,6 +31,23 @@ list_profiles() {
 ensure_links() {
     for d in "${CONTESTED[@]}"; do
         ln -sfn "$PROFILES/active/$d" "$HOME/.config/$d"
+    done
+    # Опциональные (end4-эксклюзив) — ставим/снимаем по наличию у активного рига.
+    local pair src dst target link
+    for pair in "${OPTIONAL_LINKS[@]}"; do
+        src="${pair%%:*}"; dst="${pair##*:}"
+        target="$PROFILES/active/$src"
+        link="$HOME/.config/$dst"
+        if [[ -d "$target" ]]; then
+            mkdir -p "$(dirname "$link")"
+            # чужой РЕАЛЬНЫЙ каталог не затираем — бэкапим один раз
+            [[ -e "$link" && ! -L "$link" ]] && mv "$link" "$link.pre-rig"
+            ln -sfn "$target" "$link"
+        else
+            # активный риг каталога не имеет — убрать наш симлинк, вернуть бэкап
+            [[ -L "$link" ]] && rm -f "$link"
+            [[ -e "$link.pre-rig" ]] && mv "$link.pre-rig" "$link"
+        fi
     done
 }
 
