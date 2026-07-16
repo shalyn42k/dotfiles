@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# install-end4-deps — БЕЗОПАСНАЯ установка зависимостей рига end4 (illogical-impulse)
+# в режиме СОСУЩЕСТВОВАНИЯ с caelestia + ilyamiro.
+#
+# Почему не `./setup install-deps` из dots-hyprland:
+#   1. Его remove_deprecated_dependencies() делает `sudo pacman -Rdd` по списку,
+#      включающему {quickshell,hyprpicker,hyprlock,hypridle,hyprland,...}-git и
+#      matugen-bin — это СНЕСЛО БЫ систему под caelestia+ilyamiro.
+#   2. Его metapkgs ставят illogical-impulse-quickshell-git (март-quickshell,
+#      conflicts системный). Мы вместо этого держим март-quickshell ЛОКАЛЬНО в
+#      ~/qs-test-prefix (см. bootstrap.sh 2b + session.sh), систему не трогаем.
+#
+# Этот скрипт: ставит ТОЛЬКО depends нужных meta-пакетов (кроме quickshell-git),
+# без remove-шага, + создаёт python-venv ii. Идемпотентен (yay --needed).
+# Файлы конфигов (3.files.sh) НЕ трогаем — они уже в снапшоте profiles/end4,
+# session.sh их разворачивает.
+set -euo pipefail
+
+REPO="${DOTS_HYPRLAND:-$HOME/src/dots-hyprland}"
+ARCH_DIR="$REPO/sdata/dist-arch"
+[[ -d "$ARCH_DIR" ]] || { echo "нет $ARCH_DIR — склонь: git clone --recurse-submodules https://github.com/end-4/dots-hyprland $REPO" >&2; exit 1; }
+command -v yay >/dev/null || { echo "нужен yay (AUR-хелпер)" >&2; exit 1; }
+
+# Нужные meta-пакеты — ВСЕ кроме quickshell-git (сосуществование).
+METAS=(audio backlight basic fonts-themes kde portal python screencapture
+       toolkit widgets hyprland microtex-git bibata-modern-classic-bin)
+
+echo "== Сбор depends (кроме illogical-impulse-quickshell-git) =="
+DEPS=()
+for m in "${METAS[@]}"; do
+    pkgbuild="$ARCH_DIR/illogical-impulse-$m/PKGBUILD"
+    [[ -f "$pkgbuild" ]] || { echo "  пропуск: нет $pkgbuild" >&2; continue; }
+    # source в сабшелле — depends многострочные
+    mapfile -t d < <( source "$pkgbuild" 2>/dev/null; printf '%s\n' "${depends[@]}" )
+    DEPS+=("${d[@]}")
+done
+# уникализировать, выкинуть пустые
+mapfile -t DEPS < <(printf '%s\n' "${DEPS[@]}" | grep -v '^$' | sort -u)
+echo "  всего уникальных: ${#DEPS[@]}"
+
+echo "== Установка (yay --needed --asdeps; уже стоящее пропускается) =="
+# --asdeps: ставятся как зависимости (осиротеют чисто, если удалить риг).
+# НЕТ --noconfirm намеренно: KDE-пакеты тяжёлые, дай глазами проверить.
+yay -S --needed --asdeps "${DEPS[@]}"
+
+echo "== Python-venv ii (uv, python 3.12) =="
+VENV="${XDG_STATE_HOME:-$HOME/.local/state}/quickshell/.venv"
+if [[ -f "$VENV/bin/activate" ]]; then
+    echo "  venv уже есть: $VENV"
+else
+    mkdir -p "$VENV"
+    UV_NO_MODIFY_PATH=1 uv venv --prompt .venv "$VENV" -p 3.12
+fi
+# shellcheck disable=SC1091
+source "$VENV/bin/activate"
+uv pip install -r "$REPO/sdata/uv/requirements.txt"
+deactivate
+
+cat <<'DONE'
+
+== Готово ==
+Поставлены depends ii (кроме quickshell-git) + venv. Системный quickshell/matugen/
+hypr НЕ тронуты — caelestia+ilyamiro целы.
+Дальше:
+  1. Проверь март-quickshell: ls ~/qs-test-prefix/usr/bin/quickshell (нет — bootstrap.sh 2b)
+  2. SDDM-сессия end4 стоит: ls /usr/share/wayland-sessions/hyprland-end4.desktop
+     (нет — ./bootstrap.sh поставит, или dotprofile-раздел SDDM)
+  3. Relogin в 'Hyprland (end4)' через SDDM.
+DONE

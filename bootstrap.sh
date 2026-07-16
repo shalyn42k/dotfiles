@@ -91,10 +91,13 @@ else
           || echo ">>> сборка март-quickshell не удалась — см. NOTES-install.md"
     fi
 fi
-echo ">>> ii runtime-пакеты (illogical-impulse-*) ставятся ЕГО setup'ом:"
+echo ">>> ii runtime-депы — БЕЗОПАСНЫМ скриптом (НЕ ./setup install-deps!):"
 echo ">>>   git clone --recurse-submodules https://github.com/end-4/dots-hyprland ~/src/dots-hyprland"
-echo ">>>   cd ~/src/dots-hyprland && ./setup install-deps   # НО исключи illogical-impulse-quickshell-git"
+echo ">>>   $DOTFILES/bin/install-end4-deps"
 echo ">>>   (--recurse-submodules ОБЯЗАТЕЛЕН: shapes=rounded-polygon-qmljs, иначе шелл не грузится)"
+echo ">>>   ВНИМАНИЕ: ./setup install-deps НЕЛЬЗЯ — его remove_deprecated делает"
+echo ">>>   pacman -Rdd на системный quickshell/matugen/hypr (снесёт caelestia+ilyamiro)."
+echo ">>>   install-end4-deps ставит depend'ы meta-пакетов кроме quickshell-git, без сноса."
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 3/7 Симлинки профилей =="
