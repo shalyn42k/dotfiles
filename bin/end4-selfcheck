@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# end4-selfcheck — запусти ВНУТРИ end4-сессии. Проверяет что риг развернулся верно.
+set -u
+ok(){ printf '  \033[32m✓\033[0m %s\n' "$1"; }
+no(){ printf '  \033[31m✗\033[0m %s\n' "$1"; }
+
+echo "== end4 self-check =="
+
+# 1. Провайдер lua + активный риг
+prov="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
+active="$(readlink "$HOME/dotfiles/profiles/active")"
+[[ "$prov" == lua ]] && ok "provider=lua" || no "provider=$prov (ждём lua)"
+[[ "$active" == end4 ]] && ok "active-риг=end4" || no "active-риг=$active (НЕ end4 — ты не в end4-сессии!)"
+
+# 2. Раскладка (язык-фикс)
+lay="$(hyprctl getoption input:kb_layout 2>/dev/null | awk -F': ' '/str/{print $2}' | tr -d '"')"
+[[ "$lay" == *ru* && "$lay" == *pl* ]] && ok "kb_layout=$lay (SUPER+SPACE переключит)" || no "kb_layout=$lay (ждём pl, ru)"
+
+# 3. Наши бинды загрузились (custom.keybinds)
+binds="$(hyprctl binds 2>/dev/null)"
+n="$(grep -c '^bind' <<<"$binds")"
+ok "всего биндов: $n"
+grep -q 'dotprofile menu' <<<"$binds" && ok "SUPER+SHIFT+D → rig-switch есть" || no "rig-switch бинд НЕ найден (custom.keybinds не загрузился?)"
+grep -qi 'app2unit -- thunar' <<<"$binds" && ok "наш SUPER+E (thunar) есть" || no "наши §2-бинды отсутствуют"
+
+# 4. ii-шелл на март-quickshell
+if pgrep -af 'qs-test-prefix.*-c ii' >/dev/null; then ok "ii-шелл крутится (март-quickshell)"; else no "ii-шелл НЕ запущен"; fi
+
+# 5. ii-конфиг развёрнут
+[[ -L "$HOME/.config/quickshell/ii" ]] && ok "quickshell/ii симлинк на месте" || no "quickshell/ii НЕ развёрнут"
+
+echo "== конец =="
