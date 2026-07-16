@@ -99,7 +99,10 @@ echo ">>>   (--recurse-submodules ОБЯЗАТЕЛЕН: shapes=rounded-polygon-q
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 3/7 Симлинки профилей =="
 [[ -L "$DOTFILES/profiles/active" ]] || ln -sfn caelestia "$DOTFILES/profiles/active"
-for d in hypr gtk-3.0 gtk-4.0 qt5ct qt6ct; do
+# CONTESTED-каталоги (см. bin/dotprofile): свой у каждого рига, симлинк на active.
+# matugen тоже контестируемый — ilyamiro и end4 держат разные config.toml,
+# пишущие в общие пути (gtk.css, fuzzel, colors.lua); caelestia matugen не юзает.
+for d in hypr gtk-3.0 gtk-4.0 qt5ct qt6ct matugen; do
     if [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]]; then
         echo "бэкап живого ~/.config/$d -> $d.pre-bootstrap"
         mv "$HOME/.config/$d" "$HOME/.config/$d.pre-bootstrap"
@@ -119,24 +122,9 @@ echo "== 4/7 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
 xdg-user-dirs-update 2>/dev/null || true
 
-# matugen-шаблоны тем приложений (риг ilyamiro)
-if [[ -d "$HOME/.config/matugen/templates" ]]; then
-    cp "$DOTFILES/profiles/ilyamiro/matugen/"*.template "$HOME/.config/matugen/templates/"
-    if ! grep -q 'templates.discord' "$HOME/.config/matugen/config.toml" 2>/dev/null; then
-        cat >> "$HOME/.config/matugen/config.toml" <<'MEOF'
-
-# тема Discord (Vencord) для рига ilyamiro — dotprofile копирует в themes/rig.theme.css
-[templates.discord]
-input_path = "~/.config/matugen/templates/discord.css.template"
-output_path = "~/.cache/matugen/discord-ilyamiro.theme.css"
-
-# тема Obsidian для рига ilyamiro — dotprofile копирует в vault/.obsidian/snippets/
-[templates.obsidian]
-input_path = "~/.config/matugen/templates/obsidian.css.template"
-output_path = "~/.cache/matugen/obsidian-ilyamiro.css"
-MEOF
-    fi
-fi
+# matugen теперь контестируемый (симлинк на profiles/active/matugen выше) —
+# config.toml + templates/ живут в профиле целиком, копировать в живой каталог
+# не нужно. Discord/Obsidian-шаблоны и их [templates.*] уже в снапшоте ilyamiro.
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 5/7 Скрипты и systemd-юниты =="

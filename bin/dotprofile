@@ -5,7 +5,7 @@ set -euo pipefail
 DOTFILES="$HOME/dotfiles"
 PROFILES="$DOTFILES/profiles"
 ACTIVE="$PROFILES/active"
-CONTESTED=(hypr gtk-3.0 gtk-4.0 qt5ct qt6ct)
+CONTESTED=(hypr gtk-3.0 gtk-4.0 qt5ct qt6ct matugen)
 
 usage() {
     echo "usage: dotprofile switch <name> [--links-only] | menu | status | update <name>" >&2
