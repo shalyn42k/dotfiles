@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
-# Запуск Hyprland с выбранным риг-профилем (аргумент 1 = имя профиля).
-"$HOME/dotfiles/bin/dotprofile" switch "${1:-caelestia}" --links-only
+# Запуск Hyprland с выбранным риг-профилем.
+#   start-hyprland-profile <rig>   — явный риг (SDDM hyprland-ilyamiro)
+#   start-hyprland-profile --lua   — последний lua-риг из profiles/.last-lua
+#                                    (SDDM hyprland-lua), дефолт caelestia
+DOTFILES="$HOME/dotfiles"
+name="${1:-}"
+
+if [[ -z "$name" || "$name" == "--lua" ]]; then
+    name="$(cat "$DOTFILES/profiles/.last-lua" 2>/dev/null || true)"
+    # валидируем: реально существующий lua-риг, иначе caelestia
+    if [[ -z "$name" || ! -f "$DOTFILES/profiles/$name/hypr/hyprland.lua" ]]; then
+        name=caelestia
+    fi
+fi
+
+"$DOTFILES/bin/dotprofile" switch "$name" --links-only
 exec /usr/bin/start-hyprland
