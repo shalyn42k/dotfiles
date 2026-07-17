@@ -14,6 +14,9 @@ QS_II="$HOME/qs-test-prefix/usr/bin/quickshell"
 
 case "${1:-}" in
     start)
+        # Хот-свитч В end4: custom/env.lua (PATH на март-quickshell) НЕ отработал
+        # (сессия стартовала не в end4). Ставим PATH для ii-шелла и его вотчеров.
+        export PATH="$HOME/qs-test-prefix/usr/bin:$PATH"
         if [[ -x "$QS_II" ]]; then
             "$QS_II" -c ii &
         else
