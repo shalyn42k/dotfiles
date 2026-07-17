@@ -163,6 +163,39 @@ hypr_provider() {
     hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}'
 }
 
+# Движок конфига рига: lua если есть hyprland.lua, иначе hyprlang.
+rig_engine() {
+    [[ -f "$PROFILES/$1/hypr/hyprland.lua" ]] && echo lua || echo hyprlang
+}
+
+# Имя SDDM-сессии (.desktop без расширения) для рига. Все lua-риги делят
+# одну сессию hyprland-lua; ilyamiro — своя.
+session_desktop() {
+    [[ "$(rig_engine "$1")" == lua ]] && echo hyprland-lua || echo "hyprland-$1"
+}
+
+# Запомнить последний lua-риг — hyprland-lua сессия стартует в него (Task 5).
+write_last_lua() {
+    [[ "$(rig_engine "$1")" == lua ]] && echo "$1" > "$PROFILES/.last-lua" || true
+}
+
+# Кросс-движковый переход невозможен в живой сессии (Hyprland фиксирует
+# движок при старте). Готовим релогин: active уже переключён вызывающим,
+# ставим подсветку целевой сессии в SDDM и выходим. exec — не возвращаемся.
+trigger_relogin() {
+    local name="$1"
+    write_last_lua "$name"
+    printf '[Desktop]\nSession=%s\n' "$(session_desktop "$name")" > "$HOME/.dmrc"
+    echo "relogin -> $name (сессия $(session_desktop "$name")); выхожу в SDDM..."
+    systemctl --user stop graphical-session.target 2>/dev/null || true
+    sleep 0.3
+    if [[ "$(hypr_provider)" == lua ]]; then
+        hyprctl dispatch 'hl.dsp.exit()'
+    else
+        hyprctl dispatch exit
+    fi
+}
+
 # Анимации, как и рамки, живут в конфиг-движке — применяем набор активного
 # рига runtime-командами из заранее переведённых файлов профиля.
 apply_rig_animations() {
@@ -189,42 +222,33 @@ cmd_switch() {
     ln -sfn "$name" "$ACTIVE"
     ensure_links
 
-    if [[ "$links_only" != "--links-only" ]]; then
-        if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
-            "$PROFILES/$old/session.sh" stop || true
-        fi
-        # Провайдер конфига Hyprland (lua/hyprlang) выбирается при старте
-        # инстанса и на лету не меняется: reload чужого движка = ошибка.
-        if command -v hyprctl >/dev/null; then
-            local running target
-            running="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
-            [[ -f "$PROFILES/$name/hypr/hyprland.lua" ]] && target=lua || target=hyprlang
-            if [[ -z "$running" || "$running" == "$target" ]]; then
-                # Родной движок: вернуть autoreload и перечитать конфиг
-                if [[ "$running" == lua ]]; then
-                    hyprctl eval 'hl.config({ misc = { disable_autoreload = false } })' >/dev/null || true
-                else
-                    hyprctl keyword misc:disable_autoreload false >/dev/null || true
-                fi
-                hyprctl reload || true
-            else
-                # Кросс-движок: Hyprland следит за файлами, загруженными при
-                # старте — правка конфигов неактивного рига вызвала бы reload
-                # и ошибку "cannot open hyprland.lua". Глушим autoreload.
-                if [[ "$running" == lua ]]; then
-                    hyprctl eval 'hl.config({ misc = { disable_autoreload = true } })' >/dev/null || true
-                else
-                    hyprctl keyword misc:disable_autoreload true >/dev/null || true
-                fi
-                echo "note: конфиг-движок '$target' != запущенного '$running' — бинды/настройки WM применятся после relogin в сессию '$name'"
-            fi
-        fi
-        [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
-        if command -v hyprctl >/dev/null; then
-            apply_rig_colors "$name"
-            apply_rig_animations "$name"
+    if [[ "$links_only" == "--links-only" ]]; then
+        echo "active: $name"
+        return 0
+    fi
+
+    # Кросс-движковый переход — только через релогин (не возвращается).
+    if command -v hyprctl >/dev/null; then
+        local target running
+        target="$(rig_engine "$name")"
+        running="$(hypr_provider)"
+        if [[ -n "$running" && "$running" != "$target" ]]; then
+            trigger_relogin "$name"
+            return 0
         fi
     fi
+
+    # Одномувижковый горячий свитч.
+    if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
+        "$PROFILES/$old/session.sh" stop || true
+    fi
+    command -v hyprctl >/dev/null && hyprctl reload || true
+    [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
+    if command -v hyprctl >/dev/null; then
+        apply_rig_colors "$name"
+        apply_rig_animations "$name"
+    fi
+    write_last_lua "$name"
     echo "active: $name"
 }
 
