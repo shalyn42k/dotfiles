@@ -52,8 +52,8 @@ ensure_links() {
 }
 
 # Цвет рамок окон задаётся конфиг-движком при старте сессии; при горячем
-# свитче применяем цвета активного рига runtime-командой (lua: eval hl.config,
-# hyprlang: keyword). Источники: colors.conf (matugen ilyamiro) или
+# свитче применяем цвета активного рига runtime-командой (lua: eval hl.config).
+# Источники: colors.conf (matugen ilyamiro) или
 # scheme/current.lua (caelestia: primary/onSurfaceVariant).
 apply_rig_colors() {
     local name="$1" active="" inactive="" accent_hex=""
@@ -172,7 +172,9 @@ write_last_lua() {
 
 # Кросс-движковый переход невозможен в живой сессии (Hyprland фиксирует
 # движок при старте). Готовим релогин: active уже переключён вызывающим,
-# ставим подсветку целевой сессии в SDDM и выходим. exec — не возвращаемся.
+# ставим подсветку целевой сессии в SDDM и просим Hyprland выйти. Функция
+# возвращается как обычно — падения в горячий свитч не будет, т.к. вызывающий
+# cmd_switch делает return 0 сразу после trigger_relogin.
 trigger_relogin() {
     local name="$1"
     write_last_lua "$name"
