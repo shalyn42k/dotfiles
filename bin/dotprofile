@@ -49,6 +49,10 @@ ensure_links() {
             [[ -e "$link.pre-rig" ]] && mv "$link.pre-rig" "$link"
         fi
     done
+    # Последняя пара может кончиться ложным [[ -e ]] (риг без опц-каталога,
+    # напр. caelestia без kde-material-you-colors) — тогда функция вернула бы 1
+    # и под `set -e` убила cmd_switch до stop/reload/start. Явный успех.
+    return 0
 }
 
 # Цвет рамок окон задаётся конфиг-движком при старте сессии; при горячем
