@@ -30,6 +30,9 @@ list_profiles() {
 
 ensure_links() {
     for d in "${CONTESTED[@]}"; do
+        # реальный каталог (не наш симлинк) — снести, иначе ln положит симлинк
+        # ВНУТРЬ (напр. ~/.config/matugen/matugen). matugen/end4 сюда попадали.
+        [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]] && rm -rf "$HOME/.config/${d:?}"
         ln -sfn "$PROFILES/active/$d" "$HOME/.config/$d"
     done
     # Опциональные (end4-эксклюзив) — ставим/снимаем по наличию у активного рига.
