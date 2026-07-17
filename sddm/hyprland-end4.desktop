@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Hyprland (end4)
-Comment=Hyprland with end-4/illogical-impulse rig profile
-Exec=/home/shalyn42k/dotfiles/bin/start-hyprland-profile end4
-Type=Application

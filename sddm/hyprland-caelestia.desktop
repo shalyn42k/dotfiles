@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Hyprland (caelestia)
-Comment=Hyprland with caelestia rig profile
-Exec=/home/shalyn42k/dotfiles/bin/start-hyprland-profile caelestia
-Type=Application
