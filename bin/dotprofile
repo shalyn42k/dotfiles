@@ -81,22 +81,13 @@ apply_rig_colors() {
     fi
     [[ -n "$active" && -n "$inactive" ]] || return 0
 
-    if [[ "$(hypr_provider)" == lua ]]; then
-        hyprctl eval "hl.config({
-            general = { col = { active_border = '$active', inactive_border = '$inactive' } },
-            group = { col = {
-                border_active = '$active', border_inactive = '$inactive',
-                border_locked_active = '$active', border_locked_inactive = '$inactive',
-            } },
-        })" >/dev/null || true
-    else
-        hyprctl keyword general:col.active_border "$active" >/dev/null || true
-        hyprctl keyword general:col.inactive_border "$inactive" >/dev/null || true
-        hyprctl keyword group:col.border_active "$active" >/dev/null || true
-        hyprctl keyword group:col.border_inactive "$inactive" >/dev/null || true
-        hyprctl keyword group:col.border_locked_active "$active" >/dev/null || true
-        hyprctl keyword group:col.border_locked_inactive "$inactive" >/dev/null || true
-    fi
+    hyprctl eval "hl.config({
+        general = { col = { active_border = '$active', inactive_border = '$inactive' } },
+        group = { col = {
+            border_active = '$active', border_inactive = '$inactive',
+            border_locked_active = '$active', border_locked_inactive = '$inactive',
+        } },
+    })" >/dev/null || true
 
     # fastfetch: акцент рига в конфиг из шаблона (truecolor 38;2;R;G;B)
     local tmpl="$DOTFILES/.config/fastfetch/config.jsonc.template"
@@ -196,21 +187,12 @@ trigger_relogin() {
     fi
 }
 
-# Анимации, как и рамки, живут в конфиг-движке — применяем набор активного
-# рига runtime-командами из заранее переведённых файлов профиля.
+# Анимации живут в конфиг-движке — применяем набор активного рига runtime.
+# Свитч теперь только lua↔lua, поэтому единственная ветка — lua.
 apply_rig_animations() {
     local name="$1"
-    if [[ "$(hypr_provider)" == lua ]]; then
-        local chunk="$PROFILES/$name/animations-runtime.lua"
-        [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
-    else
-        local kw="$PROFILES/$name/animations-runtime.keywords" k v
-        [[ -f "$kw" ]] || return 0
-        while read -r k v; do
-            [[ -z "$k" || "$k" == \#* ]] && continue
-            hyprctl keyword "$k" "$v" >/dev/null || true
-        done < "$kw"
-    fi
+    local chunk="$PROFILES/$name/animations-runtime.lua"
+    [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
 }
 
 cmd_switch() {
