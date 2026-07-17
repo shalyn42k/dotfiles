@@ -230,7 +230,6 @@ cmd_switch() {
     if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
         "$PROFILES/$old/session.sh" stop || true
     fi
-    command -v hyprctl >/dev/null && hyprctl reload || true
     [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
     if command -v hyprctl >/dev/null; then
         apply_rig_colors "$name"
