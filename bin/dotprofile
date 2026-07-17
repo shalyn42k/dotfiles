@@ -201,6 +201,16 @@ apply_rig_animations() {
     [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
 }
 
+# Window/workspace-правила рига — применяем набор целевого рига в рантайме
+# (mirror apply_rig_animations). Целевые добавляются последними → выигрывают
+# конфликтные (opacity/blur общих классов). Старые правила рига лингерят, но
+# целят классы уже закрытого чужого шелла. Идеально чисто — на релогине.
+apply_rig_rules() {
+    local name="$1"
+    local chunk="$PROFILES/$name/rules-runtime.lua"
+    [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
+}
+
 cmd_switch() {
     local name="${1:-}"; [[ -n "$name" ]] || usage
     local links_only="${2:-}"
@@ -234,6 +244,7 @@ cmd_switch() {
     if command -v hyprctl >/dev/null; then
         apply_rig_colors "$name"
         apply_rig_animations "$name"
+        apply_rig_rules "$name"
     fi
     write_last_lua "$name"
     echo "active: $name"
