@@ -153,6 +153,8 @@ for f in "$DOTFILES"/sddm/hyprland-*.desktop; do
     sed "s|/home/shalyn42k|$HOME|g" "$f" > "$tmpd/$(basename "$f")"
 done
 if sudo -n true 2>/dev/null || sudo -v; then
+    sudo rm -f /usr/share/wayland-sessions/hyprland-caelestia.desktop \
+               /usr/share/wayland-sessions/hyprland-end4.desktop
     sudo cp "$tmpd"/hyprland-*.desktop /usr/share/wayland-sessions/
     sudo systemctl enable sddm 2>/dev/null || true
 else
