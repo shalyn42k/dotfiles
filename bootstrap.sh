@@ -120,6 +120,11 @@ for d in caelestia fish foot fastfetch; do
     ln -sfn "$DOTFILES/.config/$d" "$HOME/.config/$d"
 done
 
+# rigswitch — overlay-свитчер ригов, вложен в ~/.config/quickshell рядом с
+# конфигами шеллов ригов, поэтому не в списке выше.
+mkdir -p "$HOME/.config/quickshell"
+ln -sfn "$DOTFILES/.config/quickshell/rigswitch" "$HOME/.config/quickshell/rigswitch"
+
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 4/7 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
