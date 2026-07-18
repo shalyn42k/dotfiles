@@ -254,6 +254,12 @@ cmd_switch() {
 }
 
 cmd_menu() {
+    # Overlay-пикер (rigswitch). /usr/bin/qs абсолютно: bare qs под end4
+    # ловит март-quickshell из PATH (см. eac4927).
+    if [[ -x /usr/bin/qs && -d "$HOME/.config/quickshell/rigswitch" ]]; then
+        exec /usr/bin/qs -c rigswitch
+    fi
+    # ── fallback: старый fuzzel-путь ──
     local cur choice
     cur="$(current || true)"
     choice="$(list_profiles | sed "s/^${cur}\$/& (active)/" \
