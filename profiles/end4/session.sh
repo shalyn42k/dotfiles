@@ -26,8 +26,13 @@ case "${1:-}" in
         "$HOME/.local/bin/kbd-theme-sync" &
         ;;
     stop)
-        # матч по локальному бинарю — НЕ трогаем системный qs других ригов
+        # Две формы cmdline одного шелла: "$QS_II -c ii" (session.sh start,
+        # полный путь) и "qs -c ii" (exec-once из hyprland/execs.lua на логине —
+        # bare, PATH-резолв). Убиваем обе, иначе логин-инстанс переживает свитч
+        # и висит зомби-баром над новым ригом. Конфиги других ригов (-c caelestia,
+        # -c rigswitch) не матчатся.
         pkill -f "$QS_II -c ii" 2>/dev/null || true
+        pkill -f 'qs -c ii' 2>/dev/null || true
         ;;
     *) echo "usage: session.sh start|stop" >&2; exit 1 ;;
 esac
