@@ -255,8 +255,13 @@ cmd_switch() {
 
 cmd_menu() {
     # Overlay-пикер (rigswitch). /usr/bin/qs абсолютно: bare qs под end4
-    # ловит март-quickshell из PATH (см. eac4927).
+    # ловит март-quickshell из PATH (см. eac4927). Toggle: повторное нажатие
+    # бинда закрывает уже открытый overlay вместо второго инстанса.
     if [[ -x /usr/bin/qs && -d "$HOME/.config/quickshell/rigswitch" ]]; then
+        if pgrep -f '/usr/bin/qs -c rigswitch' >/dev/null; then
+            pkill -f '/usr/bin/qs -c rigswitch'
+            exit 0
+        fi
         exec /usr/bin/qs -c rigswitch
     fi
     # ── fallback: старый fuzzel-путь ──
