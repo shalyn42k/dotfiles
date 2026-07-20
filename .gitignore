@@ -5,6 +5,7 @@ __pycache__
 .mypy_cache
 .superpowers/
 profiles/active
+profiles/.last-lua
 # секреты его виджетов (API-ключи) — живут только локально
 profiles/*/hypr/scripts/quickshell/calendar/.env
 # генерится dotprofile colors из config.jsonc.template

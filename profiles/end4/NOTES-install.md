@@ -221,7 +221,7 @@ WARN: quickshell.hyprland.ipc: Got openwindow ...  ← Hyprland-IPC работа
 
 - `session.sh` ✓: стартует локальный март-quickshell `-c ii`, стоп матчит по
   локальному бинарю (не трогает системный qs). Путь `QS_II` — единый ISTOCHNIK.
-- `sddm/hyprland-end4.desktop` ✓: Exec = `start-hyprland-profile end4`.
+- `sddm/hyprland-lua.desktop` ✓: Exec = `start-hyprland-profile end4`.
 - **post-update.sh ПРОПУЩЕН** (осознанно, отход от плана): `hyprland.lua`
   авто-грузит `custom/*.lua`, ii-updater перезапишет hyprland.lua тем же
   авто-сорсом → custom переживает апдейты нативно (как caelestia, у него тоже
@@ -395,8 +395,8 @@ remove-шага, +venv (uv 3.12). 80 depends (~48 стоят). НИ ОДИН н�
 
 ### ОСТАЛОСЬ (только руки юзера, sudo/relogin):
 1. `~/dotfiles/bin/install-end4-deps`  ← ~32 новых пакета (KDE/шрифты/tesseract), sudo
-2. `sudo cp ~/dotfiles/sddm/hyprland-end4.desktop /usr/share/wayland-sessions/`
+2. `sudo cp ~/dotfiles/sddm/hyprland-lua.desktop /usr/share/wayland-sessions/`
    (Exec захардкожен на /home/shalyn42k — если HOME другой, прогнать через bootstrap sed)
-3. Relogin SDDM → 'Hyprland (end4)'. Проверить: шелл поднялся (март-qs), бинды §2,
+3. Relogin SDDM → 'Hyprland (lua rig)'. Проверить: шелл поднялся (март-qs), бинды §2,
    смена обоев → цвета/fastfetch/Discord следуют. Потом 6 хот-свитчей.
 Предпосылки готовы: март-qs собран, shapes-сабмодуль в снапшоте, venv создаст скрипт.
