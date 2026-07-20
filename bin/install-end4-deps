@@ -65,7 +65,7 @@ cat <<'DONE'
 hypr НЕ тронуты — caelestia+ilyamiro целы.
 Дальше:
   1. Проверь март-quickshell: ls ~/qs-test-prefix/usr/bin/quickshell (нет — bootstrap.sh 2b)
-  2. SDDM-сессия end4 стоит: ls /usr/share/wayland-sessions/hyprland-end4.desktop
+  2. SDDM-сессия lua стоит: ls /usr/share/wayland-sessions/hyprland-lua.desktop
      (нет — ./bootstrap.sh поставит, или dotprofile-раздел SDDM)
-  3. Relogin в 'Hyprland (end4)' через SDDM.
+  3. Relogin в 'Hyprland (lua rig)' через SDDM.
 DONE

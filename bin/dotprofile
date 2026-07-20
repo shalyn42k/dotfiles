@@ -30,6 +30,9 @@ list_profiles() {
 
 ensure_links() {
     for d in "${CONTESTED[@]}"; do
+        # реальный каталог (не наш симлинк) — снести, иначе ln положит симлинк
+        # ВНУТРЬ (напр. ~/.config/matugen/matugen). matugen/end4 сюда попадали.
+        [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]] && rm -rf "$HOME/.config/${d:?}"
         ln -sfn "$PROFILES/active/$d" "$HOME/.config/$d"
     done
     # Опциональные (end4-эксклюзив) — ставим/снимаем по наличию у активного рига.
@@ -49,11 +52,15 @@ ensure_links() {
             [[ -e "$link.pre-rig" ]] && mv "$link.pre-rig" "$link"
         fi
     done
+    # Последняя пара может кончиться ложным [[ -e ]] (риг без опц-каталога,
+    # напр. caelestia без kde-material-you-colors) — тогда функция вернула бы 1
+    # и под `set -e` убила cmd_switch до stop/reload/start. Явный успех.
+    return 0
 }
 
 # Цвет рамок окон задаётся конфиг-движком при старте сессии; при горячем
-# свитче применяем цвета активного рига runtime-командой (lua: eval hl.config,
-# hyprlang: keyword). Источники: colors.conf (matugen ilyamiro) или
+# свитче применяем цвета активного рига runtime-командой (lua: eval hl.config).
+# Источники: colors.conf (matugen ilyamiro) или
 # scheme/current.lua (caelestia: primary/onSurfaceVariant).
 apply_rig_colors() {
     local name="$1" active="" inactive="" accent_hex=""
@@ -81,22 +88,13 @@ apply_rig_colors() {
     fi
     [[ -n "$active" && -n "$inactive" ]] || return 0
 
-    if [[ "$(hypr_provider)" == lua ]]; then
-        hyprctl eval "hl.config({
-            general = { col = { active_border = '$active', inactive_border = '$inactive' } },
-            group = { col = {
-                border_active = '$active', border_inactive = '$inactive',
-                border_locked_active = '$active', border_locked_inactive = '$inactive',
-            } },
-        })" >/dev/null || true
-    else
-        hyprctl keyword general:col.active_border "$active" >/dev/null || true
-        hyprctl keyword general:col.inactive_border "$inactive" >/dev/null || true
-        hyprctl keyword group:col.border_active "$active" >/dev/null || true
-        hyprctl keyword group:col.border_inactive "$inactive" >/dev/null || true
-        hyprctl keyword group:col.border_locked_active "$active" >/dev/null || true
-        hyprctl keyword group:col.border_locked_inactive "$inactive" >/dev/null || true
-    fi
+    hyprctl eval "hl.config({
+        general = { col = { active_border = '$active', inactive_border = '$inactive' } },
+        group = { col = {
+            border_active = '$active', border_inactive = '$inactive',
+            border_locked_active = '$active', border_locked_inactive = '$inactive',
+        } },
+    })" >/dev/null || true
 
     # fastfetch: акцент рига в конфиг из шаблона (truecolor 38;2;R;G;B)
     local tmpl="$DOTFILES/.config/fastfetch/config.jsonc.template"
@@ -163,21 +161,57 @@ hypr_provider() {
     hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}'
 }
 
-# Анимации, как и рамки, живут в конфиг-движке — применяем набор активного
-# рига runtime-командами из заранее переведённых файлов профиля.
+# Движок конфига рига: lua если есть hyprland.lua, иначе hyprlang.
+rig_engine() {
+    [[ -f "$PROFILES/$1/hypr/hyprland.lua" ]] && echo lua || echo hyprlang
+}
+
+# Имя SDDM-сессии (.desktop без расширения) для рига. Все lua-риги делят
+# одну сессию hyprland-lua; ilyamiro — своя.
+session_desktop() {
+    [[ "$(rig_engine "$1")" == lua ]] && echo hyprland-lua || echo "hyprland-$1"
+}
+
+# Запомнить последний lua-риг — hyprland-lua сессия стартует в него (Task 5).
+write_last_lua() {
+    [[ "$(rig_engine "$1")" == lua ]] && echo "$1" > "$PROFILES/.last-lua" || true
+}
+
+# Кросс-движковый переход невозможен в живой сессии (Hyprland фиксирует
+# движок при старте). Готовим релогин: active уже переключён вызывающим,
+# ставим подсветку целевой сессии в SDDM и просим Hyprland выйти. Функция
+# возвращается как обычно — падения в горячий свитч не будет, т.к. вызывающий
+# cmd_switch делает return 0 сразу после trigger_relogin.
+trigger_relogin() {
+    local name="$1"
+    write_last_lua "$name"
+    printf '[Desktop]\nSession=%s\n' "$(session_desktop "$name")" > "$HOME/.dmrc"
+    echo "relogin -> $name (сессия $(session_desktop "$name")); выхожу в SDDM..."
+    systemctl --user stop graphical-session.target 2>/dev/null || true
+    sleep 0.3
+    if [[ "$(hypr_provider)" == lua ]]; then
+        hyprctl dispatch 'hl.dsp.exit()'
+    else
+        hyprctl dispatch exit
+    fi
+}
+
+# Анимации живут в конфиг-движке — применяем набор активного рига runtime.
+# Свитч теперь только lua↔lua, поэтому единственная ветка — lua.
 apply_rig_animations() {
     local name="$1"
-    if [[ "$(hypr_provider)" == lua ]]; then
-        local chunk="$PROFILES/$name/animations-runtime.lua"
-        [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
-    else
-        local kw="$PROFILES/$name/animations-runtime.keywords" k v
-        [[ -f "$kw" ]] || return 0
-        while read -r k v; do
-            [[ -z "$k" || "$k" == \#* ]] && continue
-            hyprctl keyword "$k" "$v" >/dev/null || true
-        done < "$kw"
-    fi
+    local chunk="$PROFILES/$name/animations-runtime.lua"
+    [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
+}
+
+# Window/workspace-правила рига — применяем набор целевого рига в рантайме
+# (mirror apply_rig_animations). Целевые добавляются последними → выигрывают
+# конфликтные (opacity/blur общих классов). Старые правила рига лингерят, но
+# целят классы уже закрытого чужого шелла. Идеально чисто — на релогине.
+apply_rig_rules() {
+    local name="$1"
+    local chunk="$PROFILES/$name/rules-runtime.lua"
+    [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
 }
 
 cmd_switch() {
@@ -189,46 +223,48 @@ cmd_switch() {
     ln -sfn "$name" "$ACTIVE"
     ensure_links
 
-    if [[ "$links_only" != "--links-only" ]]; then
-        if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
-            "$PROFILES/$old/session.sh" stop || true
-        fi
-        # Провайдер конфига Hyprland (lua/hyprlang) выбирается при старте
-        # инстанса и на лету не меняется: reload чужого движка = ошибка.
-        if command -v hyprctl >/dev/null; then
-            local running target
-            running="$(hyprctl systeminfo 2>/dev/null | awk -F': ' '/configProvider/{print $2}')"
-            [[ -f "$PROFILES/$name/hypr/hyprland.lua" ]] && target=lua || target=hyprlang
-            if [[ -z "$running" || "$running" == "$target" ]]; then
-                # Родной движок: вернуть autoreload и перечитать конфиг
-                if [[ "$running" == lua ]]; then
-                    hyprctl eval 'hl.config({ misc = { disable_autoreload = false } })' >/dev/null || true
-                else
-                    hyprctl keyword misc:disable_autoreload false >/dev/null || true
-                fi
-                hyprctl reload || true
-            else
-                # Кросс-движок: Hyprland следит за файлами, загруженными при
-                # старте — правка конфигов неактивного рига вызвала бы reload
-                # и ошибку "cannot open hyprland.lua". Глушим autoreload.
-                if [[ "$running" == lua ]]; then
-                    hyprctl eval 'hl.config({ misc = { disable_autoreload = true } })' >/dev/null || true
-                else
-                    hyprctl keyword misc:disable_autoreload true >/dev/null || true
-                fi
-                echo "note: конфиг-движок '$target' != запущенного '$running' — бинды/настройки WM применятся после relogin в сессию '$name'"
-            fi
-        fi
-        [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
-        if command -v hyprctl >/dev/null; then
-            apply_rig_colors "$name"
-            apply_rig_animations "$name"
+    if [[ "$links_only" == "--links-only" ]]; then
+        echo "active: $name"
+        return 0
+    fi
+
+    # Кросс-движковый переход — только через релогин (не возвращается).
+    if command -v hyprctl >/dev/null; then
+        local target running
+        target="$(rig_engine "$name")"
+        running="$(hypr_provider)"
+        if [[ -n "$running" && "$running" != "$target" ]]; then
+            trigger_relogin "$name"
+            return 0
         fi
     fi
+
+    # Одномувижковый горячий свитч.
+    if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
+        "$PROFILES/$old/session.sh" stop || true
+    fi
+    [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
+    if command -v hyprctl >/dev/null; then
+        apply_rig_colors "$name"
+        apply_rig_animations "$name"
+        apply_rig_rules "$name"
+    fi
+    write_last_lua "$name"
     echo "active: $name"
 }
 
 cmd_menu() {
+    # Overlay-пикер (rigswitch). /usr/bin/qs абсолютно: bare qs под end4
+    # ловит март-quickshell из PATH (см. eac4927). Toggle: повторное нажатие
+    # бинда закрывает уже открытый overlay вместо второго инстанса.
+    if [[ -x /usr/bin/qs && -d "$HOME/.config/quickshell/rigswitch" ]]; then
+        if pgrep -f '/usr/bin/qs -c rigswitch' >/dev/null; then
+            pkill -f '/usr/bin/qs -c rigswitch'
+            exit 0
+        fi
+        exec /usr/bin/qs -c rigswitch
+    fi
+    # ── fallback: старый fuzzel-путь ──
     local cur choice
     cur="$(current || true)"
     choice="$(list_profiles | sed "s/^${cur}\$/& (active)/" \

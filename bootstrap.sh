@@ -120,6 +120,11 @@ for d in caelestia fish foot fastfetch; do
     ln -sfn "$DOTFILES/.config/$d" "$HOME/.config/$d"
 done
 
+# rigswitch — overlay-свитчер ригов, вложен в ~/.config/quickshell рядом с
+# конфигами шеллов ригов, поэтому не в списке выше.
+mkdir -p "$HOME/.config/quickshell"
+ln -sfn "$DOTFILES/.config/quickshell/rigswitch" "$HOME/.config/quickshell/rigswitch"
+
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 4/7 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
@@ -153,6 +158,8 @@ for f in "$DOTFILES"/sddm/hyprland-*.desktop; do
     sed "s|/home/shalyn42k|$HOME|g" "$f" > "$tmpd/$(basename "$f")"
 done
 if sudo -n true 2>/dev/null || sudo -v; then
+    sudo rm -f /usr/share/wayland-sessions/hyprland-caelestia.desktop \
+               /usr/share/wayland-sessions/hyprland-end4.desktop
     sudo cp "$tmpd"/hyprland-*.desktop /usr/share/wayland-sessions/
     sudo systemctl enable sddm 2>/dev/null || true
 else
