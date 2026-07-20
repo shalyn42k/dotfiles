@@ -162,18 +162,29 @@ ShellRoot {
                     scale: root.phase === "transition" ? 1 : 0.9
                     Behavior on scale { NumberAnimation { duration: Tokens.durSpring; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.springCurve } }
 
+                    // лого рига на тёмной плашке (светлое лого читается), буква-fallback
                     Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: 74; height: 74; radius: Tokens.radPanel
-                        gradient: Gradient {
-                            GradientStop { position: 0.0; color: Tokens.c.primary }
-                            GradientStop { position: 1.0; color: Tokens.c.secondaryContainer }
+                        width: 88; height: 88; radius: Tokens.radPanel
+                        color: Tokens.c.surfaceContainerLow
+                        border.width: 1.5
+                        border.color: Tokens.c.primary
+
+                        Image {
+                            id: splashLogo
+                            anchors.centerIn: parent
+                            width: 52; height: 52
+                            source: Quickshell.env("HOME") + "/.config/quickshell/rigswitch/logos/" + root.target + ".svg"
+                            visible: status === Image.Ready
+                            fillMode: Image.PreserveAspectFit
+                            sourceSize.height: 104
                         }
                         Text {
                             anchors.centerIn: parent
+                            visible: splashLogo.status !== Image.Ready
                             text: root.target.charAt(0).toUpperCase()
-                            color: Tokens.c.surface
-                            font.pixelSize: 34; font.bold: true
+                            color: Tokens.c.onSurface
+                            font.pixelSize: 40; font.bold: true
                         }
                     }
                     Text {
@@ -182,6 +193,42 @@ ShellRoot {
                         color: Tokens.c.onSurface
                         font.pixelSize: 34; font.weight: Font.Bold
                     }
+
+                    // индикатор загрузки: крутящаяся дуга (primary), пока идёт свитч
+                    Item {
+                        id: spinner
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 30; height: 30
+
+                        Canvas {
+                            id: spinnerArc
+                            anchors.fill: parent
+                            onPaint: {
+                                const ctx = getContext("2d");
+                                ctx.reset();
+                                const c = width / 2;
+                                ctx.lineWidth = 3;
+                                ctx.lineCap = "round";
+                                ctx.strokeStyle = Tokens.c.primary;
+                                ctx.beginPath();
+                                ctx.arc(c, c, c - 2.5, 0, Math.PI * 1.5);
+                                ctx.stroke();
+                            }
+                            // перерисовать при смене палитры (scheme.json подгружается async)
+                            Connections {
+                                target: Tokens
+                                function onCChanged() { spinnerArc.requestPaint(); }
+                            }
+                        }
+                        RotationAnimator {
+                            target: spinner
+                            from: 0; to: 360
+                            duration: 900
+                            loops: Animation.Infinite
+                            running: root.phase === "transition"
+                        }
+                    }
+
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: root.targetRelogin
