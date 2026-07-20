@@ -79,7 +79,7 @@ ShellRoot {
         Rectangle {
             id: surface
             anchors.fill: parent
-            color: root.phase === "picker" ? "#cc000000" : "#dd101010"
+            color: root.phase === "picker" ? Tokens.c.surface : Tokens.c.surface
             focus: true
             Keys.onEscapePressed: if (root.phase === "picker") Qt.quit()
             Keys.onLeftPressed: win.currentIndex = Math.max(0, win.currentIndex - 1)
