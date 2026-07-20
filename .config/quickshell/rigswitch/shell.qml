@@ -19,12 +19,11 @@ ShellRoot {
         phase = "transition";
         Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/bin/dotprofile", "switch", name]);
         if (targetRelogin)
-            safetyQuit.start();   // Hyprland выйдет сам и заберёт overlay
+            safetyQuit.start();
         else
             holdTimer.start();
     }
 
-    // ── hot: fixed-минимум 2с, затем guard-поллинг pgrep нового шелла, кап 2.5с ──
     Timer { id: holdTimer; interval: 2000; onTriggered: shellCheck.running = true }
     Timer {
         id: capTimer
@@ -39,14 +38,11 @@ ShellRoot {
         onExited: code => { if (code === 0) root.fadeOutAndQuit(); else pollTimer.start(); }
     }
     function shellPgrep(name) {
-        // guard нужен только lua-паре — relogin-цели не поллим.
-        // [x]-скобки: иначе pgrep матчит собственный sh -c враппер.
         if (name === "caelestia") return "pgrep -f 'qs -c caelesti[a]'";
         if (name === "end4")      return "pgrep -f -- '-c i[i]'";
         return "true";
     }
 
-    // ── relogin: страховка, если релогин не сработал ──
     Timer { id: safetyQuit; interval: 5000; onTriggered: Qt.quit() }
 
     property bool quitting: false
@@ -67,7 +63,6 @@ ShellRoot {
 
         property int currentIndex: 0
 
-        // стартовая подсветка — на активном риге
         Connections {
             target: Rigs
             function onListChanged() {
@@ -79,11 +74,12 @@ ShellRoot {
         Rectangle {
             id: surface
             anchors.fill: parent
-            color: root.phase === "picker" ? Tokens.c.surface : Tokens.c.surface
+            // полупрозрачный скрим — блюр стола даёт hyprland layer_rule
+            color: Qt.rgba(0.03, 0.06, 0.06, 0.55)
             focus: true
             Keys.onEscapePressed: if (root.phase === "picker") Qt.quit()
-            Keys.onLeftPressed: win.currentIndex = Math.max(0, win.currentIndex - 1)
-            Keys.onRightPressed: win.currentIndex = Math.min(Rigs.list.length - 1, win.currentIndex + 1)
+            Keys.onUpPressed: win.currentIndex = Math.max(0, win.currentIndex - 1)
+            Keys.onDownPressed: win.currentIndex = Math.min(Rigs.list.length - 1, win.currentIndex + 1)
             Keys.onReturnPressed: if (Rigs.list.length) root.select(Rigs.list[win.currentIndex].name)
 
             NumberAnimation {
@@ -95,45 +91,77 @@ ShellRoot {
                 onFinished: Qt.quit()
             }
 
-            // ── Фаза 1: пикер ──
-            Row {
+            // ── Фаза 1: framed-panel пикер ──
+            Rectangle {
+                id: panel
                 anchors.centerIn: parent
-                spacing: 24
                 visible: root.phase === "picker"
+                width: pickerCol.width + 40
+                height: pickerCol.height + 40
+                radius: Tokens.radPanel
+                color: Qt.rgba(Qt.color(Tokens.c.surfaceContainerLow).r,
+                               Qt.color(Tokens.c.surfaceContainerLow).g,
+                               Qt.color(Tokens.c.surfaceContainerLow).b, 0.85)
+                border.width: 1.5
+                border.color: Tokens.c.outline
 
-                Repeater {
-                    model: Rigs.list
-                    RigCard {
-                        required property int index
-                        required property var modelData
-                        rig: modelData
-                        current: index === win.currentIndex
-                        onHovered: win.currentIndex = index
-                        onActivated: { win.currentIndex = index; root.select(rig.name); }
+                Column {
+                    id: pickerCol
+                    anchors.centerIn: parent
+                    spacing: 9
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "SWITCH RIG"
+                        color: Tokens.c.primary
+                        font.pixelSize: 11
+                        font.weight: Font.Bold
+                        font.letterSpacing: 2
+                        bottomPadding: 5
+                    }
+
+                    Repeater {
+                        model: Rigs.list
+                        RigCard {
+                            id: card
+                            required property int index
+                            required property var modelData
+                            rig: modelData
+                            current: index === win.currentIndex
+                            onHovered: win.currentIndex = index
+                            onActivated: { win.currentIndex = index; root.select(rig.name); }
+
+                            // stagger-вход: снизу + fade, задержка по индексу
+                            opacity: 0
+                            transform: Translate { id: tr; y: 12 }
+                            Component.onCompleted: entrance.start()
+                            ParallelAnimation {
+                                id: entrance
+                                PauseAnimation { duration: card.index * 40 }
+                                NumberAnimation { target: card; property: "opacity"; to: 1; duration: Tokens.durDecel; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.decelCurve }
+                                NumberAnimation { target: tr; property: "y"; to: 0; duration: Tokens.durDecel; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.decelCurve }
+                            }
+                        }
                     }
                 }
             }
 
-            // ── Фаза 2: transition-сплэш ──
+            // ── Фаза 2: transition (ВРЕМЕННО — Task 4 заменит на crossfade+rise) ──
             Column {
                 anchors.centerIn: parent
                 spacing: 12
                 visible: root.phase === "transition"
-                opacity: visible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 200 } }
-
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: root.target
-                    color: "#eeeeee"
-                    font.pixelSize: 42
-                    font.bold: true
+                    color: Tokens.c.onSurface
+                    font.pixelSize: 42; font.bold: true
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: root.targetRelogin
                     text: "logging out to SDDM…"
-                    color: "#999999"
+                    color: Tokens.c.onSurfaceVariant
                     font.pixelSize: 16
                 }
             }
