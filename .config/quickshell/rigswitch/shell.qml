@@ -95,7 +95,9 @@ ShellRoot {
             Rectangle {
                 id: panel
                 anchors.centerIn: parent
-                visible: root.phase === "picker"
+                visible: opacity > 0
+                opacity: root.phase === "picker" ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: Tokens.durEffects; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.effectsCurve } }
                 width: pickerCol.width + 40
                 height: pickerCol.height + 40
                 radius: Tokens.radPanel
@@ -146,23 +148,47 @@ ShellRoot {
                 }
             }
 
-            // ── Фаза 2: transition (ВРЕМЕННО — Task 4 заменит на crossfade+rise) ──
-            Column {
-                anchors.centerIn: parent
-                spacing: 12
-                visible: root.phase === "transition"
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: root.target
-                    color: Tokens.c.onSurface
-                    font.pixelSize: 42; font.bold: true
-                }
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.targetRelogin
-                    text: "logging out to SDDM…"
-                    color: Tokens.c.onSurfaceVariant
-                    font.pixelSize: 16
+            // ── Фаза 2: transition-сплэш (crossfade + rise) ──
+            Item {
+                id: splash
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: root.phase === "transition" ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: Tokens.durEffects; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.effectsCurve } }
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 18
+                    scale: root.phase === "transition" ? 1 : 0.9
+                    Behavior on scale { NumberAnimation { duration: Tokens.durSpring; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.springCurve } }
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 74; height: 74; radius: Tokens.radPanel
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: Tokens.c.primary }
+                            GradientStop { position: 1.0; color: Tokens.c.secondaryContainer }
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: root.target.charAt(0).toUpperCase()
+                            color: Tokens.c.surface
+                            font.pixelSize: 34; font.bold: true
+                        }
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.target
+                        color: Tokens.c.onSurface
+                        font.pixelSize: 34; font.weight: Font.Bold
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: root.targetRelogin
+                        text: "logging out to SDDM…"
+                        color: Tokens.c.onSurfaceVariant
+                        font.pixelSize: 15
+                    }
                 }
             }
         }
