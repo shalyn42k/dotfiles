@@ -174,7 +174,7 @@ ShellRoot {
                             id: splashLogo
                             anchors.centerIn: parent
                             width: 52; height: 52
-                            source: Quickshell.env("HOME") + "/.config/quickshell/rigswitch/logos/" + root.target + ".svg"
+                            source: root.target ? Quickshell.env("HOME") + "/.config/quickshell/rigswitch/logos/" + root.target + ".svg" : ""
                             visible: status === Image.Ready
                             fillMode: Image.PreserveAspectFit
                             sourceSize.height: 104
