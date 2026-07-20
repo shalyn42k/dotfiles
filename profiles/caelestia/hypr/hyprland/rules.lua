@@ -125,3 +125,8 @@ hl.layer_rule({ match = { namespace = "caelestia-(border-exclusion|area-picker)"
 hl.layer_rule({ match = { namespace = "caelestia-(drawers|background)" }, animation = "fade" })
 hl.layer_rule({ match = { namespace = "caelestia-drawers" }, blur = true })
 hl.layer_rule({ match = { namespace = "caelestia-drawers" }, ignore_alpha = 0.57 })
+
+-- rigswitch overlay: блюр стола под полупрозрачной панелью пикера
+hl.layer_rule({ match = { namespace = "rigswitch" }, blur = true })
+hl.layer_rule({ match = { namespace = "rigswitch" }, ignore_alpha = 0.6 })
+hl.layer_rule({ match = { namespace = "rigswitch" }, animation = "fade" })

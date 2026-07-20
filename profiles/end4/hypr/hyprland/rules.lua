@@ -167,3 +167,8 @@ hl.layer_rule({ match = { namespace = "quickshell:wTaskView" }, no_anim = true})
 
 -- Launchers need to be FAST
 hl.layer_rule({ match = { namespace = "gtk4-layer-shell" }, no_anim = true})
+
+-- rigswitch overlay: блюр стола под полупрозрачной панелью пикера
+hl.layer_rule({ match = { namespace = "rigswitch" }, blur = true })
+hl.layer_rule({ match = { namespace = "rigswitch" }, ignore_alpha = 0.6 })
+hl.layer_rule({ match = { namespace = "rigswitch" }, animation = "fade" })
