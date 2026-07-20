@@ -1,6 +1,7 @@
 import QtQuick
+import Quickshell
 
-// Строка рига в списке-пикере: thumb обоев + имя + сабтайтл (движок·режим),
+// Строка рига в списке-пикере: лого рига + имя + сабтайтл (движок·режим),
 // active-dot / бейдж relogin справа. State-морф по current (signature caelestia):
 // фон surfaceContainer→secondaryContainer, border outlineVariant→primary,
 // radius large→row, всё через Behavior.
@@ -10,6 +11,11 @@ Rectangle {
     property bool current: false
     signal hovered()
     signal activated()
+
+    // Лого рига (vendored) по имени: logos/<name>.svg. Drop-in: положил
+    // logos/<newrig>.svg — появится. Нет файла → fallback первая буква.
+    readonly property string logoPath:
+        Quickshell.env("HOME") + "/.config/quickshell/rigswitch/logos/" + rig.name + ".svg"
 
     width: 300
     height: 58
@@ -29,23 +35,25 @@ Rectangle {
         anchors.rightMargin: 13
         spacing: 12
 
-        // thumb обоев (или градиент-заглушка)
+        // лого рига (или буква-заглушка, если файла нет)
         Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             width: 48; height: 36; radius: 9; clip: true
             color: Tokens.c.surfaceContainerLow
 
             Image {
+                id: logo
                 anchors.fill: parent
-                source: row.rig.wallpaper
-                visible: row.rig.wallpaper !== ""
-                fillMode: Image.PreserveAspectCrop
+                anchors.margins: 6
+                source: row.logoPath
+                visible: status === Image.Ready
+                fillMode: Image.PreserveAspectFit
                 asynchronous: true
-                sourceSize.width: 96
+                sourceSize.height: 64
             }
             Text {
                 anchors.centerIn: parent
-                visible: row.rig.wallpaper === ""
+                visible: logo.status !== Image.Ready
                 text: row.rig.name.charAt(0).toUpperCase()
                 color: Tokens.c.onSurfaceVariant
                 font.pixelSize: 20; font.bold: true
