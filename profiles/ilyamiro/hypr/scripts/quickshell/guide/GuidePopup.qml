@@ -168,7 +168,10 @@ Item {
 
     Process {
         id: updateChecker
-        command: ["bash", "-c", "curl -m 5 -s https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh | grep '^DOTS_VERSION=' | cut -d'\"' -f2"]
+        // Upstream archived 2026-09-02: imperative-dots' install.sh is frozen forever.
+        // Read the successor project's version instead. Display only - serpantinum is
+        // a separate project, not an upgrade of this one.
+        command: ["bash", "-c", "curl -m 5 -s https://raw.githubusercontent.com/ilyamiro/serpantinum/master/version.txt | tr -d '[:space:]'"]
         running: true
         stdout: StdioCollector {
             onStreamFinished: {
@@ -622,8 +625,11 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh)\"'; fi";
-                            Quickshell.execDetached(["bash", "-c", cmd]);
+                            // Previously this piped the upstream install.sh straight into eval.
+                            // That repo is archived and its successor's installer discards the
+                            // existing configuration, so there is no safe automatic path left.
+                            // Open the project page and let the migration be a deliberate act.
+                            Quickshell.execDetached(["xdg-open", "https://github.com/ilyamiro/serpantinum"]);
                         }
                     }
                 }
@@ -1544,7 +1550,7 @@ Item {
                     Repeater {
                         model: [
                             { name: "NixOS Config", icon: "", color: "blue", url: "https://github.com/ilyamiro/nixos-configuration" },
-                            { name: "Imperative Dots", icon: "󰣇", color: "mauve", url: "https://github.com/ilyamiro/imperative-dots" },
+                            { name: "Serpantinum", icon: "󰣇", color: "mauve", url: "https://github.com/ilyamiro/serpantinum" },
                             { name: "Wallpapers", icon: "", color: "peach", url: "https://github.com/ilyamiro/shell-wallpapers" }
                         ]
 
