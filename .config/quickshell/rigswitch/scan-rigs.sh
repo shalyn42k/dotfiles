@@ -15,6 +15,12 @@ wallpaper_for() {
             case "$p" in *.mp4|*.webm|*.mkv)
                 p="$HOME/.cache/quickshell/wallpaper_picker/current_wallpaper.png" ;;
             esac ;;
+        serpantinum)
+            # WallpaperEngine.qml (shell/src/quickshell/wallpaper/) держит один
+            # снапшот вне зависимости от монитора: для картинок — копия файла,
+            # для видео — кадр через ffmpeg. Путь строит Caching.getCacheDir
+            # ("wallpaper") = ~/.cache/serpantinum/wallpaper, мы его не переопределяем.
+            p="$HOME/.cache/serpantinum/wallpaper/current_wallpaper.png" ;;
     esac
     [[ -f "$p" ]] && printf '%s' "$p"
 }

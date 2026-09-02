@@ -39,6 +39,7 @@ ShellRoot {
     }
     function shellPgrep(name) {
         if (name === "caelestia") return "pgrep -f 'qs -c caelesti[a]'";
+        if (name === "serpantinum") return "pgrep -f serpantinumd";
         return "true";
     }
 
