@@ -31,6 +31,9 @@ Singleton {
     readonly property int durSpring: 500
     readonly property int durEffects: 200
     readonly property int durDecel: 400
+    // Спокойная calm-анимация "дрейфа" (ilyamiro/дефолт-стиль сборки рига) —
+    // медленнее двух остальных почерков нарочно, это самый тихий из трёх.
+    readonly property int durDrift: 640
     readonly property int radMedium: 12
     readonly property int radLarge: 16
     readonly property int radRow: 22
