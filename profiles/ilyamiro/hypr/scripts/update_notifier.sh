@@ -2,50 +2,28 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/caching.sh"
 
-# Check interval in seconds (600s = 10 minutes)
-INTERVAL=600
+# UPSTREAM ARCHIVED (2026-09-02)
+# ilyamiro/imperative-dots is archived. Its install.sh is frozen at
+# DOTS_VERSION="2.0.0" and will never advance, so the old polling loop reported a
+# permanent phantom "update available" against our local 1.7.6-1. The successor,
+# ilyamiro/serpantinum, is a different project (a shell, not dotfiles) whose
+# installer discards the existing configuration - so it is NOT an update target
+# and must never be triggered from the topbar. This notifier is therefore
+# informational only: it clears the pending flag and says its piece once.
 
-# Cache file to prevent notification spam if the script is restarted
-CACHE_FILE="$QS_CACHE_UPDATER/notified_version"
-# State file to tell the topbar to show the update button
+# State file that tells the topbar to show the update button
 PENDING_FILE="$QS_CACHE_UPDATER/update_pending"
+# Marker so the archive notice is shown only once, not on every login
+NOTICE_FILE="$QS_CACHE_UPDATER/archive_notice_shown"
 
-while true; do
-    # Fetch local version
-    LOCAL_VERSION=$(source ~/.local/state/imperative-dots-version 2>/dev/null && echo "$LOCAL_VERSION")
-    LOCAL_VERSION=${LOCAL_VERSION:-"Unknown"}
-    
-    # Fetch remote version
-    REMOTE_VERSION=$(curl -m 5 -s https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh | grep '^DOTS_VERSION=' | cut -d'"' -f2)
+# No upgrade path exists: make sure the topbar update button stays hidden.
+rm -f "$PENDING_FILE"
 
-    # Check if we got valid responses and they don't match
-    if [[ -n "$REMOTE_VERSION" && "$LOCAL_VERSION" != "Unknown" && "$LOCAL_VERSION" != "$REMOTE_VERSION" ]]; then
-        
-        # Determine the newest version using bash semantic sorting
-        NEWEST=$(printf '%s\n' "$LOCAL_VERSION" "$REMOTE_VERSION" | sort -V | tail -n1)
-        
-        if [[ "$NEWEST" == "$REMOTE_VERSION" ]]; then
-            
-            # Signal the topbar to show the update icon
-            touch "$PENDING_FILE"
-            
-            # Only send the notification if we haven't notified about this specific version yet
-            if [[ ! -f "$CACHE_FILE" ]] || [[ "$(cat "$CACHE_FILE")" != "$REMOTE_VERSION" ]]; then
-                
-                # Cache the version so we don't spam the user every 10 minutes
-                echo "$REMOTE_VERSION" > "$CACHE_FILE"
+if [[ ! -f "$NOTICE_FILE" ]]; then
+    touch "$NOTICE_FILE"
+    notify-send -t 15000 -a 'Imperative Dots' -u normal \
+        'Upstream archived' \
+        'imperative-dots is no longer maintained. It has moved to ilyamiro/serpantinum, which is a separate project and not a drop-in update. Automatic updates are disabled.'
+fi
 
-                # Send standard notification without the action prompt
-                notify-send -t 15000 -a 'Imperative Dots' -u normal 'Update Available' "A new version ($REMOTE_VERSION) is ready! Click the update icon in the topbar to install."
-                
-            fi
-        fi
-    else
-        # Self-healing: if versions match or we are offline, clear the pending flag 
-        # so the topbar button disappears if you updated via terminal.
-        rm -f "$PENDING_FILE"
-    fi
-
-    # Wait 10 minutes before checking again
-    sleep "$INTERVAL"
-done
+exit 0

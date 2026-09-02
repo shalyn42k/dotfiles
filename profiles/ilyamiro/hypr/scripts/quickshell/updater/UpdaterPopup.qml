@@ -112,7 +112,10 @@ Item {
     Process {
         id: remoteVerProcess
         running: false
-        command: ["bash", "-c", "curl -m 5 -s https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh | grep '^DOTS_VERSION=' | cut -d'\"' -f2"]
+        // Upstream archived 2026-09-02: imperative-dots' install.sh is frozen forever.
+        // Read the successor project's version instead. Display only - serpantinum is
+        // a separate project, not an upgrade of this one.
+        command: ["bash", "-c", "curl -m 5 -s https://raw.githubusercontent.com/ilyamiro/serpantinum/master/version.txt | tr -d '[:space:]'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 let out = this.text ? this.text.trim() : "";
@@ -673,8 +676,11 @@ except Exception as e:
                     easing.type: Easing.InSine
                     onFinished: {
                         updateBtn.triggered = true;
-                        let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/imperative-dots/master/install.sh)\"'; fi";
-                        Quickshell.execDetached(["bash", "-c", cmd]);
+                        // Previously this piped the upstream install.sh straight into eval.
+                        // That repo is archived and its successor's installer discards the
+                        // existing configuration, so there is no safe automatic path left.
+                        // Open the project page and let the migration be a deliberate act.
+                        Quickshell.execDetached(["xdg-open", "https://github.com/ilyamiro/serpantinum"]);
                         Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "close"]);
                     }
                 }
