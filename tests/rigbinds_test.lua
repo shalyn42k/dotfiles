@@ -141,5 +141,29 @@ it("drop() of a rig leaves the shared set alone", function()
     assert_eq(#live, 1, "only the shared bind is left live")
 end)
 
+-- Загрузка конфига — не функция, которую можно обернуть: hyprland.lua просто
+-- выполняется сверху вниз. Поэтому прелюдия зовёт begin(<риг>), и всё
+-- забайнженное дальше принадлежит ригу. Контрактный модуль внутри этой загрузки
+-- оборачивает себя в own("shared", ...) — то есть own обязан быть вложенным.
+it("begin() attributes everything loaded afterwards to the rig", function()
+    local rig, hl = fresh()
+    rig.begin("caelestia")
+    hl.bind("SUPER + O", "pip")
+    hl.bind("SUPER + M", "restart-shell")
+    assert_eq(rig.count("caelestia"), 2, "caelestia bind count")
+end)
+
+it("own() nested inside begin() restores the outer owner", function()
+    local rig, hl = fresh()
+    rig.begin("caelestia")
+    hl.bind("SUPER + O", "pip")
+
+    rig.own("shared", function() hl.bind("SUPER + SHIFT + D", "dotprofile menu") end)
+
+    hl.bind("SUPER + M", "restart-shell")   -- снова риговый, а не бесхозный
+    assert_eq(rig.count("shared"), 1, "shared bind count")
+    assert_eq(rig.count("caelestia"), 2, "caelestia bind count")
+end)
+
 print(("\n%d passed, %d failed"):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
