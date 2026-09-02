@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Выводит по ригу: name<TAB>engine<TAB>абсолютный-путь-превью (или пусто).
+# Выводит по ригу: name<TAB>engine<TAB>абсолютный-путь-превью (или пусто)<TAB>role.
+# role — однословная метка из profiles/<rig>/role (см. 2026-07-14-fastfetch-rig-design):
+# rigswitch читает её, чтобы transition-анимация опиралась на реальную
+# идентичность рига, а не на выдуманные соответствия.
 set -u
 PROFILES="$HOME/dotfiles/profiles"
 
@@ -30,5 +33,6 @@ for d in "$PROFILES"/*/; do
     [[ "$name" == "active" ]] && continue
     engine=hyprlang
     [[ -f "$d/hypr/hyprland.lua" ]] && engine=lua
-    printf '%s\t%s\t%s\n' "$name" "$engine" "$(wallpaper_for "$name")"
+    role="$(cat "$d/role" 2>/dev/null)"
+    printf '%s\t%s\t%s\t%s\n' "$name" "$engine" "$(wallpaper_for "$name")" "$role"
 done

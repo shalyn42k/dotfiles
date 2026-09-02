@@ -33,12 +33,12 @@ Singleton {
         stdout: StdioCollector { onStreamFinished: root.parseScan(this.text) }
     }
 
-    property var scanned: []   // [{name, engine, wallpaper}]
+    property var scanned: []   // [{name, engine, wallpaper, role}]
     function parseScan(t) {
-        // строки вида: name<TAB>engine<TAB>путь-превью-или-пусто
+        // строки вида: name<TAB>engine<TAB>путь-превью-или-пусто<TAB>role-или-пусто
         root.scanned = t.trim().split("\n").filter(l => l).map(l => {
             const p = l.split("\t");
-            return { name: p[0], engine: p[1], wallpaper: p[2] || "" };
+            return { name: p[0], engine: p[1], wallpaper: p[2] || "", role: p[3] || "" };
         });
         root.refresh();
     }
@@ -50,7 +50,15 @@ Singleton {
             engine: r.engine,
             active: r.name === root.active,
             relogin: root.sessionEngine !== "" && r.engine !== root.sessionEngine,
-            wallpaper: r.wallpaper ? "file://" + r.wallpaper : ""
+            wallpaper: r.wallpaper ? "file://" + r.wallpaper : "",
+            role: r.role
         }));
+    }
+
+    // Риг по имени, для transition-анимации (identity нужна и для source, и
+    // для target рига). undefined, если список ещё не загружен — вызывающий
+    // код должен сам подставлять дефолт.
+    function byName(name) {
+        return root.list.find(r => r.name === name);
     }
 }
