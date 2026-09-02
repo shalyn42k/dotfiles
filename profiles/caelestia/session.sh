@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # session.sh — демоны рига caelestia. Контракт: start|stop.
-# Абсолютный путь к СИСТЕМНОМУ quickshell (0.3.0): при хот-свитче из end4 его
-# env.lua префиксит PATH на ~/qs-test-prefix (март-quickshell 0.2.1), и голый
-# `qs` поймал бы несовместимый бинарь (падает на pragma DefaultEnv). См.
-# profiles/end4/hypr/custom/env.lua.
+# Абсолютный путь к СИСТЕМНОМУ quickshell, а не голый `qs`: риг может
+# префиксить PATH своей сборкой quickshell, и тогда голое имя поймало бы
+# несовместимый бинарь. Так было с удалённым ригом end4 (март-сборка в
+# ~/qs-test-prefix, падала на pragma DefaultEnv).
 set -u
 QS_SYS="/usr/bin/qs"
 case "${1:-}" in

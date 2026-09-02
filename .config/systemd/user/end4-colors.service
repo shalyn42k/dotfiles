@@ -1,9 +1,0 @@
-[Unit]
-Description=Reapply active rig colours (borders/fastfetch/Discord/Obsidian) after end4 palette change
-# Смена обоев переписывает colors.json одним всплеском; дефолтный start-limit
-# споткнулся бы и заклинил юнит.
-StartLimitIntervalSec=0
-
-[Service]
-Type=oneshot
-ExecStart=%h/dotfiles/bin/dotprofile colors
