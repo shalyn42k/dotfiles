@@ -74,11 +74,17 @@ rebind("SUPER + S", hl.dsp.workspace.toggle_special("special"))
 -- Electron-приложения (класс окна не совпадает с именем процесса), это
 -- ровно баг, исправленный в caelestia коммитом 1853895
 -- ("fix(caelestia): match special-workspace apps by window class").
--- feishin и AyuGram процесс совпадает с классом, поэтому для них pgrep -x
--- остаётся верным — так же, как в caelestia/hypr/hyprland/keybinds.lua.
+-- feishin — тоже Electron (тот же класс проблемы, что vesktop/obsidian),
+-- поэтому матчим по классу, а не pgrep -x: caelestia/hypr/hyprland/keybinds.lua
+-- всё ещё держит там pgrep -x и это НЕ прецедент — та строка не была
+-- проверена, просто не попала под ревью. AyuGram — нативный Qt/C++-форт
+-- Telegram Desktop, там процесс реально совпадает с классом, pgrep -x верен.
+-- Строка класса "feishin" взята из caelestia/hypr/hyprland/rules.lua:29,62
+-- (там matchится `class = "feishin"` для правил прозрачности/воркспейса) —
+-- но НЕ подтверждена на живой сессии serpantinum; сверить при приёмке рига.
 rebind("SUPER + Z",
     hl.dsp.exec_cmd(
-        [[pgrep -x feishin && hyprctl dispatch 'hl.dsp.workspace.toggle_special("music")' || feishin]]))
+        [[hyprctl clients | grep -qi 'class: feishin' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("music")' || feishin]]))
 rebind("SUPER + X",
     hl.dsp.exec_cmd(
         [[hyprctl clients | grep -qi 'class: vesktop' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("communication")' || vesktop]]))
