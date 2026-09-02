@@ -68,6 +68,32 @@ function M.new()
         end
     end
 
+    -- Всё, кроме bind/unbind, автоматически: hl.dsp.window.fullscreen{...},
+    -- hl.get_active_window(), hl.config{...} и прочее. Настоящие наборы биндов
+    -- зовут десятки таких — стаб отдаёт вызываемую заглушку на любую глубину,
+    -- чтобы файл рига догрузился до конца и мы увидели ВСЕ его бинды.
+    -- Арифметика нужна потому, что наборы считают геометрию прямо в биндах:
+    -- `win.size.x * (x / 100)` в resize_active_window (caelestia functions.lua,
+    -- инлайн-копия в end4 custom). Заглушка обязана пережить такие выражения,
+    -- иначе файл не догрузится и часть биндов останется невидимой тесту.
+    local function auto(name)
+        local mt
+        local function arith() return auto(name .. "<arith>") end
+        mt = {
+            __index = function(_, key) return auto(name .. "." .. tostring(key)) end,
+            __call = function() return auto(name .. "()") end,
+            __tostring = function() return "<hl." .. name .. ">" end,
+            __add = arith, __sub = arith, __mul = arith, __div = arith,
+            __mod = arith, __pow = arith, __unm = arith, __idiv = arith,
+            __concat = function() return name end,
+            __len = function() return 0 end,
+        }
+        return setmetatable({}, mt)
+    end
+    setmetatable(hl, {
+        __index = function(_, key) return auto(tostring(key)) end,
+    })
+
     return hl, live
 end
 
