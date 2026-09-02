@@ -72,8 +72,8 @@ ensure_links() {
 
 # Цвет рамок окон задаётся конфиг-движком при старте сессии; при горячем
 # свитче применяем цвета активного рига runtime-командой (lua: eval hl.config).
-# Источники: colors.conf (matugen ilyamiro) или
-# scheme/current.lua (caelestia: primary/onSurfaceVariant).
+# Источники: colors.conf (любой риг со своим matugen — ilyamiro, serpantinum)
+# или scheme/current.lua (caelestia: primary/onSurfaceVariant).
 apply_rig_colors() {
     local name="$1" active="" inactive="" accent_hex=""
     local cconf="$PROFILES/$name/hypr/colors.conf"

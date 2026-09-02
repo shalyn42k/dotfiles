@@ -65,8 +65,12 @@ for i = 1, 10 do
     rebind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ workspace = tostring(i) }))
 end
 
--- Спец-воркспейсы (scratchpad). Имя "special" — то же, что использует
--- гест caelestia/hypr/hyprland/gestures.lua:15 (workspace_name = "special").
+-- Спец-воркспейсы (scratchpad). Имя "special" — наше, внутреннее для рига.
+-- У caelestia скретчпад называется "specialws" и тогглится через его CLI
+-- (`caelestia toggle specialws`), которого здесь нет. Имя видно только внутри
+-- рига, и specialcycle.fish этого же профиля перечисляет ровно его, поэтому
+-- расхождение с caelestia безвредно. Комба SUPER+S одинаковая — это и есть
+-- то, что требует контракт.
 rebind("SUPER + S", hl.dsp.workspace.toggle_special("special"))
 
 -- Приложения-специалы: тоггл, если уже запущено, иначе запуск. Матчим по
@@ -74,14 +78,14 @@ rebind("SUPER + S", hl.dsp.workspace.toggle_special("special"))
 -- Electron-приложения (класс окна не совпадает с именем процесса), это
 -- ровно баг, исправленный в caelestia коммитом 1853895
 -- ("fix(caelestia): match special-workspace apps by window class").
--- feishin — тоже Electron (тот же класс проблемы, что vesktop/obsidian),
--- поэтому матчим по классу, а не pgrep -x: caelestia/hypr/hyprland/keybinds.lua
--- всё ещё держит там pgrep -x и это НЕ прецедент — та строка не была
--- проверена, просто не попала под ревью. AyuGram — нативный Qt/C++-форт
--- Telegram Desktop, там процесс реально совпадает с классом, pgrep -x верен.
--- Строка класса "feishin" взята из caelestia/hypr/hyprland/rules.lua:29,62
--- (там matchится `class = "feishin"` для правил прозрачности/воркспейса) —
--- но НЕ подтверждена на живой сессии serpantinum; сверить при приёмке рига.
+-- feishin матчим по классу для единообразия с vesktop/obsidian, а НЕ потому
+-- что pgrep у него сломан: замерено 2026-09-02 на живой сессии — `pgrep -x
+-- feishin` процесс находит, то есть строка в caelestia/keybinds.lua:44
+-- исправна. Класс устойчивее к переименованию бинаря, поэтому здесь класс.
+-- Значение "feishin" сверено с caelestia/hypr/hyprland/rules.lua:29,62, где
+-- по этому же классу висят правила прозрачности и воркспейса.
+-- AyuGram — нативный Qt/C++-форк Telegram Desktop, имя процесса совпадает
+-- с классом, pgrep -x там верен и менять его не на что.
 rebind("SUPER + Z",
     hl.dsp.exec_cmd(
         [[hyprctl clients | grep -qi 'class: feishin' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("music")' || feishin]]))

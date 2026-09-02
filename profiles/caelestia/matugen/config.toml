@@ -48,9 +48,9 @@ output_path = '~/.config/hypr/colors.conf'
 # тема Discord (Vencord) для рига ilyamiro — dotprofile копирует в themes/rig.theme.css
 [templates.discord]
 input_path = "~/.config/matugen/templates/discord.css.template"
-output_path = "~/.cache/matugen/discord-ilyamiro.theme.css"
+output_path = "~/.cache/matugen/discord-caelestia.theme.css"
 
-# тема Obsidian для рига ilyamiro — dotprofile копирует в vault/.obsidian/snippets/
+# тема Obsidian этого рига — dotprofile копирует в vault/.obsidian/snippets/
 [templates.obsidian]
 input_path = "~/.config/matugen/templates/obsidian.css.template"
-output_path = "~/.cache/matugen/obsidian-ilyamiro.css"
+output_path = "~/.cache/matugen/obsidian-caelestia.css"
