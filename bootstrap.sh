@@ -124,19 +124,33 @@ tmpd="$(mktemp -d)"
 for f in "$DOTFILES"/sddm/hyprland-*.desktop; do
     sed "s|/home/shalyn42k|$HOME|g" "$f" > "$tmpd/$(basename "$f")"
 done
+# Цель — РОВНО две записи в греетере: наша «Hyprland (rig)» и plasma как
+# запасное DE. Остальное убираем: прежние per-rig записи промахиваются мимо
+# profiles/active, а пакетные запускают композитор в обход
+# start-hyprland-profile (симлинки ~/.config остаются от прежнего рига).
+STALE_OURS=(hyprland-caelestia hyprland-lua hyprland-ilyamiro hyprland-end4)
+# Пакетные (владелец — hyprland): голая запись и uwsm, которого мы не ставим.
+# Их мало удалить — pacman вернёт файлы при обновлении, молча и без .pacnew,
+# потому что это /usr/share, а не /etc. Отсюда NoExtract ниже.
+STALE_PKG=(hyprland hyprland-uwsm)
+
 if sudo -n true 2>/dev/null || sudo -v; then
-    # Прежние per-rig записи. Единая hyprland-rig.desktop обслуживает все
-    # риги через --auto, поэтому остальные только плодят промахи выбора.
-    sudo rm -f /usr/share/wayland-sessions/hyprland-caelestia.desktop \
-               /usr/share/wayland-sessions/hyprland-lua.desktop \
-               /usr/share/wayland-sessions/hyprland-ilyamiro.desktop
-    # Пакетная запись hyprland-uwsm: uwsm мы не ставим, сессия нерабочая.
-    # Вернётся при обновлении hyprland — durable-вариант в docs/tech-debt.md п.10.
-    sudo rm -f /usr/share/wayland-sessions/hyprland-uwsm.desktop
+    for n in "${STALE_OURS[@]}" "${STALE_PKG[@]}"; do
+        sudo rm -f "/usr/share/wayland-sessions/$n.desktop"
+    done
     sudo cp "$tmpd"/hyprland-*.desktop /usr/share/wayland-sessions/
     sudo systemctl enable sddm 2>/dev/null || true
+
+    # Update-proof: без этого запись возвращается при каждом обновлении hyprland.
+    for n in "${STALE_PKG[@]}"; do
+        line="NoExtract   = usr/share/wayland-sessions/$n.desktop"
+        grep -qxF "$line" /etc/pacman.conf \
+            || echo "$line" | sudo tee -a /etc/pacman.conf >/dev/null
+    done
 else
-    echo ">>> нет sudo — вручную: sudo cp $tmpd/hyprland-*.desktop /usr/share/wayland-sessions/"
+    echo ">>> нет sudo — вручную:"
+    echo ">>>   sudo cp $tmpd/hyprland-*.desktop /usr/share/wayland-sessions/"
+    echo ">>>   и удалить лишние записи (см. STALE_OURS/STALE_PKG выше)"
 fi
 rm -rf "$tmpd"
 
