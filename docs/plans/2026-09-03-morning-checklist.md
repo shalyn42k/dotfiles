@@ -42,7 +42,7 @@ ls -1 /usr/share/wayland-sessions/
 
 ```bash
 cd ~/dotfiles
-tests/run.sh          # ожидается ALL PASS, 21 тест
+tests/run.sh          # ожидается ALL PASS, 23 теста
 bin/dotprofile doctor # три рига ok, симлинки ok
 ```
 
@@ -65,6 +65,15 @@ hyprctl systeminfo | grep configProvider   # ожидается: lua
 pgrep -f 'quickshell -p.*serpantinu[m]'    # шелл рига жив
 bin/dotprofile doctor                       # битых симлинков нет
 ```
+
+Шелл на логине поднимается двумя независимыми путями, чтобы не зависеть от
+одного: `hyprland.lua` рига стартует `serpantinumd` по абсолютному пути, и
+плюс к тому его бинари симлинкнуты в `~/.local/bin`, так что штатный
+`config/autostart` апстрима тоже находит их. Двойного старта не будет —
+демон держит `/tmp/serpantinumd.pid`. Это была реальная дыра: на логине
+`session.sh` не вызывается вовсе (`--links-only` возвращается раньше), а
+апстрим звал `serpantinumd` голым именем, которого нет в PATH — риг поднялся
+бы без бара.
 
 **Если экран пустой или шелл не поднялся** — аварийный выход есть, `SUPER+F1`
 это локскрин, а не выход. Переключись в TTY (`Ctrl+Alt+F2`), залогинься и:
@@ -91,6 +100,19 @@ bin/dotprofile doctor                       # битых симлинков не
 | `SUPER+Z/X/C/V` | feishin / vesktop / obsidian / AyuGram |
 | `CTRL+J` / `CTRL+L` | цикл спец-воркспейсов |
 | `ALT+Q` / `ALT+TAB` | группа: тоггл / следующее |
+| `SUPER+TAB` | терминал (foot) |
+| `SUPER+W` | браузер (zen-browser) |
+| `SUPER+R` | редактор (codium) |
+| `SUPER+E` | файлы (thunar) |
+| `SUPER+T` | hyprkcs |
+| `SUPER+G` | gamemode: клавиши лочатся, громкость живёт; выход тем же `SUPER+G` |
+| `SHIFT+drag` / `CTRL+drag` | двигать / ресайзить окно мышью |
+
+Три из них апстрим занимал под своё: `SUPER+E` открывал nautilus, `SUPER+R`
+перезагружал шелл, `SUPER+W` тоггл обои. Перевешены на контрактное — это тот
+самый случай «клавиша есть, но делает не то», который пальцами и ловится.
+Функции рига не потерялись: обои остались на `SUPER+Y`, рестарт шелла на
+`SUPER+M`.
 
 Счётчик, если что-то не так:
 
