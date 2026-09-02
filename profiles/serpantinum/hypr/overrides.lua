@@ -28,7 +28,7 @@ end
 rebind("SUPER + Q",           hl.dsp.window.close())
 rebind("SUPER + F",           hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 rebind("SUPER + ALT + F",     hl.dsp.window.fullscreen({ mode = "maximized" }))
-rebind("SUPER + ALT + Space", hl.dsp.window.float())
+rebind("SUPER + ALT + space", hl.dsp.window.float())
 rebind("SUPER + SHIFT + F",   hl.dsp.window.float())      -- та же мнемоника F, что у caelestia
 rebind("SUPER + P",           hl.dsp.window.pin())
 
@@ -108,3 +108,60 @@ rebind("SUPER + SHIFT + X", hl.dsp.window.move({ workspace = "e+0" }))
 -- зависимости на чужой profiles/caelestia/hypr/scripts.
 rebind("CTRL + J", hl.dsp.exec_cmd(scripts .. "/specialcycle.fish prev"))
 rebind("CTRL + L", hl.dsp.exec_cmd(scripts .. "/specialcycle.fish next"))
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- §2.4 Приложения
+-- ─────────────────────────────────────────────────────────────────────────
+-- Три комбо апстрим занимает под своё, и это прямое нарушение контракта:
+-- одна клавиша означала бы в двух ригах разное. Перевешиваем на контрактное
+-- (значения — profiles/caelestia/hypr/variables.lua):
+--   SUPER+E  ii: nautilus                  -> thunar
+--   SUPER+R  ii: serpantinum reload        -> codium
+--   SUPER+W  ii: msg toggle wallpaper      -> zen-browser
+-- Обои у serpantinum остаются на контрактном SUPER+Y через rigdo, рестарт
+-- шелла — на контрактном SUPER+M, так что ничего из его функций не теряется.
+--
+-- app2unit — как у caelestia: приложение уезжает в свой systemd-скоуп и не
+-- умирает вместе с процессом, который его запустил.
+rebind("SUPER + TAB", hl.dsp.exec_cmd("app2unit -- foot"))
+rebind("SUPER + W",   hl.dsp.exec_cmd("app2unit -- zen-browser"))
+rebind("SUPER + R",   hl.dsp.exec_cmd("app2unit -- codium"))
+rebind("SUPER + E",   hl.dsp.exec_cmd("app2unit -- thunar"))
+rebind("SUPER + T",   hl.dsp.exec_cmd("app2unit -- hyprkcs"))
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- §2.5 Мышь
+-- ─────────────────────────────────────────────────────────────────────────
+-- { mouse = true } обязателен для drag/resize — без него бинд не получает
+-- зажатую кнопку и жест не работает.
+rebind("SHIFT + mouse:274", hl.dsp.window.drag(),   { mouse = true })
+rebind("CTRL + mouse:274",  hl.dsp.window.resize(), { mouse = true })
+rebind("SUPER + SHIFT + mouse:272", hl.dsp.window.move({ workspace = "e+0" }))
+rebind("SUPER + SHIFT + mouse:273", hl.dsp.window.move({ workspace = "special:secret" }))
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- §2.6 Питание / gamemode
+-- ─────────────────────────────────────────────────────────────────────────
+rebind("SUPER + ALT + Escape", hl.dsp.exec_cmd("systemctl poweroff"))
+
+-- Gamemode: сабмап, который лочит всё, кроме громкости. Смысл в том, что в
+-- игре случайный SUPER+Q не закрывает окно. Выход — тем же SUPER+G.
+-- Громкость внутри сабмапа переопределяется явно: сабмап отменяет ВСЕ бинды
+-- сессии, включая XF86, и без этих четырёх строк регулятор в игре умрёт.
+rebind("SUPER + G", function()
+    hl.dispatch(hl.dsp.exec_cmd("notify-send -u critical 'GAMEMODE' 'ON: Keys Locked'"))
+    hl.dispatch(hl.dsp.submap("gamemode"))
+end)
+
+hl.define_submap("gamemode", function()
+    hl.bind("SUPER + G", function()
+        hl.dispatch(hl.dsp.exec_cmd("notify-send -u low 'GAMEMODE' 'OFF'"))
+        hl.dispatch(hl.dsp.submap("reset"))
+    end)
+    hl.bind("XF86AudioRaiseVolume",
+        hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { repeating = true })
+    hl.bind("XF86AudioLowerVolume",
+        hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { repeating = true })
+    hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
+    hl.bind("XF86AudioMute",    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
+end)
