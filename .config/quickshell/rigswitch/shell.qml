@@ -8,42 +8,137 @@ ShellRoot {
 
     property string phase: "picker"       // "picker" | "transition"
     property string target: ""
+    property string fromName: ""          // риг, с которого уходим (Rigs.active на момент клика)
     property bool targetRelogin: false
+    property int direction: 1             // +1/-1 — по позиции target относительно fromName в Rigs.list
+
+    // Контракт со стадиями bin/dotprofile cmd_switch (`stage <имя> ok|fail`).
+    // binds сюда сознательно не входит — стадия отключена в dotprofile
+    // (сегфолтит композитор), см. её комментарий там же.
+    readonly property var stageOrder: ["links", "colors", "animations", "rules", "daemons", "state"]
+    readonly property var stageLabels: ({
+        links: "config", colors: "palette", animations: "motion",
+        rules: "window rules", daemons: "shell", state: "state"
+    })
+    property var stageState: ({
+        links: "pending", colors: "pending", animations: "pending",
+        rules: "pending", daemons: "pending", state: "pending"
+    })
+    property bool anyFailed: false
+    property bool switchDone: false
+    property bool dismissed: false
+
+    function roleOf(name) {
+        const r = Rigs.byName(name);
+        return r ? r.role : "";
+    }
+
+    readonly property var fromIdentity: RigIdentity.identityFor(root.fromName, root.roleOf(root.fromName))
+    readonly property var toIdentity: RigIdentity.identityFor(root.target, root.roleOf(root.target))
+
+    function lerpColor(c1, c2, t) {
+        const a = Qt.color(c1), b = Qt.color(c2);
+        return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, 1);
+    }
+
+    function computeDirection(fromName, toName) {
+        const list = Rigs.list;
+        const i1 = list.findIndex(r => r.name === fromName);
+        const i2 = list.findIndex(r => r.name === toName);
+        if (i1 < 0 || i2 < 0 || i1 === i2)
+            return 1;
+        return i2 > i1 ? 1 : -1;
+    }
 
     function select(name) {
         if (phase !== "picker")
             return;
         const rig = Rigs.list.find(r => r.name === name);
-        target = name;
-        targetRelogin = rig ? rig.relogin : false;
+        root.fromName = Rigs.active;
+        root.target = name;
+        root.targetRelogin = rig ? rig.relogin : false;
+        root.direction = root.computeDirection(root.fromName, root.target);
+        root.stageState = {
+            links: "pending", colors: "pending", animations: "pending",
+            rules: "pending", daemons: "pending", state: "pending"
+        };
+        root.anyFailed = false;
+        root.switchDone = false;
         phase = "transition";
-        Quickshell.execDetached([Quickshell.env("HOME") + "/dotfiles/bin/dotprofile", "switch", name]);
-        if (targetRelogin)
+        switchProc.command = [Quickshell.env("HOME") + "/dotfiles/bin/dotprofile", "switch", name];
+        switchProc.running = true;
+        if (root.targetRelogin)
             safetyQuit.start();
         else
-            holdTimer.start();
+            watchdog.start();
     }
 
-    Timer { id: holdTimer; interval: 2000; onTriggered: shellCheck.running = true }
+    function handleStageLine(line) {
+        const m = /^stage (\S+) (ok|fail)$/.exec(line.trim());
+        if (!m)
+            return;   // прочий stdout dotprofile (active:, relogin ->, диагностика) — не наш контракт, не показываем сырьём
+        const key = m[1], status = m[2];
+        if (!(key in root.stageState))
+            return;
+        const next = Object.assign({}, root.stageState);
+        next[key] = status;
+        root.stageState = next;
+        if (status === "fail")
+            root.anyFailed = true;
+    }
+
+    function handleSwitchExit(code) {
+        root.switchDone = true;
+        if (code !== 0)
+            root.anyFailed = true;
+        if (root.dismissed) {
+            // юзер уже попросил закрыть оверлей — окно скрыто, ничего доигрывать не надо
+            Qt.quit();
+            return;
+        }
+        resultHold.start();
+    }
+
+    Process {
+        id: switchProc
+        running: false
+        stdout: SplitParser { onRead: line => root.handleStageLine(line) }
+        onExited: code => root.handleSwitchExit(code)
+    }
+
+    // Держим результат на экране, чтобы fail(ы) были ВИДНЫ, а не мигнули и исчезли.
     Timer {
-        id: capTimer
-        interval: 2500
-        running: root.phase === "transition" && !root.targetRelogin
+        id: resultHold
+        interval: root.anyFailed ? 1800 : 700
         onTriggered: root.fadeOutAndQuit()
     }
-    Timer { id: pollTimer; interval: 150; onTriggered: shellCheck.running = true }
-    Process {
-        id: shellCheck
-        command: ["sh", "-c", root.shellPgrep(root.target)]
-        onExited: code => { if (code === 0) root.fadeOutAndQuit(); else pollTimer.start(); }
-    }
-    function shellPgrep(name) {
-        if (name === "caelestia") return "pgrep -f 'qs -c caelesti[a]'";
-        if (name === "serpantinum") return "pgrep -f 'quickshell -p.*serpantinu[m]'";
-        return "true";
-    }
 
-    Timer { id: safetyQuit; interval: 5000; onTriggered: Qt.quit() }
+    // relogin рвёт горячий свитч на первой стадии — сессия уйдёт сама, это
+    // короткий бэкстоп на случай, если systemctl/hyprctl exit не отработали.
+    Timer { id: safetyQuit; interval: 5000; onTriggered: root.requestDismiss() }
+    // Общий бэкстоп для горячего свитча: не таймер прогресса (тот теперь
+    // честный, по stage-строкам), а потолок "process точно не должен висеть вечно".
+    Timer { id: watchdog; interval: 20000; onTriggered: root.requestDismiss() }
+    // Если юзер попросил закрыть, пока switchProc ещё жив — держим приложение
+    // (скрытым) до его настоящего завершения максимум столько, потом добиваем.
+    Timer { id: hardCeiling; interval: 15000; onTriggered: Qt.quit() }
+
+    // Закрытие по биндy/Escape НЕ обязано убивать процесс на середине —
+    // apply_rig_colors/daemons/rules пишут в живую сессию, и если оборвать
+    // dotprofile switch руками, риг останется в получужом состоянии (та же
+    // болезнь, что уже роняла GTK4-тему у end4). Поэтому если свитч ещё идёт,
+    // просто прячем окно и ждём его настоящего конца.
+    function requestDismiss() {
+        if (root.dismissed)
+            return;
+        root.dismissed = true;
+        if (switchProc.running) {
+            win.visible = false;
+            hardCeiling.start();
+        } else {
+            root.fadeOutAndQuit();
+        }
+    }
 
     property bool quitting: false
     function fadeOutAndQuit() {
@@ -77,10 +172,10 @@ ShellRoot {
             // полупрозрачный скрим — блюр стола даёт hyprland layer_rule
             color: Qt.rgba(0.03, 0.06, 0.06, 0.55)
             focus: true
-            Keys.onEscapePressed: if (root.phase === "picker") Qt.quit()
-            Keys.onUpPressed: win.currentIndex = Math.max(0, win.currentIndex - 1)
-            Keys.onDownPressed: win.currentIndex = Math.min(Rigs.list.length - 1, win.currentIndex + 1)
-            Keys.onReturnPressed: if (Rigs.list.length) root.select(Rigs.list[win.currentIndex].name)
+            Keys.onEscapePressed: root.requestDismiss()
+            Keys.onUpPressed: if (root.phase === "picker") win.currentIndex = Math.max(0, win.currentIndex - 1)
+            Keys.onDownPressed: if (root.phase === "picker") win.currentIndex = Math.min(Rigs.list.length - 1, win.currentIndex + 1)
+            Keys.onReturnPressed: if (root.phase === "picker" && Rigs.list.length) root.select(Rigs.list[win.currentIndex].name)
 
             NumberAnimation {
                 id: quitAnim
@@ -148,7 +243,7 @@ ShellRoot {
                 }
             }
 
-            // ── Фаза 2: transition-сплэш (crossfade + rise) ──
+            // ── Фаза 2: сборка целевого рига по стадиям ──
             Item {
                 id: splash
                 anchors.fill: parent
@@ -158,17 +253,21 @@ ShellRoot {
 
                 Column {
                     anchors.centerIn: parent
-                    spacing: 18
+                    spacing: 20
                     scale: root.phase === "transition" ? 1 : 0.9
                     Behavior on scale { NumberAnimation { duration: Tokens.durSpring; easing.type: Easing.BezierSpline; easing.bezierCurve: Tokens.springCurve } }
 
-                    // лого рига на тёмной плашке (светлое лого читается), буква-fallback
+                    // лого рига на тёмной плашке; рамка перекрашивается живьём
+                    // по доле реально прилетевших стадий — от акцента source
+                    // рига к акценту target, а не мгновенно (честный прогресс)
                     Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 88; height: 88; radius: Tokens.radPanel
                         color: Tokens.c.surfaceContainerLow
                         border.width: 1.5
-                        border.color: Tokens.c.primary
+                        border.color: root.lerpColor(root.fromIdentity.accent, root.toIdentity.accent,
+                                                      root.stageOrder.length ? assembly.landedCount / root.stageOrder.length : 0)
+                        Behavior on border.color { ColorAnimation { duration: Tokens.durEffects } }
 
                         Image {
                             id: splashLogo
@@ -187,54 +286,46 @@ ShellRoot {
                             font.pixelSize: 40; font.bold: true
                         }
                     }
-                    Text {
+                    Column {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.target
-                        color: Tokens.c.onSurface
-                        font.pixelSize: 34; font.weight: Font.Bold
+                        spacing: 2
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.target
+                            color: Tokens.c.onSurface
+                            font.pixelSize: 34; font.weight: Font.Bold
+                        }
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: root.roleOf(root.target).length > 0
+                            text: root.roleOf(root.target)
+                            color: Tokens.c.onSurfaceVariant
+                            font.pixelSize: 11
+                            font.letterSpacing: 1
+                        }
                     }
 
-                    // индикатор загрузки: крутящаяся дуга (primary), пока идёт свитч
-                    Item {
-                        id: spinner
+                    // сама сборка — шесть кусочков, по одному на реальную стадию
+                    Assembly {
+                        id: assembly
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: 30; height: 30
-
-                        Canvas {
-                            id: spinnerArc
-                            anchors.fill: parent
-                            onPaint: {
-                                const ctx = getContext("2d");
-                                ctx.reset();
-                                const c = width / 2;
-                                ctx.lineWidth = 3;
-                                ctx.lineCap = "round";
-                                ctx.strokeStyle = Tokens.c.primary;
-                                ctx.beginPath();
-                                ctx.arc(c, c, c - 2.5, 0, Math.PI * 1.5);
-                                ctx.stroke();
-                            }
-                            // перерисовать при смене палитры (scheme.json подгружается async)
-                            Connections {
-                                target: Tokens
-                                function onCChanged() { spinnerArc.requestPaint(); }
-                            }
-                        }
-                        RotationAnimator {
-                            target: spinner
-                            from: 0; to: 360
-                            duration: 900
-                            loops: Animation.Infinite
-                            running: root.phase === "transition"
-                        }
+                        stageState: root.stageState
+                        stageOrder: root.stageOrder
+                        stageLabels: root.stageLabels
+                        style: root.toIdentity.style
+                        accent: root.toIdentity.accent
+                        direction: root.direction
+                        relogin: root.targetRelogin
                     }
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        visible: root.targetRelogin
-                        text: "logging out to SDDM…"
-                        color: Tokens.c.onSurfaceVariant
-                        font.pixelSize: 15
+                        text: root.targetRelogin ? "logging out — restarting session"
+                            : root.anyFailed ? "finished with issues"
+                            : root.switchDone ? "ready"
+                            : "switching…"
+                        color: (root.anyFailed && !root.targetRelogin) ? Tokens.c.onErrorContainer : Tokens.c.onSurfaceVariant
+                        font.pixelSize: 14
                     }
                 }
             }
