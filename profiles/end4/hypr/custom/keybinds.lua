@@ -61,24 +61,6 @@ for _, combo in ipairs(unbinds) do
 end
 
 -- ─────────────────────────────────────────────────────────────────────────
--- §2.1 Действия через rigdo (переживают горячий свитч)
--- ─────────────────────────────────────────────────────────────────────────
-rebind("SUPER + SHIFT + D", hl.dsp.exec_cmd(home .. "/dotfiles/bin/dotprofile menu"))
-rebind("SHIFT + TAB",       hl.dsp.exec_cmd(rigdo .. "launcher"))
-rebind("SUPER + Y",         hl.dsp.exec_cmd(rigdo .. "wallpaper"))
-rebind("SUPER + SHIFT + O", hl.dsp.exec_cmd(rigdo .. "settings"))
-rebind("SUPER + M",         hl.dsp.exec_cmd(rigdo .. "shell"))
-rebind("SUPER + F1",        hl.dsp.exec_cmd(rigdo .. "lock"), { locked = true })
-rebind("SUPER + SHIFT + S", hl.dsp.exec_cmd(rigdo .. "screenshot"))
-rebind("SUPER + grave",     hl.dsp.exec_cmd(rigdo .. "clipboard"))
-rebind("SUPER + B",         hl.dsp.exec_cmd(rigdo .. "battery"))
-rebind("SUPER + N",         hl.dsp.exec_cmd(rigdo .. "network"))
-rebind("SUPER + H",         hl.dsp.exec_cmd(rigdo .. "guide"))
-rebind("SUPER + ALT + M",   hl.dsp.exec_cmd(rigdo .. "music"))
-rebind("SUPER + ALT + S",   hl.dsp.exec_cmd(rigdo .. "calendar"))
-rebind("SUPER + ALT + P",   hl.dsp.exec_cmd(rigdo .. "movies"))
-
--- ─────────────────────────────────────────────────────────────────────────
 -- §2.2 Окна
 -- ─────────────────────────────────────────────────────────────────────────
 rebind("SUPER + Q",           hl.dsp.window.close())

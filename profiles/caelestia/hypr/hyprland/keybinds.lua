@@ -11,10 +11,7 @@ local specialcycle = cscripts .. "/specialcycle.fish"
 -- Shell & Caelestia actions (риг-зависимые — через rigdo, чтобы работали
 -- и после горячего свитча на ilyamiro)
 local rigdo = os.getenv("HOME") .. "/dotfiles/bin/rigdo "
-hl.bind("SHIFT + TAB", hl.dsp.exec_cmd(rigdo .. "launcher"))
-hl.bind("SUPER + M", hl.dsp.exec_cmd(rigdo .. "shell"))                                        -- Restart shell
 hl.bind("SUPER + ALT + Escape", hl.dsp.exec_cmd("systemctl poweroff"))                                -- Full off
-hl.bind(vars.kbRestoreLock, hl.dsp.exec_cmd(rigdo .. "lock"), { locked = true })              -- Lock screen
 
 -- Window state & layout
 hl.bind(vars.kbWindowFullscreen, hl.dsp.window.fullscreen({ mode = "fullscreen" }))
@@ -68,7 +65,6 @@ hl.bind(vars.kbManagerApp, hl.dsp.exec_cmd("app2unit -- " .. vars.kbManager))
 hl.bind(vars.kbFileExplorer, hl.dsp.exec_cmd("app2unit -- " .. vars.fileExplorer))
 
 -- Utilities & tools
-hl.bind("SUPER + SHIFT + S", hl.dsp.exec_cmd(rigdo .. "screenshot"))             -- Screenshot region (freeze)
 hl.bind("ALT + SHIFT + R", hl.dsp.exec_cmd("caelestia record -s"))               -- Record + sound
 hl.bind("SUPER + SHIFT + R", hl.dsp.exec_cmd("caelestia record"))                 -- Record
 hl.bind("SUPER + O",         hl.dsp.exec_cmd("caelestia resizer pip"))            -- Picture-in-Picture
@@ -78,7 +74,6 @@ hl.bind("SUPER + ALT + N",                                                      
         [[fish -c "set m (caelestia scheme get -m); if test $m = dark; caelestia scheme set -m light; else; caelestia scheme set -m dark; end"]]))
 
 -- Clipboard & emoji
-hl.bind("SUPER + grave", hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard"))
 
 -- Hardware keys (TUF laptop)
 hl.bind("XF86AudioRaiseVolume",
