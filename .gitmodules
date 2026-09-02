@@ -1,0 +1,3 @@
+[submodule "profiles/serpantinum/shell"]
+	path = profiles/serpantinum/shell
+	url = https://github.com/ilyamiro/serpantinum.git

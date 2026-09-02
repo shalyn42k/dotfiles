@@ -30,6 +30,10 @@ local RIGS = {
         entry = "profiles/caelestia/hypr/hyprland/keybinds.lua",
         paths = { "profiles/caelestia/hypr/?.lua", "profiles/caelestia/hypr/?/init.lua" },
     },
+    serpantinum = {
+        entry = "profiles/serpantinum/hypr/overrides.lua",
+        paths = { "profiles/serpantinum/shell/compositors/hyprland/?.lua" },
+    },
 }
 
 -- Загрузить набор рига под свежим стабом. Возвращает (ok, err, live, rig).

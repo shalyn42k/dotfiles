@@ -7,6 +7,7 @@ set -u
 ACTIVE="$(basename "$(readlink -f "$HOME/dotfiles/profiles/active")" 2>/dev/null || echo caelestia)"
 QSM="$HOME/.config/hypr/scripts/qs_manager.sh"
 ILSCRIPTS="$HOME/dotfiles/profiles/ilyamiro/hypr/scripts"
+SERP="$HOME/dotfiles/profiles/serpantinum/shell/bin/serpantinum"
 
 hint() { notify-send -u low "rigdo" "$1"; }
 
@@ -24,30 +25,41 @@ hypr_global() {
 case "${1:-}" in
     launcher)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle applauncher
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle launcher
         else caelestia shell drawers toggle launcher; fi ;;
     wallpaper)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle wallpaper
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle wallpaper
         else hint "пикер обоев — в риге ilyamiro (SUPER+SHIFT+D)"; fi ;;
     settings)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle settings
+        # в serpantinum отдельного таргета "settings" нет: qs_manager.sh отдаёт
+        # только "guide" — тот же экран (WindowRegistry.js: id "guide", name "Settings")
+        elif [[ "$ACTIVE" == serpantinum ]]; then hint "настройки serpantinum — это guide (SUPER+H)"
         else hint "настройки рига — только в ilyamiro"; fi ;;
     music)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle music
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle music
         else hint "музыка-виджет — только в ilyamiro (feishin: SUPER+Z)"; fi ;;
     calendar)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle calendar
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle calendar
         else hint "календарь — только в ilyamiro"; fi ;;
     movies)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle movies
+        elif [[ "$ACTIVE" == serpantinum ]]; then hint "movies — нет аналога в serpantinum"
         else hint "movies — только в ilyamiro"; fi ;;
     clipboard)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle clipboard
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle clipboard
         else pkill fuzzel || caelestia clipboard; fi ;;
     screenshot)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$ILSCRIPTS/screenshot.sh"
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" screenshot
         else hypr_global caelestia:screenshotFreeze; fi ;;
     lock)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$ILSCRIPTS/lock.sh"
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" lock
         else hypr_global caelestia:lock; fi ;;
     shell)  # рестарт шелла активного рига
         if [[ "$ACTIVE" == ilyamiro ]]; then
@@ -56,17 +68,24 @@ case "${1:-}" in
             # hyprctl возвращает 0 даже при ошибке диспатча, поэтому
             # `|| fallback` не работал — hypr-exec сам выбирает движок.
             "$HOME/dotfiles/bin/hypr-exec" "quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml"
+        elif [[ "$ACTIVE" == serpantinum ]]; then
+            "$SERP" reload
         else
             qs -c caelestia kill; qs -c caelestia -d
         fi ;;
     battery)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle battery
+        # отдельного виджета батареи в serpantinum нет — заряд показан внутри
+        # системной панели (compositors/hyprland/config/keybinds.lua: SUPER+B → toggle system)
+        elif [[ "$ACTIVE" == serpantinum ]]; then hint "батарея — в системной панели serpantinum (SUPER+B)"
         else hint "виджет батареи — только в ilyamiro"; fi ;;
     network)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle network
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle network
         else hint "виджет сети — только в ilyamiro"; fi ;;
     guide)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle guide
+        elif [[ "$ACTIVE" == serpantinum ]]; then "$SERP" msg toggle guide
         else hint "гайд — только в ilyamiro (в caelestia: SUPER+T hyprkcs)"; fi ;;
     *) echo "usage: rigdo launcher|wallpaper|settings|music|calendar|movies|clipboard|screenshot|lock|shell|battery|network|guide" >&2; exit 1 ;;
 esac

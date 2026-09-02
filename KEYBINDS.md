@@ -15,6 +15,7 @@
 |---|---|---|
 | **ilyamiro** | hyprlang | 1) `profiles/ilyamiro/hypr/config/keybindings.conf` — **АВТОГЕН** из `settings.json`; 2) `.config/hypr-shared/binds-ilyamiro.conf` — грузится **последним**, `unbind`+`bind` перекрывает автоген; 3) `.config/hypr-shared/binds.conf` — общий свитчер |
 | **caelestia** | hyprkcs (Lua) | 1) `profiles/caelestia/hypr/hyprland/keybinds.lua` — **живой**, риговые бинды; 2) `.config/hypr-shared/contract-binds.lua` — **общий контракт §2**, грузится последним |
+| **serpantinum** | hyprkcs (Lua) | 1) `shell/compositors/hyprland/config/keybinds.lua` — дефолты апстрима (submodule, НЕ править); 2) `profiles/serpantinum/hypr/overrides.lua` — **наши бинды**, снимают конфликтные комбо апстрима и вешают свои; 3) `.config/hypr-shared/contract-binds.lua` — контракт, последним |
 
 ⚠️ **Ловушки правки:**
 - ilyamiro: не редактируй автоген `keybindings.conf` напрямую — снесётся при `dotprofile update`.
