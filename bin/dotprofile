@@ -114,13 +114,12 @@ apply_rig_colors() {
     fi
 
     # Vencord-тема Discord (rig.theme.css в vesktop/equibop): контент по ригу.
-    # ilyamiro-вариант генерит его matugen (обновляется со сменой обоев).
-    local dsrc
-    if [[ "$name" == ilyamiro && -f "$HOME/.cache/matugen/discord-ilyamiro.theme.css" ]]; then
-        dsrc="$HOME/.cache/matugen/discord-ilyamiro.theme.css"
-    else
-        dsrc="$PROFILES/caelestia/discord.theme.css"
-    fi
+    # Если у рига есть свой matugen (обновляется со сменой обоев) — берём его
+    # вывод по имени рига, а не захардкоженный список. Раньше тут проверялось
+    # только "== ilyamiro", из-за чего у любого другого matugen-рига (и у
+    # удалённого end4) тема молча падала на дефолт caelestia.
+    local dsrc="$HOME/.cache/matugen/discord-$name.theme.css"
+    [[ -f "$dsrc" ]] || dsrc="$PROFILES/caelestia/discord.theme.css"
     if [[ -f "$dsrc" ]]; then
         local client
         for client in vesktop equibop Vencord; do
@@ -130,12 +129,8 @@ apply_rig_colors() {
 
     # Obsidian: CSS-сниппет rig-theme в вольте, контент по ригу (как Discord)
     local vault="$HOME/Documents/Obsidian Vault/Shalyn_Vault"
-    local osrc
-    if [[ "$name" == ilyamiro && -f "$HOME/.cache/matugen/obsidian-ilyamiro.css" ]]; then
-        osrc="$HOME/.cache/matugen/obsidian-ilyamiro.css"
-    else
-        osrc="$PROFILES/caelestia/obsidian.css"
-    fi
+    local osrc="$HOME/.cache/matugen/obsidian-$name.css"
+    [[ -f "$osrc" ]] || osrc="$PROFILES/caelestia/obsidian.css"
     if [[ -d "$vault/.obsidian" && -f "$osrc" ]]; then
         mkdir -p "$vault/.obsidian/snippets"
         cp "$osrc" "$vault/.obsidian/snippets/rig-theme.css"
