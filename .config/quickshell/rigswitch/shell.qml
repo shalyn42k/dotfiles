@@ -15,6 +15,13 @@ ShellRoot {
     // Контракт со стадиями bin/dotprofile cmd_switch (`stage <имя> ok|fail`).
     // binds сюда сознательно не входит — стадия отключена в dotprofile
     // (сегфолтит композитор), см. её комментарий там же.
+    //
+    // Если hyprctl недоступен, dotprofile целиком пропускает стадии
+    // colors/animations/rules — они там внутри `if command -v hyprctl`.
+    // В этом случае соответствующие кусочки останутся pending до самого
+    // конца свитча (links/daemons/state всё равно приходят). Это косметика,
+    // не зависание: watchdog и content-сигнал (active:/relogin ->) не зависят
+    // от того, сколько стадий реально напечаталось.
     readonly property var stageOrder: ["links", "colors", "animations", "rules", "daemons", "state"]
     readonly property var stageLabels: ({
         links: "config", colors: "palette", animations: "motion",
@@ -27,6 +34,7 @@ ShellRoot {
     property bool anyFailed: false
     property bool switchDone: false
     property bool dismissed: false
+    property string logPath: ""
 
     function roleOf(name) {
         const r = Rigs.byName(name);
@@ -65,45 +73,73 @@ ShellRoot {
         root.anyFailed = false;
         root.switchDone = false;
         phase = "transition";
-        switchProc.command = [Quickshell.env("HOME") + "/dotfiles/bin/dotprofile", "switch", name];
-        switchProc.running = true;
+
+        // Свитч запускается ПОЛНОСТЬЮ отдельно от нас (execDetached, не
+        // Process) — оверлей может умереть в любой момент (Escape, повторный
+        // бинд шлёт нам pkill СНАРУЖИ — его никаким QML-обработчиком не
+        // поймать, наш собственный watchdog, да просто краш), а dotprofile
+        // switch обязан доехать до конца в любом случае: apply_rig_colors/
+        // daemons/rules уже пишут в живую сессию, оборванный на середине
+        // свитч — это ровно та болезнь, что роняла GTK4-тему у end4, только
+        // хуже (обе session.sh недо-применены разом). Прогресс читаем ОТДЕЛЬНЫМ
+        // tail -F по файлу — если убьют нас, умрёт только tail, свитч не заметит.
+        const runtimeDir = Quickshell.env("XDG_RUNTIME_DIR") || "/tmp";
+        const stamp = Date.now() + "-" + Math.floor(Math.random() * 1000000);
+        root.logPath = runtimeDir + "/rigswitch-" + name + "-" + stamp + ".log";
+        const dotprofile = Quickshell.env("HOME") + "/dotfiles/bin/dotprofile";
+        // ": > лог" — первая команда в ТОМ ЖЕ шелле, до exec dotprofile —
+        // гарантирует, что файл создан/пуст раньше, чем свитч в него пишет
+        // (и раньше, чем наш tail -F вообще успеет запуститься).
+        Quickshell.execDetached(["sh", "-c",
+            ": > '" + root.logPath + "'; exec '" + dotprofile + "' switch '" + name + "' > '" + root.logPath + "' 2>&1"]);
+
+        // -F (не -f): если наш tail всё-таки стартует раньше, чем шелл выше
+        // успел создать файл, -F ждёт и переоткрывает, а не падает с ошибкой.
+        tailProc.command = ["tail", "-n", "+1", "-F", root.logPath];
+        tailProc.running = true;
+
         if (root.targetRelogin)
             safetyQuit.start();
         else
             watchdog.start();
     }
 
-    function handleStageLine(line) {
-        const m = /^stage (\S+) (ok|fail)$/.exec(line.trim());
-        if (!m)
-            return;   // прочий stdout dotprofile (active:, relogin ->, диагностика) — не наш контракт, не показываем сырьём
-        const key = m[1], status = m[2];
-        if (!(key in root.stageState))
-            return;
-        const next = Object.assign({}, root.stageState);
-        next[key] = status;
-        root.stageState = next;
-        if (status === "fail")
-            root.anyFailed = true;
-    }
-
-    function handleSwitchExit(code) {
-        root.switchDone = true;
-        if (code !== 0)
-            root.anyFailed = true;
-        if (root.dismissed) {
-            // юзер уже попросил закрыть оверлей — окно скрыто, ничего доигрывать не надо
-            Qt.quit();
+    function handleLogLine(line) {
+        const trimmed = line.trim();
+        const m = /^stage (\S+) (ok|fail)$/.exec(trimmed);
+        if (m) {
+            const key = m[1], status = m[2];
+            if (key in root.stageState) {
+                const next = Object.assign({}, root.stageState);
+                next[key] = status;
+                root.stageState = next;
+                if (status === "fail")
+                    root.anyFailed = true;
+            }
             return;
         }
+        // Завершение — по содержимому, не по выходу процесса (мы его больше
+        // не отслеживаем): `active: <name>` — последняя строка успешного
+        // cmd_switch, `relogin -> ...` — единственное, что напечатает
+        // кросс-движковый переход перед тем, как сессия уйдёт сама.
+        // Остальной stdout/stderr dotprofile (диагностика, часто по-русски) —
+        // не наш контракт, сырьём в UI не показываем.
+        if (/^active: /.test(trimmed) || /^relogin -> /.test(trimmed))
+            root.finishSwitch();
+    }
+
+    function finishSwitch() {
+        if (root.switchDone)
+            return;   // active: гарантированно одна строка, но береженого...
+        root.switchDone = true;
+        tailProc.running = false;   // это наш disposable tail, не сам свитч — его остановка ничего не рвёт
         resultHold.start();
     }
 
     Process {
-        id: switchProc
+        id: tailProc
         running: false
-        stdout: SplitParser { onRead: line => root.handleStageLine(line) }
-        onExited: code => root.handleSwitchExit(code)
+        stdout: SplitParser { onRead: line => root.handleLogLine(line) }
     }
 
     // Держим результат на экране, чтобы fail(ы) были ВИДНЫ, а не мигнули и исчезли.
@@ -116,28 +152,21 @@ ShellRoot {
     // relogin рвёт горячий свитч на первой стадии — сессия уйдёт сама, это
     // короткий бэкстоп на случай, если systemctl/hyprctl exit не отработали.
     Timer { id: safetyQuit; interval: 5000; onTriggered: root.requestDismiss() }
-    // Общий бэкстоп для горячего свитча: не таймер прогресса (тот теперь
-    // честный, по stage-строкам), а потолок "process точно не должен висеть вечно".
+    // Бэкстоп для горячего свитча: НЕ таймер прогресса (тот честный, по
+    // content-сигналу из лога) — просто потолок "оверлей не должен висеть
+    // вечно", если active:/relogin -> почему-то не долетели (например, tail
+    // не смог открыть файл). Сам свитч это никак не касается — мы его больше
+    // не держим за хвост, поэтому свободны закрыться в любой момент.
     Timer { id: watchdog; interval: 20000; onTriggered: root.requestDismiss() }
-    // Если юзер попросил закрыть, пока switchProc ещё жив — держим приложение
-    // (скрытым) до его настоящего завершения максимум столько, потом добиваем.
-    Timer { id: hardCeiling; interval: 15000; onTriggered: Qt.quit() }
 
-    // Закрытие по биндy/Escape НЕ обязано убивать процесс на середине —
-    // apply_rig_colors/daemons/rules пишут в живую сессию, и если оборвать
-    // dotprofile switch руками, риг останется в получужом состоянии (та же
-    // болезнь, что уже роняла GTK4-тему у end4). Поэтому если свитч ещё идёт,
-    // просто прячем окно и ждём его настоящего конца.
+    // Свитч больше не наш child (execDetached), поэтому закрытие оверлея —
+    // Escape, повторный бинд (внешний pkill), watchdog — ничем не рискует:
+    // прятать окно и ждать больше не нужно, можно просто уйти.
     function requestDismiss() {
         if (root.dismissed)
             return;
         root.dismissed = true;
-        if (switchProc.running) {
-            win.visible = false;
-            hardCeiling.start();
-        } else {
-            root.fadeOutAndQuit();
-        }
+        root.fadeOutAndQuit();
     }
 
     property bool quitting: false
