@@ -1,18 +1,37 @@
 #!/usr/bin/env bash
 # Запуск Hyprland с выбранным риг-профилем.
-#   start-hyprland-profile <rig>   — явный риг (SDDM hyprland-ilyamiro)
-#   start-hyprland-profile --lua   — последний lua-риг из profiles/.last-lua
-#                                    (SDDM hyprland-lua), дефолт caelestia
+#
+#   start-hyprland-profile --auto   — риг из profiles/active (SDDM: hyprland-rig)
+#   start-hyprland-profile <rig>    — явный риг
+#   start-hyprland-profile --lua    — [legacy] последний lua-риг из .last-lua
+#
+# --auto обслуживает ВСЕ риги, включая hyprlang-ilyamiro: движок Hyprland
+# выбирает по тому, что лежит в ~/.config/hypr (hyprland.lua или hyprland.conf),
+# а симлинки переставляются здесь, до exec. Поэтому SDDM-запись нужна одна.
+#
+# Источник правды — profiles/active: cmd_switch переставляет его ПЕРЕД тем как
+# просить релогин, так что после перезахода мы приземляемся в запрошенный риг.
+# Раньше эту роль пытался играть ~/.dmrc, который SDDM не читает (см. dotprofile).
+#
+# set -e сознательно нет: упасть здесь — значит не залогинить пользователя.
+# Любая неудача подготовки лучше чёрного экрана, поэтому до exec доходим всегда.
 DOTFILES="$HOME/dotfiles"
 name="${1:-}"
 
-if [[ -z "$name" || "$name" == "--lua" ]]; then
-    name="$(cat "$DOTFILES/profiles/.last-lua" 2>/dev/null || true)"
-    # валидируем: реально существующий lua-риг, иначе caelestia
-    if [[ -z "$name" || ! -f "$DOTFILES/profiles/$name/hypr/hyprland.lua" ]]; then
-        name=caelestia
-    fi
-fi
+case "$name" in
+    ""|--auto)
+        name="$(readlink "$DOTFILES/profiles/active" 2>/dev/null || true)"
+        name="${name##*/}"
+        ;;
+    --lua)
+        name="$(cat "$DOTFILES/profiles/.last-lua" 2>/dev/null || true)"
+        [[ -n "$name" && -f "$DOTFILES/profiles/$name/hypr/hyprland.lua" ]] || name=""
+        ;;
+esac
 
-"$DOTFILES/bin/dotprofile" switch "$name" --links-only
+# Валидация: реально существующий профиль, иначе caelestia. Ловит и висячий
+# active (риг удалён), и пустой .last-lua, и опечатку в аргументе.
+[[ -n "$name" && -d "$DOTFILES/profiles/$name" ]] || name=caelestia
+
+"$DOTFILES/bin/dotprofile" switch "$name" --links-only || true
 exec /usr/bin/start-hyprland

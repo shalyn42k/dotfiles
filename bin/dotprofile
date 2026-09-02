@@ -166,27 +166,33 @@ rig_engine() {
     [[ -f "$PROFILES/$1/hypr/hyprland.lua" ]] && echo lua || echo hyprlang
 }
 
-# Имя SDDM-сессии (.desktop без расширения) для рига. Все lua-риги делят
-# одну сессию hyprland-lua; ilyamiro — своя.
-session_desktop() {
-    [[ "$(rig_engine "$1")" == lua ]] && echo hyprland-lua || echo "hyprland-$1"
-}
-
-# Запомнить последний lua-риг — hyprland-lua сессия стартует в него (Task 5).
+# Запомнить последний lua-риг — читает legacy-запись hyprland-lua
+# (start-hyprland-profile --lua). Единая запись hyprland-rig берёт риг из
+# profiles/active и в этом файле не нуждается.
 write_last_lua() {
     [[ "$(rig_engine "$1")" == lua ]] && echo "$1" > "$PROFILES/.last-lua" || true
 }
 
 # Кросс-движковый переход невозможен в живой сессии (Hyprland фиксирует
 # движок при старте). Готовим релогин: active уже переключён вызывающим,
-# ставим подсветку целевой сессии в SDDM и просим Hyprland выйти. Функция
-# возвращается как обычно — падения в горячий свитч не будет, т.к. вызывающий
-# cmd_switch делает return 0 сразу после trigger_relogin.
+# просим Hyprland выйти. Функция возвращается как обычно — падения в горячий
+# свитч не будет, т.к. вызывающий cmd_switch делает return 0 сразу после
+# trigger_relogin.
+#
+# Целевой риг несёт profiles/active, и единственная SDDM-запись
+# (hyprland-rig -> start-hyprland-profile --auto) его читает.
+#
+# Раньше здесь писался ~/.dmrc с именем целевой сессии. SDDM его НЕ читает —
+# он держит последнюю сессию в root-овом /var/lib/sddm/state.conf, — поэтому
+# запись была холостой: релогин приземлялся в ту сессию, что SDDM запомнил,
+# а её Exec переставлял active обратно. Кросс-движковый свитч из-за этого
+# всегда возвращал в исходный риг. Проверено по journal 2026-09-02:
+#   13:40:09  ~/.dmrc = hyprland-lua
+#   13:41:00  Session "hyprland-ilyamiro.desktop" selected
 trigger_relogin() {
     local name="$1"
     write_last_lua "$name"
-    printf '[Desktop]\nSession=%s\n' "$(session_desktop "$name")" > "$HOME/.dmrc"
-    echo "relogin -> $name (сессия $(session_desktop "$name")); выхожу в SDDM..."
+    echo "relogin -> $name; выхожу в SDDM..."
     systemctl --user stop graphical-session.target 2>/dev/null || true
     sleep 0.3
     if [[ "$(hypr_provider)" == lua ]]; then

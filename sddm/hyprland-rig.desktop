@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Hyprland (rig)
+Comment=Hyprland; риг берётся из dotfiles/profiles/active — свитч SUPER+SHIFT+D
+Exec=/home/shalyn42k/dotfiles/bin/start-hyprland-profile --auto
+Type=Application
+DesktopNames=Hyprland

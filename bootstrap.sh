@@ -16,7 +16,7 @@ PKGS=(
     # WM + сессия
     hyprland hypridle hyprpolkitagent hyprpicker sddm
     # шеллы обоих ригов
-    quickshell-git caelestia-cli
+    quickshell caelestia-cli
     # терминал/шелл/лаунчер
     foot fish fuzzel
     # обои (awww = форк swww; mpvpaper = видео)
@@ -158,8 +158,15 @@ for f in "$DOTFILES"/sddm/hyprland-*.desktop; do
     sed "s|/home/shalyn42k|$HOME|g" "$f" > "$tmpd/$(basename "$f")"
 done
 if sudo -n true 2>/dev/null || sudo -v; then
+    # Прежние per-rig записи. Единая hyprland-rig.desktop обслуживает все
+    # риги через --auto, поэтому остальные только плодят промахи выбора.
     sudo rm -f /usr/share/wayland-sessions/hyprland-caelestia.desktop \
-               /usr/share/wayland-sessions/hyprland-end4.desktop
+               /usr/share/wayland-sessions/hyprland-end4.desktop \
+               /usr/share/wayland-sessions/hyprland-lua.desktop \
+               /usr/share/wayland-sessions/hyprland-ilyamiro.desktop
+    # Пакетная запись hyprland-uwsm: uwsm мы не ставим, сессия нерабочая.
+    # Вернётся при обновлении hyprland — durable-вариант в docs/tech-debt.md п.10.
+    sudo rm -f /usr/share/wayland-sessions/hyprland-uwsm.desktop
     sudo cp "$tmpd"/hyprland-*.desktop /usr/share/wayland-sessions/
     sudo systemctl enable sddm 2>/dev/null || true
 else

@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Hyprland (lua rig)
-Comment=Hyprland lua-провайдер: caelestia/end4 (горячий свитч SUPER+SHIFT+D)
-Exec=/home/shalyn42k/dotfiles/bin/start-hyprland-profile --lua
-Type=Application
