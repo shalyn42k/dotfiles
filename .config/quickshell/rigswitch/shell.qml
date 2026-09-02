@@ -39,7 +39,6 @@ ShellRoot {
     }
     function shellPgrep(name) {
         if (name === "caelestia") return "pgrep -f 'qs -c caelesti[a]'";
-        if (name === "end4")      return "pgrep -f -- '-c i[i]'";
         return "true";
     }
 

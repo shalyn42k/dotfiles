@@ -55,22 +55,23 @@ it("drop() removes the owner's binds from the compositor", function()
     assert_eq(rig.count("caelestia"), 0, "caelestia bind count after drop")
 end)
 
--- end4 снимает 13 конфликтных ii-комбо через hl.unbind
--- (profiles/end4/hypr/custom/keybinds.lua:35-51). Без обёртки хендл остаётся в
--- реестре мёртвым, и drop позже дёргает :remove() по нему.
+-- Набор рига может снимать конфликтные комбы через hl.unbind перед своими
+-- биндами (так делал удалённый риг end4, так же устроен contract-binds.lua).
+-- Без обёртки снятый бинд остаётся в реестре мёртвым хендлом, и drop позже
+-- дёргает :remove() по нему.
 it("drop() survives binds already removed via hl.unbind", function()
     local rig, hl, live = fresh()
-    rig.own("end4", function()
+    rig.own("rig", function()
         hl.bind("SUPER + Tab", "ii-overview")
         hl.bind("SUPER + O", "region-search")
     end)
     hl.unbind("SUPER + Tab")
     assert_eq(#live, 1, "live binds after unbind")
 
-    rig.drop("end4")
+    rig.drop("rig")
 
     assert_eq(#live, 0, "live binds after drop")
-    assert_eq(rig.count("end4"), 0, "end4 bind count after drop")
+    assert_eq(rig.count("rig"), 0, "rig bind count after drop")
 end)
 
 -- Свитч ставит новый набор ДО сноса старого. Если загрузка падает на середине,
@@ -80,14 +81,14 @@ it("own() rolls back its partial set when the chunk fails", function()
     local rig, hl, live = fresh()
     rig.own("caelestia", function() hl.bind("SUPER + M", "restart-shell") end)
 
-    local ok = rig.own("end4", function()
+    local ok = rig.own("rig", function()
         hl.bind("SUPER + O", "region-search")
         hl.bind("SUPER + B", "sidebar")
         error("keybinds.lua: attempt to index a nil value")
     end)
 
     assert_eq(ok, false, "own() reports failure")
-    assert_eq(rig.count("end4"), 0, "end4 bind count after failed load")
+    assert_eq(rig.count("rig"), 0, "rig bind count after failed load")
     assert_eq(#live, 1, "only the old rig's bind is left live")
 end)
 

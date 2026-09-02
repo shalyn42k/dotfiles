@@ -6,19 +6,17 @@ DOTFILES="$HOME/dotfiles"
 PROFILES="$DOTFILES/profiles"
 ACTIVE="$PROFILES/active"
 CONTESTED=(hypr gtk-3.0 gtk-4.0 qt5ct qt6ct matugen)
-# OPTIONAL_LINKS — каталоги, которые есть НЕ у всех ригов (end4-эксклюзив: ii-шелл
-# и его Qt/шрифт-тема). Формат «источник-в-профиле:цель-в-.config». ensure_links
-# ставит симлинк, если у активного рига каталог есть, иначе снимает наш симлинк
-# (самокоррекция: relogin в ilyamiro после end4 не тащит его fontconfig/Kvantum).
-OPTIONAL_LINKS=(
-    "quickshell-ii:quickshell/ii"
-    "fontconfig:fontconfig"
-    "Kvantum:Kvantum"
-    "kde-material-you-colors:kde-material-you-colors"
-)
+# OPTIONAL_LINKS — каталоги, которые есть НЕ у всех ригов. Формат
+# «источник-в-профиле:цель-в-.config». ensure_links ставит симлинк, если у
+# активного рига каталог есть, иначе снимает наш симлинк и возвращает бэкап.
+#
+# Сейчас пуст: все записи были end4-эксклюзивом (ii-шелл, его Qt- и
+# шрифт-тема), а риг удалён 2026-09-02. Механика оставлена — serpantinum
+# приедет со своим набором каталогов.
+OPTIONAL_LINKS=()
 
 usage() {
-    echo "usage: dotprofile switch <name> [--links-only] | menu | status | update <name>" >&2
+    echo "usage: dotprofile switch <name> [--links-only] | menu | status | doctor | update <name>" >&2
     exit 1
 }
 
@@ -29,13 +27,26 @@ list_profiles() {
 }
 
 ensure_links() {
+    local missing=()
     for d in "${CONTESTED[@]}"; do
+        # CONTESTED обязателен по контракту рига. Раньше симлинк ставился
+        # безусловно: если каталога у рига нет, в ~/.config оставался битый
+        # симлинк, и всё, что туда пишет, тихо падало. Так у end4 пропала
+        # GTK4-тема целиком — его matugen рендерил gtk.css в никуда.
+        if [[ ! -d "$PROFILES/active/$d" ]]; then
+            missing+=("$d")
+            continue
+        fi
         # реальный каталог (не наш симлинк) — снести, иначе ln положит симлинк
         # ВНУТРЬ (напр. ~/.config/matugen/matugen). matugen/end4 сюда попадали.
         [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]] && rm -rf "$HOME/.config/${d:?}"
         ln -sfn "$PROFILES/active/$d" "$HOME/.config/$d"
     done
-    # Опциональные (end4-эксклюзив) — ставим/снимаем по наличию у активного рига.
+    if (( ${#missing[@]} )); then
+        echo "ensure_links: у рига '$(current)' нет обязательных каталогов: ${missing[*]}" >&2
+        echo "  темы, которые туда рендерятся, применяться не будут (см. dotprofile doctor)" >&2
+    fi
+    # Опциональные — ставим/снимаем по наличию у активного рига.
     local pair src dst target link
     for pair in "${OPTIONAL_LINKS[@]}"; do
         src="${pair%%:*}"; dst="${pair##*:}"
@@ -54,8 +65,9 @@ ensure_links() {
     done
     # Последняя пара может кончиться ложным [[ -e ]] (риг без опц-каталога,
     # напр. caelestia без kde-material-you-colors) — тогда функция вернула бы 1
-    # и под `set -e` убила cmd_switch до stop/reload/start. Явный успех.
-    return 0
+    # на ровном месте. Поэтому итог считаем ЯВНО и только по CONTESTED:
+    # отсутствие опционального каталога — норма, обязательного — нет.
+    (( ${#missing[@]} == 0 ))
 }
 
 # Цвет рамок окон задаётся конфиг-движком при старте сессии; при горячем
@@ -66,19 +78,7 @@ apply_rig_colors() {
     local name="$1" active="" inactive="" accent_hex=""
     local cconf="$PROFILES/$name/hypr/colors.conf"
     local clua="$PROFILES/$name/hypr/scheme/current.lua"
-    local cjson="$HOME/.local/state/quickshell/user/generated/colors.json"
-    if [[ "$name" == end4 && -f "$cjson" ]] && command -v jq >/dev/null; then
-        # end4 (illogical-impulse): палитру генерит его matugen в colors.json.
-        # Бордюры повторяют его hyprland/colors.lua-шаблон (outline_variant/77,
-        # surface_container_low/33); fastfetch-accent — primary (яркий, не тусклый
-        # бордюр). hex приходит с '#', rgba() хочет без — стрипаем ниже.
-        local ov scl pr
-        ov="$(jq -r '.outline_variant // empty' "$cjson")"
-        scl="$(jq -r '.surface_container_low // empty' "$cjson")"
-        pr="$(jq -r '.primary // empty' "$cjson")"
-        [[ -n "$ov" && -n "$scl" ]] && { active="rgba(${ov#\#}77)"; inactive="rgba(${scl#\#}33)"; }
-        [[ -n "$pr" ]] && accent_hex="${pr#\#}"
-    elif [[ -f "$cconf" ]]; then
+    if [[ -f "$cconf" ]]; then
         active="$(awk -F' = ' '/^\$active_border/{print $2}' "$cconf")"
         inactive="$(awk -F' = ' '/^\$inactive_border/{print $2}' "$cconf")"
     elif [[ -f "$clua" ]] && command -v luajit >/dev/null; then
@@ -118,8 +118,6 @@ apply_rig_colors() {
     local dsrc
     if [[ "$name" == ilyamiro && -f "$HOME/.cache/matugen/discord-ilyamiro.theme.css" ]]; then
         dsrc="$HOME/.cache/matugen/discord-ilyamiro.theme.css"
-    elif [[ "$name" == end4 && -f "$HOME/.cache/matugen/discord-end4.theme.css" ]]; then
-        dsrc="$HOME/.cache/matugen/discord-end4.theme.css"
     else
         dsrc="$PROFILES/caelestia/discord.theme.css"
     fi
@@ -135,8 +133,6 @@ apply_rig_colors() {
     local osrc
     if [[ "$name" == ilyamiro && -f "$HOME/.cache/matugen/obsidian-ilyamiro.css" ]]; then
         osrc="$HOME/.cache/matugen/obsidian-ilyamiro.css"
-    elif [[ "$name" == end4 && -f "$HOME/.cache/matugen/obsidian-end4.css" ]]; then
-        osrc="$HOME/.cache/matugen/obsidian-end4.css"
     else
         osrc="$PROFILES/caelestia/obsidian.css"
     fi
@@ -210,6 +206,65 @@ apply_rig_animations() {
     [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
 }
 
+# Бинды рига — меняются в рантайме через реестр владения
+# (.config/hypr-shared/rigbinds.lua). Спека:
+# docs/superpowers/specs/2026-09-02-rig-switch-binds-ownership-design.md
+#
+# Порядок внутри чанка важен:
+#   1. reset_modules — package.loaded держит variables/functions СТАРОГО рига,
+#      без сброса dofile подтянет чужие значения;
+#   2. own(<новый>) — сначала ПОСТАВИТЬ новый набор;
+#   3. drop(<старый>) — и только если загрузка прошла. Обратный порядок при
+#      падении оставил бы систему без клавиатуры;
+#   4. контракт последним — набор рига мог занять его комбы (ii-дефолты вешают
+#      SUPER+B, SUPER+N, SUPER+M), а контракт снимает комбу перед своей.
+apply_rig_binds() {
+    local old="$1" new="$2"
+    local files=() f
+    for f in "$PROFILES/$new/hypr/hyprland/keybinds.lua" \
+             "$PROFILES/$new/hypr/custom/keybinds.lua"; do
+        [[ -f "$f" ]] && files+=("$f")
+    done
+    (( ${#files[@]} )) || { echo "apply_rig_binds: у рига '$new' нет файлов биндов" >&2; return 1; }
+
+    local loads=""
+    for f in "${files[@]}"; do loads+="dofile('$f') "; done
+
+    local status; status="$(mktemp)"
+    hyprctl eval "
+        local st
+        if __rig and __rig.own then
+            __rig.reset_modules()
+            if __rig.own('$new', function() $loads end) then
+                __rig.drop('$old')
+                st = 'ok'
+            else
+                st = 'load-failed'
+            end
+            dofile('$DOTFILES/.config/hypr-shared/contract-binds.lua')
+        else
+            st = 'no-registry'
+        end
+        local h = io.open('$status', 'w') h:write(st) h:close()
+    " >/dev/null 2>&1
+
+    local result; result="$(cat "$status" 2>/dev/null || true)"
+    rm -f "$status"
+    case "$result" in
+        ok) return 0 ;;
+        no-registry)
+            # Сессия стартовала до появления прелюдии в hyprland.lua рига.
+            echo "apply_rig_binds: в этой сессии нет реестра биндов — нужен один релогин" >&2
+            return 1 ;;
+        load-failed)
+            echo "apply_rig_binds: набор рига '$new' не загрузился; прежние бинды сохранены" >&2
+            return 1 ;;
+        *)
+            echo "apply_rig_binds: hyprctl eval не ответил (риг '$new')" >&2
+            return 1 ;;
+    esac
+}
+
 # Window/workspace-правила рига — применяем набор целевого рига в рантайме
 # (mirror apply_rig_animations). Целевые добавляются последними → выигрывают
 # конфликтные (opacity/blur общих классов). Старые правила рига лингерят, но
@@ -220,6 +275,21 @@ apply_rig_rules() {
     [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
 }
 
+# Одна стадия свитча. Печатает `stage <имя> ok|fail` в stdout — это контракт с
+# оверлеем rigswitch: он анимирует сборку рига по реальным событиям, а не по
+# таймеру вслепую. Провал стадии больше не немой, но и не фатальный: остальные
+# слои применить всё равно нужно.
+SWITCH_FAILED=0
+stage() {
+    local name="$1"; shift
+    if "$@"; then
+        echo "stage $name ok"
+    else
+        echo "stage $name fail"
+        SWITCH_FAILED=1
+    fi
+}
+
 cmd_switch() {
     local name="${1:-}"; [[ -n "$name" ]] || usage
     local links_only="${2:-}"
@@ -227,7 +297,7 @@ cmd_switch() {
     local old; old="$(current || true)"
 
     ln -sfn "$name" "$ACTIVE"
-    ensure_links
+    stage links ensure_links
 
     if [[ "$links_only" == "--links-only" ]]; then
         echo "active: $name"
@@ -245,24 +315,62 @@ cmd_switch() {
         fi
     fi
 
-    # Одномувижковый горячий свитч.
+    # ── Одномувижковый горячий свитч, стадиями ──
+    #
+    # Порядок не произвольный. links (выше) первой — через ~/.config/* читает всё
+    # остальное, включая package.path, по которому стадия binds резолвит require.
+    # colors ДО daemons, чтобы шелл нового рига стартовал уже на своей схеме, а
+    # не перекрашивался на глазах. daemons предпоследней как самая медленная.
+    if command -v hyprctl >/dev/null; then
+        # ⚠ СТАДИЯ binds ОТКЛЮЧЕНА — роняет композитор.
+        #
+        # Два SIGSEGV подряд 2026-09-02, оба с одной подписью:
+        #   Config::Lua::Objects::CLuaKeybind::push(lua_State*, CSharedPointer<SKeybind>)
+        #   ← Config::Lua::CConfigManager::guardedPCall ← ::eval
+        # Крэш-репорты: ~/.cache/hyprland/hyprlandCrashReport{35293,173}.txt
+        #
+        # Падает не снятие само по себе (одиночный :remove() в зонде отработал
+        # чисто, 100 -> 99), а первый hl.bind ПОСЛЕ массового сноса: push
+        # разыменовывает уже недействительный SKeybind. То есть __rig.drop
+        # оставляет внутренний список биндов Hyprland 0.56.2 в состоянии, где
+        # очередной bind сегфолтит. pcall не помогает — это падение процесса,
+        # а не lua-ошибка.
+        #
+        # Реестр и контракт при этом исправны: на загрузке конфига дают
+        # shared=14 + caelestia=85 = 99, совпадает с `hyprctl binds`.
+        #
+        # Путь к починке: снимать через hl.unbind(комба) вместо хендлов —
+        # реестр уже хранит строку комбы рядом с хендлом. Косвенных
+        # подтверждений безопасности unbind три: зонд (unbind, затем 88 биндов,
+        # без падения), и годами работавший custom/keybinds.lua у end4
+        # (13 unbind, следом 85 биндов). Проверять — в ОТДЕЛЬНОМ headless-
+        # инстансе Hyprland, не в живой сессии.
+        # stage binds      apply_rig_binds "$old" "$name"
+        stage colors     apply_rig_colors "$name"
+        stage animations apply_rig_animations "$name"
+        stage rules      apply_rig_rules "$name"
+    fi
+    stage daemons swap_session_daemons "$old" "$name"
+    stage state   write_last_lua "$name"
+
+    echo "active: $name"
+    return $SWITCH_FAILED
+}
+
+# Шелл и демоны рига: погасить старый, поднять новый.
+swap_session_daemons() {
+    local old="$1" new="$2"
     if [[ -n "$old" && -x "$PROFILES/$old/session.sh" ]]; then
         "$PROFILES/$old/session.sh" stop || true
     fi
-    [[ -x "$PROFILES/$name/session.sh" ]] && "$PROFILES/$name/session.sh" start
-    if command -v hyprctl >/dev/null; then
-        apply_rig_colors "$name"
-        apply_rig_animations "$name"
-        apply_rig_rules "$name"
-    fi
-    write_last_lua "$name"
-    echo "active: $name"
+    [[ -x "$PROFILES/$new/session.sh" ]] || return 0
+    "$PROFILES/$new/session.sh" start
 }
 
 cmd_menu() {
-    # Overlay-пикер (rigswitch). /usr/bin/qs абсолютно: bare qs под end4
-    # ловит март-quickshell из PATH (см. eac4927). Toggle: повторное нажатие
-    # бинда закрывает уже открытый overlay вместо второго инстанса.
+    # Overlay-пикер (rigswitch). /usr/bin/qs абсолютным путём — исторически
+    # bare `qs` ловил из PATH чужую сборку quickshell (см. eac4927). Toggle:
+    # повторное нажатие бинда закрывает уже открытый overlay.
     if [[ -x /usr/bin/qs && -d "$HOME/.config/quickshell/rigswitch" ]]; then
         if pgrep -f '/usr/bin/qs -c rigswitch' >/dev/null; then
             pkill -f '/usr/bin/qs -c rigswitch'
@@ -278,6 +386,41 @@ cmd_menu() {
     choice="${choice% (active)}"
     [[ -z "$choice" || "$choice" == "$cur" ]] && exit 0
     cmd_switch "$choice"
+}
+
+# doctor — проверка контракта ригов. Ловит ровно тот класс поломок, из-за
+# которого у end4 молча пропала GTK4-тема: каталог из CONTESTED отсутствует у
+# рига, а симлинк на него всё равно стоит и указывает в никуда.
+cmd_doctor() {
+    local rc=0 rig d link
+    for rig in $(list_profiles); do
+        local missing=()
+        for d in "${CONTESTED[@]}"; do
+            [[ -d "$PROFILES/$rig/$d" ]] || missing+=("$d")
+        done
+        if (( ${#missing[@]} )); then
+            printf '%-10s НЕТ обязательных каталогов: %s\n' "$rig" "${missing[*]}"
+            rc=1
+        else
+            printf '%-10s ok\n' "$rig"
+        fi
+    done
+
+    echo
+    echo "симлинки ~/.config активного рига ($(current || echo '<none>')):"
+    for d in "${CONTESTED[@]}"; do
+        link="$HOME/.config/$d"
+        if [[ -L "$link" && ! -e "$link" ]]; then
+            printf '  %-8s БИТЫЙ -> %s\n' "$d" "$(readlink "$link")"
+            rc=1
+        elif [[ ! -e "$link" ]]; then
+            printf '  %-8s отсутствует\n' "$d"
+            rc=1
+        else
+            printf '  %-8s ok\n' "$d"
+        fi
+    done
+    return $rc
 }
 
 cmd_status() {
@@ -349,6 +492,7 @@ case "${1:-}" in
     switch) shift; cmd_switch "$@" ;;
     menu)   cmd_menu ;;
     status) cmd_status ;;
+    doctor) cmd_doctor ;;
     update) shift; cmd_update "$@" ;;
     # Переприменить цвета рамок активного рига (зовётся из matugen-пайплайна
     # после смены обоев)

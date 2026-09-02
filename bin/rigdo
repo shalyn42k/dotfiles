@@ -7,8 +7,6 @@ set -u
 ACTIVE="$(basename "$(readlink -f "$HOME/dotfiles/profiles/active")" 2>/dev/null || echo caelestia)"
 QSM="$HOME/.config/hypr/scripts/qs_manager.sh"
 ILSCRIPTS="$HOME/dotfiles/profiles/ilyamiro/hypr/scripts"
-# end4 (illogical-impulse): шелл на ЛОКАЛЬНОМ март-quickshell (мина №1, NOTES).
-QS_II="$HOME/qs-test-prefix/usr/bin/quickshell"
 
 hint() { notify-send -u low "rigdo" "$1"; }
 
@@ -26,39 +24,30 @@ hypr_global() {
 case "${1:-}" in
     launcher)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle applauncher
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:searchToggleRelease
         else caelestia shell drawers toggle launcher; fi ;;
     wallpaper)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle wallpaper
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:wallpaperSelectorToggle
         else hint "пикер обоев — в риге ilyamiro (SUPER+SHIFT+D)"; fi ;;
     settings)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle settings
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:sidebarRightToggle
         else hint "настройки рига — только в ilyamiro"; fi ;;
     music)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle music
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:mediaControlsToggle
         else hint "музыка-виджет — только в ilyamiro (feishin: SUPER+Z)"; fi ;;
     calendar)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle calendar
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:sidebarRightToggle
         else hint "календарь — только в ilyamiro"; fi ;;
     movies)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle movies
-        elif [[ "$ACTIVE" == end4 ]]; then hint "movies — нет аналога в end4"
         else hint "movies — только в ilyamiro"; fi ;;
     clipboard)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle clipboard
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:overviewClipboardToggle
         else pkill fuzzel || caelestia clipboard; fi ;;
     screenshot)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$ILSCRIPTS/screenshot.sh"
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:regionScreenshot
         else hypr_global caelestia:screenshotFreeze; fi ;;
     lock)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$ILSCRIPTS/lock.sh"
-        elif [[ "$ACTIVE" == end4 ]]; then loginctl lock-session
         else hypr_global caelestia:lock; fi ;;
     shell)  # рестарт шелла активного рига
         if [[ "$ACTIVE" == ilyamiro ]]; then
@@ -67,24 +56,17 @@ case "${1:-}" in
             # hyprctl возвращает 0 даже при ошибке диспатча, поэтому
             # `|| fallback` не работал — hypr-exec сам выбирает движок.
             "$HOME/dotfiles/bin/hypr-exec" "quickshell -p $HOME/.config/hypr/scripts/quickshell/Shell.qml"
-        elif [[ "$ACTIVE" == end4 ]]; then
-            pkill -f "$QS_II -c ii"
-            sleep 0.5
-            "$QS_II" -c ii &
         else
             qs -c caelestia kill; qs -c caelestia -d
         fi ;;
     battery)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle battery
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:sidebarRightToggle
         else hint "виджет батареи — только в ilyamiro"; fi ;;
     network)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle network
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:sidebarRightToggle
         else hint "виджет сети — только в ilyamiro"; fi ;;
     guide)
         if [[ "$ACTIVE" == ilyamiro ]]; then bash "$QSM" toggle guide
-        elif [[ "$ACTIVE" == end4 ]]; then hypr_global quickshell:cheatsheetToggle
         else hint "гайд — только в ilyamiro (в caelestia: SUPER+T hyprkcs)"; fi ;;
     *) echo "usage: rigdo launcher|wallpaper|settings|music|calendar|movies|clipboard|screenshot|lock|shell|battery|network|guide" >&2; exit 1 ;;
 esac

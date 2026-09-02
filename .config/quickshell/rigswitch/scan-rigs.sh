@@ -15,12 +15,6 @@ wallpaper_for() {
             case "$p" in *.mp4|*.webm|*.mkv)
                 p="$HOME/.cache/quickshell/wallpaper_picker/current_wallpaper.png" ;;
             esac ;;
-        end4)
-            p="$(jq -r '.background.wallpaperPath // empty' \
-                "$HOME/.config/illogical-impulse/config.json" 2>/dev/null)"
-            case "$p" in *.mp4|*.webm|*.mkv)
-                p="$PROFILES/end4/hypr/custom/scripts/mpvpaper_thumbnails/$(basename "$p").jpg" ;;
-            esac ;;
     esac
     [[ -f "$p" ]] && printf '%s' "$p"
 }
