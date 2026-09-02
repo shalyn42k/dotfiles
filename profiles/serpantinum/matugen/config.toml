@@ -1,9 +1,10 @@
 [config]
 reload_apps = false
 
-[templates.quickshell]
-input_path = "~/.config/matugen/templates/qs_colors.json.template"
-output_path = "~/.config/hypr/scripts/quickshell/qs_colors.json"
+# quickshell убран: его выход ~/.config/hypr/scripts/quickshell/qs_colors.json
+# принадлежит шеллу ilyamiro — у serpantinum своя тема
+# (shell/src/assets/matugen/templates/serpantinum_matugen_colors.json.template,
+# рендерится upstream-матугеном самого шелла, не отсюда).
 
 [templates.kitty]
 input_path = "~/.config/matugen/templates/kitty-colors.conf.template"
@@ -41,16 +42,18 @@ output_path = "~/.config/qt5ct/qss/matugen-style.qss"
 input_path = "~/.config/matugen/templates/qt-style.qss.template"
 output_path = "~/.config/qt6ct/qss/matugen-style.qss"
 
-[templates.hyprland]
-input_path = '~/.config/matugen/templates/hyprland.conf.template'
-output_path = '~/.config/hypr/colors.conf'
+# рамки окон для lua-рига — формат hyprlang, но читается awk-ом из
+# bin/dotprofile apply_rig_colors, а не движком компоновщика напрямую
+[templates.hyprcolors]
+input_path = "~/.config/matugen/templates/hypr-colors.conf.template"
+output_path = "~/.config/hypr/colors.conf"
 
-# тема Discord (Vencord) для рига ilyamiro — dotprofile копирует в themes/rig.theme.css
+# тема Discord (Vencord) для рига serpantinum — dotprofile копирует в themes/rig.theme.css
 [templates.discord]
 input_path = "~/.config/matugen/templates/discord.css.template"
-output_path = "~/.cache/matugen/discord-caelestia.theme.css"
+output_path = "~/.cache/matugen/discord-serpantinum.theme.css"
 
-# тема Obsidian этого рига — dotprofile копирует в vault/.obsidian/snippets/
+# тема Obsidian для рига serpantinum — dotprofile копирует в vault/.obsidian/snippets/
 [templates.obsidian]
 input_path = "~/.config/matugen/templates/obsidian.css.template"
-output_path = "~/.cache/matugen/obsidian-caelestia.css"
+output_path = "~/.cache/matugen/obsidian-serpantinum.css"

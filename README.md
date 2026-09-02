@@ -8,8 +8,21 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **caelestia** | [caelestia-dots](https://github.com/caelestia-dots/caelestia) | work | lua (`hyprland.lua`) | caelestia shell (quickshell) |
 | **ilyamiro** | [ilyamiro/imperative-dots](https://github.com/ilyamiro/imperative-dots) | daily | hyprlang (`hyprland.conf`) | кастомный quickshell |
+| **serpantinum** | [ilyamiro/serpantinum](https://github.com/ilyamiro/serpantinum) (submodule) | third | lua (`hyprland.lua`) | serpantinumd + quickshell |
 
-Переключение — `SUPER+SHIFT+D` (меню fuzzel) или из SDDM (две отдельные сессии).
+Переключение — `SUPER+SHIFT+D` (overlay-пикер). В SDDM одна запись,
+«Hyprland (rig)»: она читает `profiles/active`, поэтому запоминать риг греетеру
+не нужно.
+
+**caelestia ↔ serpantinum** — оба на lua-провайдере, значит свитч однодвижковый
+и идёт без релогина. **ilyamiro** на hyprlang: Hyprland выбирает движок один раз
+при старте, поэтому переход в него и из него — всегда релогин. Он остаётся
+вторым рабочим ригом, пока serpantinum не отработает как daily; после этого
+hyprlang-ветка уходит из репозитория целиком.
+
+> Оговорка: бинды при горячем свитче пока НЕ переключаются — стадия отключена,
+> снос набора через хендлы роняет композитор. Цвета, анимации, правила окон и
+> шелл переключаются. См. `docs/tech-debt.md` п.8.
 
 ## Установка с нуля
 

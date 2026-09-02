@@ -38,6 +38,8 @@ PKGS=(
     python-pillow asusctl
     # кастомное
     hyprkcs-git
+    # serpantinum: единственная его зависимость, которой не было у ilyamiro v1
+    wl-gammarelay-rs
 )
 missing=()
 for p in "${PKGS[@]}"; do pacman -Qi "$p" &>/dev/null || missing+=("$p"); done
@@ -92,6 +94,12 @@ done
 mkdir -p "$HOME/.config/quickshell"
 ln -sfn "$DOTFILES/.config/quickshell/rigswitch" "$HOME/.config/quickshell/rigswitch"
 
+# Вендоренный апстрим serpantinum. Клон репы без --recurse-submodules оставляет
+# profiles/serpantinum/shell пустым, и риг не стартует.
+if [[ -f "$DOTFILES/.gitmodules" ]]; then
+    git -C "$DOTFILES" submodule update --init --recursive
+fi
+
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 4/7 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
@@ -108,6 +116,14 @@ echo "== 5/7 Скрипты и systemd-юниты =="
 mkdir -p "$HOME/.local/bin" "$HOME/.config/systemd/user"
 for s in kbd-theme-sync thunar-css-fix; do
     ln -sfn "$DOTFILES/bin/$s" "$HOME/.local/bin/$s"
+done
+# CLI вендоренного serpantinum. Его config/autostart зовёт `serpantinumd start`
+# голым именем, плюс сам CLI полезен из терминала. Симлинк безопасен: бинарь
+# резолвит свой каталог через realpath, поэтому SERPANTINUM_DIR указывает в
+# сабмодуль, а не в ~/.local.
+for s in serpantinum serpantinumd; do
+    [[ -x "$DOTFILES/profiles/serpantinum/shell/bin/$s" ]] \
+        && ln -sfn "$DOTFILES/profiles/serpantinum/shell/bin/$s" "$HOME/.local/bin/$s"
 done
 # kbd-theme-sync.path  — подсветка клавиатуры за цветом обоев активного рига
 # thunar-css-fix.path  — откатывает thunar.css, который caelestia CLI
