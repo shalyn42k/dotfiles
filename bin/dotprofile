@@ -216,8 +216,13 @@ apply_rig_animations() {
 apply_rig_binds() {
     local old="$1" new="$2"
     local files=() f
+    # Список покрывает формы, в которых разные риги хранят бинды: caelestia/
+    # ilyamiro кладут их под hypr/hyprland или hypr/custom, serpantinum —
+    # одним файлом hypr/overrides.lua. Рига без нужного файла просто не имеет —
+    # [[ -f ]] отсеивает недостающее, дублировать список под каждый риг не надо.
     for f in "$PROFILES/$new/hypr/hyprland/keybinds.lua" \
-             "$PROFILES/$new/hypr/custom/keybinds.lua"; do
+             "$PROFILES/$new/hypr/custom/keybinds.lua" \
+             "$PROFILES/$new/hypr/overrides.lua"; do
         [[ -f "$f" ]] && files+=("$f")
     done
     (( ${#files[@]} )) || { echo "apply_rig_binds: у рига '$new' нет файлов биндов" >&2; return 1; }
