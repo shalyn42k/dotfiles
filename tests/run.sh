@@ -17,5 +17,13 @@ for f in *_test.lua; do
     "$lua_bin" "$f" || failed=1
 done
 
+# Тесты на shell: QML-оверлей линтуется своим скриптом, а не lua.
+for f in *_test.sh; do
+    [[ -e "$f" ]] || continue
+    [[ -n "$filter" && "$f" != *"$filter"* ]] && continue
+    echo "── $f"
+    bash "$f" || failed=1
+done
+
 [[ $failed -eq 0 ]] && echo "ALL PASS" || echo "FAILURES"
 exit $failed
