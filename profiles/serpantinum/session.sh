@@ -36,8 +36,50 @@ seed_shell_colors() {
     echo "session.sh: не нашёл обоев для засева палитры — шелл поднимется без цветов" >&2
 }
 
+# Настройки шелла. Бар показывается ТОЛЬКО если в settings.json есть секция
+# bar: Bar.qml гасит окно, пока `Config.rawSettings.bar.autohide === undefined`
+# (bar/Bar.qml:81-85). Апстрим раскладывает свой дефолт config/serpantinum/
+# инсталлером, который мы не запускаем никогда — и без него шелл поднимается
+# молча, с обоями и без единого элемента интерфейса. Ровно это и выглядело как
+# «риг не работает»: процесс жив, слоёв два (обои и оверлей), бара нет.
+#
+# Дефолт кладём как БАЗУ, а поверх — то, что уже есть у пользователя: шелл сам
+# дописывает в этот файл настройки, и затирать их нельзя.
+seed_shell_settings() {
+    local user="$HOME/.config/serpantinum/settings.json"
+    local default="$RIG/shell/config/serpantinum/settings.json"
+    [[ -f "$default" ]] || return 0
+    command -v python3 >/dev/null || return 0
+
+    python3 - "$default" "$user" <<'PY'
+import json, sys, pathlib
+
+default_path, user_path = sys.argv[1], pathlib.Path(sys.argv[2])
+default = json.load(open(default_path))
+user = {}
+if user_path.exists():
+    try:
+        user = json.load(open(user_path))
+    except json.JSONDecodeError:
+        pass   # битый файл: дефолт лучше, чем шелл без интерфейса
+
+if "bar" in user:
+    raise SystemExit(0)   # уже полноценный конфиг, не трогаем
+
+def merge(base, over):
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+user_path.parent.mkdir(parents=True, exist_ok=True)
+user_path.write_text(json.dumps(merge(default, user), indent=2) + "\n")
+PY
+}
+
 case "${1:-}" in
     start)
+        seed_shell_settings
         seed_shell_colors
         if [[ -x "$SERPANTINUMD" ]]; then
             "$SERPANTINUMD" start &
