@@ -398,6 +398,18 @@ cmd_doctor() {
         for d in "${CONTESTED[@]}"; do
             [[ -d "$PROFILES/$rig/$d" ]] || missing+=("$d")
         done
+        # lua-риг без прелюдии реестра — значит его hypr/hyprland.lua подменили
+        # (так и случилось 2026-09-03: поверх легла голая копия конфига
+        # апстрима). Внешне это выглядит как «бинды не мои»: набор рига и
+        # контракт §2 просто не грузятся, а Hyprland про это молчит, потому
+        # что подменённый файл сам по себе валиден.
+        local entry="$PROFILES/$rig/hypr/hyprland.lua"
+        if [[ -f "$entry" ]] && ! grep -q "hypr-shared/rigbinds.lua" "$entry"; then
+            printf '%-10s hypr/hyprland.lua БЕЗ прелюдии реестра — набор биндов рига не загрузится\n' "$rig"
+            printf '           восстановить: git checkout -- profiles/%s/hypr/hyprland.lua\n' "$rig"
+            rc=1
+        fi
+
         if (( ${#missing[@]} )); then
             printf '%-10s НЕТ обязательных каталогов: %s\n' "$rig" "${missing[*]}"
             rc=1
