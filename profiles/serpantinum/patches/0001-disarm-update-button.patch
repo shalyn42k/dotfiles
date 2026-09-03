@@ -1,8 +1,8 @@
 diff --git a/src/quickshell/guide/AboutTab.qml b/src/quickshell/guide/AboutTab.qml
-index ea212e8..fbd08fd 100644
+index ea212e8..d03910c 100644
 --- a/src/quickshell/guide/AboutTab.qml
 +++ b/src/quickshell/guide/AboutTab.qml
-@@ -214,10 +214,26 @@ Item {
+@@ -214,10 +214,40 @@ Item {
                              iconFontSize: rootObj.s(16)
                              fillDuration: 1200
  
@@ -25,10 +25,23 @@ index ea212e8..fbd08fd 100644
 +                            // пина — см. docs/tech-debt.md.
                              onTriggered: {
 -                                let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)\"'; fi";
--                                Quickshell.execDetached(["bash", "-c", cmd]);
++                                // Наш скрипт вместо апстримовского обработчика:
++                                // тот пайпил install/install.sh в eval, а он
++                                // делает `sudo pacman -Syyu --noconfirm` и
++                                // кладёт свой конфиг поверх существующего —
++                                // то есть поверх этого рига.
++                                //
++                                // rig-update двигает пин сабмодуля, накатывает
++                                // наши патчи (включая ЭТОТ) и перезапускает
++                                // шелл. Терминал нужен, чтобы было видно, что
++                                // именно приезжает, и чтобы можно было
++                                // отказаться.
++                                let upd = "$HOME/dotfiles/bin/rig-update serpantinum";
++                                let cmd = "if command -v foot >/dev/null 2>&1; then foot -- bash -c '" + upd + "; read -p \"Enter…\"'; "
++                                        + "elif command -v kitty >/dev/null 2>&1; then kitty --hold bash -c '" + upd + "'; "
++                                        + "else ${TERM:-xterm} -hold -e bash -c '" + upd + "'; fi";
+                                 Quickshell.execDetached(["bash", "-c", cmd]);
 -                                Quickshell.execDetached(["bash", rootObj.appPaths.serpantinumDir + "/scripts/qs_manager.sh", "close"]);
-+                                Quickshell.execDetached(["xdg-open",
-+                                    "https://github.com/ilyamiro/serpantinum/releases"]);
                              }
                          }
                      }

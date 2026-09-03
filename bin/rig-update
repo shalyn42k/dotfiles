@@ -80,9 +80,37 @@ if [[ -e "${patches[0]}" ]]; then
     done
 fi
 
+# ── Страховка ───────────────────────────────────────────────────────────────
+# Кнопка «Update» в гайде рига запускает ЭТОТ скрипт — но только потому, что
+# патч выше её перевесил. Если апстрим перепишет тот участок и патч не ляжет,
+# checkout вернёт её исходный обработчик: `curl … install.sh | eval`, то есть
+# неинтерактивное обновление всей системы плюс раскладку чужого конфига поверх
+# рига. Нажатие кнопки после такого обновления снесло бы настройку.
+#
+# Поэтому не доверяем факту «патчи применились», а проверяем результат.
+if grep -rn "install/install.sh" "$shell_dir/src/quickshell" >/dev/null 2>&1; then
+    echo >&2
+    echo "ОПАСНО: в шелле снова есть вызов install/install.sh:" >&2
+    grep -rn "install/install.sh" "$shell_dir/src/quickshell" | sed 's/^/  /' >&2
+    echo >&2
+    echo "  Это значит, что патч не лёг, и кнопка Update снова запускает их" >&2
+    echo "  инсталлер. НЕ НАЖИМАЙ ЕЁ. Пересобери патч:" >&2
+    echo "    \$EDITOR $shell_dir/src/quickshell/guide/AboutTab.qml" >&2
+    echo "    git -C $shell_dir diff > $PROFILES/$rig/patches/0001-disarm-update-button.patch" >&2
+    exit 1
+fi
+
+# Шелл держит QML в памяти: без перезапуска обновление визуально «не приехало»,
+# а свежий патч кнопки не действует.
 echo
-echo "готово. Зафиксировать пин:"
+if [[ "$(basename "$(readlink -f "$PROFILES/active")")" == "$rig" ]]; then
+    echo "перезапускаю шелл, чтобы новая версия и патчи вступили в силу…"
+    "$DOTFILES/bin/rigdo" shell >/dev/null 2>&1 || true
+else
+    echo "риг не активен — шелл перезапустится сам при следующем входе в него"
+fi
+
+echo
+echo "готово. Осталось зафиксировать пин:"
 echo "  git -C $DOTFILES add profiles/$rig/shell"
 echo "  git -C $DOTFILES commit -m 'chore($rig): bump vendored shell to ${resolved:0:7}'"
-echo
-echo "перезапустить шелл: rigdo shell"
