@@ -1,0 +1,27 @@
+# shell-seed.toml — палитра ТОЛЬКО для шелла serpantinum, на первый запуск.
+#
+# Зачем отдельный файл. Шелл рига красит себя сам: singletons/Matugen.qml зовёт
+# matugen со СВОИМ конфигом (shell/src/assets/matugen/config.toml) и пишет
+# ~/.local/state/serpantinum/qs_colors.json. Но делает он это только когда в
+# риге меняют обои. На свежем логине, если обои в этом риге ещё ни разу не
+# ставили, файла нет — и ThemeBackend.qml поднимается БЕЗ цветов. Выглядит это
+# как чёрный экран с невидимым баром, то есть как «риг не работает».
+#
+# Поймано 2026-09-03 на первом же реальном входе в риг:
+#   ThemeBackend.qml[294]: Read of ~/.local/state/serpantinum/qs_matugen_colors.json failed
+#   ThemeBackend.qml[316]: Read of ~/.local/state/serpantinum/qs_colors.json failed
+#
+# Почему не берём конфиг апстрима целиком: он пишет ещё и в
+# ~/.config/fastfetch/config.jsonc, ~/.config/kitty/colors.conf и
+# ~/.config/cava/config. Первый из них генерит dotprofile из шаблона с
+# риг-модулями — апстрим затёр бы его своим. Здесь только шелл, ничего чужого.
+#
+# Зовётся из session.sh и только если файла нет: как только обои в риге
+# поставят, шелл начнёт вести палитру сам и сюда больше не заглянет.
+
+[config]
+reload_apps = false
+
+[templates.quickshell]
+input_path = "~/dotfiles/profiles/serpantinum/shell/src/assets/matugen/templates/serpantinum_matugen_colors.json.template"
+output_path = "~/.local/state/serpantinum/qs_colors.json"

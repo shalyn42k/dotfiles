@@ -458,7 +458,7 @@
         "audioIncrement": 0.1,
         "brightnessIncrement": 0.1,
         "defaultPlayer": "Feishin",
-        "gpuType": "",
+        "gpuType": "Auto",
         "lyricsBackend": "NetEase",
         "maxVolume": 1,
         "playerAliases": [
