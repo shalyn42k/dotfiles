@@ -21,12 +21,12 @@ PKGS=(
     foot fish fuzzel
     # обои (awww = форк swww; mpvpaper = видео)
     awww mpvpaper
-    # его риг: OSD, скриншоты, тема
-    swayosd-git grim satty zbar matugen-bin
+    # скриншоты, тема
+    grim satty zbar matugen
     # интеграция
     app2unit cliphist wl-clipboard playerctl
     # сервисы из execs
-    gnome-keyring network-manager-applet gammastep geoclue bluez-utils
+    gnome-keyring network-manager-applet geoclue bluez-utils
     easyeffects trash-cli
     # тулкиты/темы
     qt5ct qt6ct xdg-user-dirs volantes_cursors
