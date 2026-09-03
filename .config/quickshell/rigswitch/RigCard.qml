@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 
 // Строка рига в списке-пикере: лого рига + имя + сабтайтл (движок·режим),
@@ -42,33 +41,18 @@ Rectangle {
             width: 48; height: 36; radius: 9; clip: true
             color: Tokens.c.surfaceContainerLow
 
-            // Лого перекрашивается в акцент рига, а не рисуется как есть.
-            // Две причины. Ассеты у ригов чужие и про наш фон ничего не знают:
-            // у serpantinum основная фигура залита #000000 и на тёмной карточке
-            // просто пропадала. И вторая — так лого следует теме рига вместе с
-            // остальным свитчером, а не остаётся единственным местом, которое
-            // не меняется при смене схемы.
-            //
-            // colorization=1 берёт форму (альфу) и заливает её целиком, поэтому
-            // исходные цвета внутри SVG роли не играют — важен только силуэт.
+            // Логотип рисуется как есть: ассеты разноцветные, и подкраска в
+            // один тон (была тут раньше) убивала рисунок caelestia. Тёмный
+            // логотип чинится в своём SVG, а не эффектом поверх всех.
             Image {
                 id: logo
                 anchors.fill: parent
                 anchors.margins: 6
                 source: row.logoPath
-                visible: false            // показывает эффект ниже
+                visible: status === Image.Ready
                 fillMode: Image.PreserveAspectFit
                 asynchronous: true
                 sourceSize.height: 64
-            }
-            MultiEffect {
-                anchors.fill: logo
-                source: logo
-                visible: logo.status === Image.Ready
-                colorization: 1.0
-                colorizationColor: RigIdentity.identityFor(row.rig.name, row.rig.role).accent
-                // Активная карточка ярче — глазу видно, где ты сейчас.
-                brightness: row.current ? 0.0 : -0.15
             }
             Text {
                 anchors.centerIn: parent
@@ -79,22 +63,15 @@ Rectangle {
             }
         }
 
-        // имя + сабтайтл
-        Column {
+        // Только имя. Строка "движок · hot-switch" убрана: выбирают риг по
+        // имени, а движок теперь у всех один.
+        Text {
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 48 - 12 - 40
-            spacing: 4
-            Text {
-                text: row.rig.name
-                color: row.current ? Tokens.c.onSecondaryContainer : Tokens.c.onSurface
-                font.pixelSize: 14; font.weight: Font.DemiBold
-                Behavior on color { ColorAnimation { duration: Tokens.durEffects } }
-            }
-            Text {
-                text: row.rig.engine + " · " + (row.rig.relogin ? "relogin" : "hot-switch")
-                color: Tokens.c.onSurfaceVariant
-                font.pixelSize: 10; font.weight: Font.Medium
-            }
+            text: row.rig.name
+            color: row.current ? Tokens.c.onSecondaryContainer : Tokens.c.onSurface
+            font.pixelSize: 15; font.weight: Font.DemiBold
+            Behavior on color { ColorAnimation { duration: Tokens.durEffects } }
         }
     }
 
@@ -105,20 +82,12 @@ Rectangle {
         color: Tokens.c.primary
         anchors { right: parent.right; rightMargin: 14; verticalCenter: parent.verticalCenter }
     }
+    // Риг, требующий релогина, помечен точкой цвета ошибки — без слова.
     Rectangle {
         visible: row.rig.relogin
-        anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
-        radius: 6
-        width: reloginText.width + 12
-        height: reloginText.height + 6
+        width: 8; height: 8; radius: 4
         color: Tokens.c.errorContainer
-        Text {
-            id: reloginText
-            anchors.centerIn: parent
-            text: "relogin"
-            color: Tokens.c.onErrorContainer
-            font.pixelSize: 9; font.weight: Font.DemiBold
-        }
+        anchors { right: parent.right; rightMargin: 14; verticalCenter: parent.verticalCenter }
     }
 
     MouseArea {

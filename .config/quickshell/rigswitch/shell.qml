@@ -23,10 +23,6 @@ ShellRoot {
     // не зависание: watchdog и content-сигнал (active:/relogin ->) не зависят
     // от того, сколько стадий реально напечаталось.
     readonly property var stageOrder: ["links", "colors", "animations", "rules", "daemons", "state"]
-    readonly property var stageLabels: ({
-        links: "config", colors: "palette", animations: "motion",
-        rules: "window rules", daemons: "shell", state: "state"
-    })
     property var stageState: ({
         links: "pending", colors: "pending", animations: "pending",
         rules: "pending", daemons: "pending", state: "pending"
@@ -331,23 +327,14 @@ ShellRoot {
                             font.pixelSize: 40; font.bold: true
                         }
                     }
-                    Column {
+                    // Только имя рига. Роль ("work"/"third") и словесный
+                    // статус убраны намеренно: переход должен читаться
+                    // картинкой, а не подписями к ней.
+                    Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 2
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: root.target
-                            color: Tokens.c.onSurface
-                            font.pixelSize: 34; font.weight: Font.Bold
-                        }
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: root.roleOf(root.target).length > 0
-                            text: root.roleOf(root.target)
-                            color: Tokens.c.onSurfaceVariant
-                            font.pixelSize: 11
-                            font.letterSpacing: 1
-                        }
+                        text: root.target
+                        color: Tokens.c.onSurface
+                        font.pixelSize: 34; font.weight: Font.Bold
                     }
 
                     // сама сборка — шесть кусочков, по одному на реальную стадию
@@ -356,21 +343,42 @@ ShellRoot {
                         anchors.horizontalCenter: parent.horizontalCenter
                         stageState: root.stageState
                         stageOrder: root.stageOrder
-                        stageLabels: root.stageLabels
                         style: root.toIdentity.style
                         accent: root.toIdentity.accent
                         direction: root.direction
                         relogin: root.targetRelogin
                     }
 
-                    Text {
+                    // Статус без слов: полоса набирается по мере приезда
+                    // стадий, краснеет на провале. Релогин — пульсирует, потому
+                    // что стадий там не будет и заполняться нечему.
+                    Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.targetRelogin ? "logging out — restarting session"
-                            : root.anyFailed ? "finished with issues"
-                            : root.switchDone ? "ready"
-                            : "switching…"
-                        color: (root.anyFailed && !root.targetRelogin) ? Tokens.c.onErrorContainer : Tokens.c.onSurfaceVariant
-                        font.pixelSize: 14
+                        width: 220; height: 3; radius: 2
+                        color: Qt.rgba(Tokens.c.outlineVariant.r, Tokens.c.outlineVariant.g,
+                                       Tokens.c.outlineVariant.b, 0.5)
+
+                        Rectangle {
+                            height: parent.height; radius: parent.radius
+                            width: parent.width * (root.stageOrder.length
+                                ? root.stageOrder.filter(k => root.stageState[k] !== undefined
+                                    && root.stageState[k] !== "pending").length / root.stageOrder.length
+                                : 0)
+                            color: root.anyFailed ? Tokens.c.errorContainer : root.toIdentity.accent
+                            Behavior on width {
+                                NumberAnimation { duration: Tokens.durSpring
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Tokens.springCurve }
+                            }
+                            Behavior on color { ColorAnimation { duration: Tokens.durEffects } }
+                        }
+
+                        SequentialAnimation on opacity {
+                            running: root.targetRelogin
+                            loops: Animation.Infinite
+                            NumberAnimation { to: 0.35; duration: 620 }
+                            NumberAnimation { to: 1.0;  duration: 620 }
+                        }
                     }
                 }
             }

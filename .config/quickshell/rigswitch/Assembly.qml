@@ -2,6 +2,11 @@ import QtQuick
 
 // Визуальная "сборка" рига по стадиям свитча. Один кусочек = одна стадия
 // dotprofile (stage <имя> ok|fail в stdout, см. bin/dotprofile cmd_switch).
+//
+// Подписей на кусочках нет намеренно: технические имена стадий ничего не
+// говорят тому, кто просто переключает риг, а переход должен читаться
+// движением. Что именно приехало — видно в терминале, если запускать свитч
+// оттуда.
 // Кусочек оживает ТОЛЬКО когда shell.qml реально получил его строку —
 // никаких таймеров вслепую тут нет, вся анимация управляется stageState.
 //
@@ -15,7 +20,6 @@ Item {
     id: root
     property var stageState: ({})   // { links: "pending"|"ok"|"fail", ... }
     property var stageOrder: []
-    property var stageLabels: ({})
     property string style: "drift"
     property color accent: Tokens.c.primary
     property int direction: 1
@@ -34,12 +38,12 @@ Item {
         for (let i = 0; i < n; i++) {
             if (root.style === "grid") {
                 const col = i % 3, row = Math.floor(i / 3);
-                slots.push({ x: (col - 1) * 116, y: (row - 0.5) * 44, rot: 0 });
+                slots.push({ x: (col - 1) * 58, y: (row - 0.5) * 30, rot: 0 });
             } else if (root.style === "serpentine") {
                 const t = i - (n - 1) / 2;
-                slots.push({ x: t * 56, y: Math.sin(i * 1.15) * 26, rot: Math.sin(i * 1.15) * 9 });
+                slots.push({ x: t * 40, y: Math.sin(i * 1.15) * 22, rot: Math.sin(i * 1.15) * 12 });
             } else {
-                slots.push({ x: 0, y: (i - (n - 1) / 2) * 38, rot: 0 });
+                slots.push({ x: 0, y: (i - (n - 1) / 2) * 24, rot: 0 });
             }
         }
         return slots;
@@ -55,8 +59,8 @@ Item {
     Item {
         id: cluster
         anchors.centerIn: parent
-        width: 372
-        height: 148
+        width: 220
+        height: 110
 
         // ── Каркас ───────────────────────────────────────────────────────
         // Связь между соседними кусочками: прорастает, когда приехал ВТОРОЙ из
@@ -122,8 +126,8 @@ Item {
                 readonly property var slot: root.slots[index] || ({ x: 0, y: 0, rot: 0 })
                 property real shakeOffset: 0
 
-                width: 112
-                height: 30
+                width: 46
+                height: 14
                 x: cluster.width / 2 + slot.x - width / 2 + shakeOffset
                 y: cluster.height / 2 + slot.y - height / 2
 
@@ -165,18 +169,6 @@ Item {
                     Behavior on color { ColorAnimation { duration: Tokens.durEffects } }
                     Behavior on border.color { ColorAnimation { duration: Tokens.durEffects } }
 
-                    Text {
-                        anchors.centerIn: parent
-                        width: parent.width - 8
-                        horizontalAlignment: Text.AlignHCenter
-                        elide: Text.ElideRight
-                        text: root.stageLabels[chip.key] || chip.key
-                        color: chip.status === "fail" ? Tokens.c.onErrorContainer
-                             : chip.status === "ok"   ? Tokens.c.onSurface
-                                                       : Tokens.c.onSurfaceVariant
-                        font.pixelSize: 10
-                        font.weight: chip.status === "pending" ? Font.Normal : Font.DemiBold
-                    }
                 }
             }
         }
