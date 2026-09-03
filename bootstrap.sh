@@ -158,10 +158,20 @@ if sudo -n true 2>/dev/null || sudo -v; then
     sudo systemctl enable sddm 2>/dev/null || true
 
     # Update-proof: без этого запись возвращается при каждом обновлении hyprland.
+    #
+    # ВСТАВЛЯТЬ НАДО В [options], а не в конец файла: в конце pacman.conf идут
+    # секции репозиториев, и NoExtract там не директива, а мусор — pacman
+    # печатает "directive 'NoExtract' in section '<repo>' not recognized" и
+    # молча её игнорирует. Именно так и вышло при первом заходе.
     for n in "${STALE_PKG[@]}"; do
         line="NoExtract   = usr/share/wayland-sessions/$n.desktop"
-        grep -qxF "$line" /etc/pacman.conf \
-            || echo "$line" | sudo tee -a /etc/pacman.conf >/dev/null
+        grep -qxF "$line" /etc/pacman.conf && continue
+        sudo awk -v ins="$line" '
+            /^\[options\]/ { print; print ins; next }
+            { print }
+        ' /etc/pacman.conf > /tmp/pacman.conf.new \
+            && sudo install -m644 /tmp/pacman.conf.new /etc/pacman.conf \
+            && rm -f /tmp/pacman.conf.new
     done
 else
     echo ">>> нет sudo — вручную:"
