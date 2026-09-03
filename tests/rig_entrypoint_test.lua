@@ -28,8 +28,7 @@ end
 
 local REPO = "../"
 
--- Риги на lua-провайдере. hyprlang-риги (ilyamiro) сюда не входят: у них нет
--- hyprland.lua, движок другой.
+-- Все риги теперь на lua-провайдере: hyprlang-ветка ушла вместе с ilyamiro.
 local ENTRYPOINTS = {
     caelestia   = "profiles/caelestia/hypr/hyprland.lua",
     serpantinum = "profiles/serpantinum/hypr/hyprland.lua",

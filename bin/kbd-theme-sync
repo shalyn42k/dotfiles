@@ -7,13 +7,13 @@ achromatic wallpapers map to a grey of matching brightness (black walls
 -> dim keys, white walls -> white keys). If the wallpaper can't be read,
 falls back to the rig's material-scheme primary as before.
 
-Rig detection: caelestia (qs -c caelestia) or ilyamiro (quickshell -p
-.../hypr/scripts/quickshell/Shell.qml); falls back to whichever colour
+Rig detection: caelestia (qs -c caelestia) or serpantinum (quickshell -p
+.../serpantinum/shell/src/quickshell/Shell.qml); falls back to whichever colour
 file changed last. The target colour fades in over FADE_SECONDS instead
 of snapping. A newer invocation kills a fade already in progress and
 takes over from the colour it reached.
 
-Triggered by kbd-theme-sync{,-ilyamiro}.path on colour-file changes and
+Triggered by kbd-theme-sync.path on colour-file changes and
 by each rig's session.sh on login/rig switch.
 """
 
@@ -29,10 +29,11 @@ from pathlib import Path
 
 HOME = Path.home()
 CAELESTIA = HOME / ".local/state/caelestia/scheme.json"
-ILYAMIRO = HOME / ".config/hypr/scripts/quickshell/qs_colors.json"
+SERPANTINUM = HOME / ".local/state/serpantinum/qs_colors.json"
 CAELESTIA_WALL = HOME / ".local/state/caelestia/wallpaper/path.txt"
-ILYAMIRO_WALL = HOME / ".local/state/quickshell/wallpaper_picker/last_wallpaper"
-ILYAMIRO_WALL_FRAME = HOME / ".cache/quickshell/wallpaper_picker/current_wallpaper.png"
+# serpantinum держит снапшот текущих обоев одним файлом и для картинок,
+# и для видео (WallpaperEngine.qml), поэтому разбирать формат не нужно.
+SERPANTINUM_WALL = HOME / ".cache/serpantinum/wallpaper/current_wallpaper.png"
 STATE_DIR = HOME / ".local/state/kbd-theme-sync"
 CURRENT = STATE_DIR / "current"   # last colour actually sent to the keyboard
 PIDFILE = STATE_DIR / "pid"
@@ -63,12 +64,12 @@ def detect_rig() -> str:
         for flag, value in zip(argv, argv[1:]):
             if flag == "-c" and value == "caelestia":
                 return "caelestia"
-            if flag == "-p" and "hypr/scripts/quickshell" in value:
-                return "ilyamiro"
+            if flag == "-p" and "serpantinum/shell/src/quickshell" in value:
+                return "serpantinum"
     # No shell running (early login) — newest colour file wins.
     c = CAELESTIA.stat().st_mtime if CAELESTIA.exists() else 0
-    i = ILYAMIRO.stat().st_mtime if ILYAMIRO.exists() else 0
-    return "caelestia" if c >= i else "ilyamiro"
+    s = SERPANTINUM.stat().st_mtime if SERPANTINUM.exists() else 0
+    return "caelestia" if c >= s else "serpantinum"
 
 
 def wallpaper_path(rig: str) -> Path | None:
@@ -76,10 +77,9 @@ def wallpaper_path(rig: str) -> Path | None:
         if rig == "caelestia":
             wall = Path(CAELESTIA_WALL.read_text().strip())
         else:
-            kind, path, _ = ILYAMIRO_WALL.read_text().strip().split("|", 2)
-            # Video wallpapers can't be decoded here; the picker keeps a
-            # still frame of whatever is current.
-            wall = Path(path) if kind == "img" else ILYAMIRO_WALL_FRAME
+            # serpantinum keeps one snapshot of the current wallpaper for both
+            # images and video, so there is no format to parse here.
+            wall = SERPANTINUM_WALL
     except (OSError, ValueError):
         return None
     return wall if wall.is_file() else None
@@ -142,7 +142,7 @@ def scheme_colour(rig: str) -> str | None:
         if rig == "caelestia":
             col = json.loads(CAELESTIA.read_text())["colours"]["primary"]
         else:
-            col = json.loads(ILYAMIRO.read_text())["blue"]
+            col = json.loads(SERPANTINUM.read_text())["blue"]
     except (OSError, KeyError, ValueError):
         return None
     col = col.lstrip("#")

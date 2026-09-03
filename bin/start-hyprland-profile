@@ -5,9 +5,9 @@
 #   start-hyprland-profile <rig>    — явный риг
 #   start-hyprland-profile --lua    — [legacy] последний lua-риг из .last-lua
 #
-# --auto обслуживает ВСЕ риги, включая hyprlang-ilyamiro: движок Hyprland
-# выбирает по тому, что лежит в ~/.config/hypr (hyprland.lua или hyprland.conf),
-# а симлинки переставляются здесь, до exec. Поэтому SDDM-запись нужна одна.
+# --auto обслуживает ВСЕ риги: движок Hyprland выбирает по тому, что лежит
+# в ~/.config/hypr, а симлинки переставляются здесь, до exec. Поэтому
+# SDDM-запись нужна одна.
 #
 # Источник правды — profiles/active: cmd_switch переставляет его ПЕРЕД тем как
 # просить релогин, так что после перезахода мы приземляемся в запрошенный риг.

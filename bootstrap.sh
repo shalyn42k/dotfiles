@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap.sh — развёртывание dual-rig сетапа (caelestia + ilyamiro) с нуля
+# bootstrap.sh — развёртывание dual-rig сетапа (caelestia + serpantinum) с нуля
 # на Arch. Репозиторий уже содержит оба профиля целиком (снапшоты) — скрипт
 # ставит пакеты, раскладывает симлинки и SDDM-сессии.
 # Идемпотентен: повторный запуск ничего не ломает.
@@ -38,7 +38,7 @@ PKGS=(
     python-pillow asusctl
     # кастомное
     hyprkcs-git
-    # serpantinum: единственная его зависимость, которой не было у ilyamiro v1
+    # serpantinum: его единственная зависимость сверх общего набора
     wl-gammarelay-rs
 )
 missing=()
@@ -107,7 +107,7 @@ xdg-user-dirs-update 2>/dev/null || true
 
 # matugen теперь контестируемый (симлинк на profiles/active/matugen выше) —
 # config.toml + templates/ живут в профиле целиком, копировать в живой каталог
-# не нужно. Discord/Obsidian-шаблоны и их [templates.*] уже в снапшоте ilyamiro.
+# не нужно. Discord/Obsidian-шаблоны и их [templates.*] лежат в профиле рига.
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 5/7 Скрипты и systemd-юниты =="
@@ -144,7 +144,7 @@ done
 # запасное DE. Остальное убираем: прежние per-rig записи промахиваются мимо
 # profiles/active, а пакетные запускают композитор в обход
 # start-hyprland-profile (симлинки ~/.config остаются от прежнего рига).
-STALE_OURS=(hyprland-caelestia hyprland-lua hyprland-ilyamiro hyprland-end4)
+STALE_OURS=(hyprland-caelestia hyprland-lua hyprland-ilyamiro hyprland-end4)  # исторические per-rig записи
 # Пакетные (владелец — hyprland): голая запись и uwsm, которого мы не ставим.
 # Их мало удалить — pacman вернёт файлы при обновлении, молча и без .pacnew,
 # потому что это /usr/share, а не /etc. Отсюда NoExtract ниже.

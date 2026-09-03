@@ -3,7 +3,7 @@
 #
 # caelestia CLI (utils/theme.py: apply_gtk) на каждой смене схемы пишет
 # ~/.config/gtk-{3,4}.0/thunar.css из своего шаблона. Этот рендер:
-#   1) вшивает hex активной схемы — на риге ilyamiro палитра берётся из
+#   1) вшивает hex активной схемы — у рига со своим matugen палитра берётся из
 #      matugen, и вшитые caelestia-цвета с ней расходятся;
 #   2) содержит fade-in, из-за которого панели Thunar остаются с opacity:0
 #      на нативном Wayland GTK3 (upstream caelestia-cli PR #122).

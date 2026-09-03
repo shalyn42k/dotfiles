@@ -11,13 +11,6 @@ wallpaper_for() {
     case "$rig" in
         caelestia)
             p="$(cat "$HOME/.local/state/caelestia/wallpaper/path.txt" 2>/dev/null)" ;;
-        ilyamiro)
-            # формат: type|/путь|monitor (например video|/…/x.mp4|all)
-            p="$(cat "$HOME/.local/state/quickshell/wallpaper_picker/last_wallpaper" 2>/dev/null)"
-            [[ "$p" == *"|"* ]] && p="$(cut -d'|' -f2 <<<"$p")"
-            case "$p" in *.mp4|*.webm|*.mkv)
-                p="$HOME/.cache/quickshell/wallpaper_picker/current_wallpaper.png" ;;
-            esac ;;
         serpantinum)
             # WallpaperEngine.qml (shell/src/quickshell/wallpaper/) держит один
             # снапшот вне зависимости от монитора: для картинок — копия файла,

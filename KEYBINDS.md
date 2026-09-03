@@ -13,19 +13,15 @@
 
 | Риг | Движок | Файлы биндов (порядок загрузки) |
 |---|---|---|
-| **ilyamiro** | hyprlang | 1) `profiles/ilyamiro/hypr/config/keybindings.conf` — **АВТОГЕН** из `settings.json`; 2) `.config/hypr-shared/binds-ilyamiro.conf` — грузится **последним**, `unbind`+`bind` перекрывает автоген; 3) `.config/hypr-shared/binds.conf` — общий свитчер |
 | **caelestia** | hyprkcs (Lua) | 1) `profiles/caelestia/hypr/hyprland/keybinds.lua` — **живой**, риговые бинды; 2) `.config/hypr-shared/contract-binds.lua` — **общий контракт §2**, грузится последним |
 | **serpantinum** | hyprkcs (Lua) | 1) `shell/compositors/hyprland/config/keybinds.lua` — дефолты апстрима (submodule, НЕ править); 2) `profiles/serpantinum/hypr/overrides.lua` — **наши бинды**, снимают конфликтные комбо апстрима и вешают свои; 3) `.config/hypr-shared/contract-binds.lua` — контракт, последним |
 
 ⚠️ **Ловушки правки:**
-- ilyamiro: не редактируй автоген `keybindings.conf` напрямую — снесётся при `dotprofile update`.
-  Все переопределения кладём в `binds-ilyamiro.conf` (слой-оверрайд, переживает регенерацию).
 - caelestia: `profiles/caelestia/hypr/legacy-hyprlang/hyprland/keybinds.conf` — **МЁРТВЫЙ** (старый
   до-hyprkcs сетап). Не грузится. Правь только `keybinds.lua`.
 - Контракт §2 живёт в ОДНОМ файле — `.config/hypr-shared/contract-binds.lua`
-  (владелец `shared`, переживает свитч рига). Для hyprlang-рига ilyamiro та же
-  роль у `.config/hypr-shared/binds.conf` — hyprkcs не умеет `source=`, поэтому
-  два формата остаются, но каждый в одном экземпляре.
+  (владелец `shared`, переживает свитч рига). Второй формат (hyprlang) больше не
+  нужен: все риги на hyprkcs.
 - Контракт применяется ПОСЛЕДНИМ и снимает комбу перед своим биндом: ре-бинд в
   hyprkcs стекается, а не замещает (замерено 2026-09-02: 99 -> 187 биндов).
 - **Оговорка lua require-кэш:** `hyprctl reload` может не подхватить правки
@@ -136,17 +132,14 @@
 
 ---
 
-## 3. Уникально для ilyamiro
+## 3. Уникально для serpantinum
 
-| Комбо | Действие | Почему только тут |
-|---|---|---|
-| `SUPER+SHIFT+T` | **FocusTime** — Pomodoro-таймер с трекингом сессий | quickshell-виджет + демон, есть только в шелле ilyamiro |
-| `SUPER+RETURN` | Терминал (foot) — доп. к `SUPER+TAB` | нативный дефолт ilyamiro, оставлен |
-| `SUPER+SHIFT+TAB` | Фокус на след. монитор | мультимонитор-риг |
-| 3 пальца горизонт. | Свайп воркспейсов | `gesture` ilyamiro |
-| `XF86MonBrightness*` → swayosd | OSD яркости | в этом риге стартует `swayosd-server` |
-
----
+Дефолты его собственного шелла сверх контракта — стрелочная навигация
+(`SUPER+Left/Right/Up/Down` и с `SHIFT`/`CTRL`), `Print` во всех вариантах,
+`SUPER+RETURN` терминал, `SUPER+SPACE` лаунчер, `ALT+F4`, медиа-клавиши,
+`XF86PowerOff`. Они не конфликтуют с контрактом: это лишние удобства поверх,
+а не занятые контрактные комбо. Полный список — в `RIG_ONLY` теста
+`tests/rig_contract_parity_test.lua`, он же не даёт им разойтись молча.
 
 ## 4. Уникально для caelestia
 
@@ -160,7 +153,7 @@
 | `CTRL+SHIFT+Escape` | `caelestia toggle sysmon` — системный монитор | виджет caelestia |
 | `SUPER+ALT+F12` | Тест-нотификация | dev/тест |
 
-> `SUPER+O` занят PiP только в caelestia — в ilyamiro эта комбо **свободна**.
+> `SUPER+O` занят PiP только в caelestia — в serpantinum комбо **свободна**.
 
 ---
 
@@ -169,7 +162,7 @@
 Клавиши одни и те же в обоих ригах. Команда под клавишей отличается, потому что
 **OSD-путь у ригов разный**:
 
-| | ilyamiro | caelestia |
+| | serpantinum | caelestia |
 |---|---|---|
 | Vol/Mic/Mute | `swayosd-client` | `wpctl` |
 | Brightness | `swayosd-client --brightness` | `brightnessctl` |
@@ -182,10 +175,6 @@
 
 ## 6. Known issues / проверить
 
-- **`SHIFT` vs `SHIFT_L`.** Автоген ilyamiro использует `SUPER SHIFT, N` для переноса на
-  воркспейс, а `binds-ilyamiro.conf` снимает их через `unbind = SUPER SHIFT_L, N`. Если
-  Hyprland различает эти модмаски — старый бинд не снимется и `SUPER+SHIFT+цифра` сработает
-  дважды (`wsaction move` + `qs_manager move`). Проверить: `hyprctl binds | grep -A2 ', 1$'`.
 - **Два источника правды у caelestia.** Живой `keybinds.lua` и мёртвый `legacy-hyprlang/keybinds.conf`
   расходятся (в legacy нет IJKL, нет яркости). Legacy стоит удалить/пометить, чтобы больше
   никто не правил его по ошибке. См. `docs/tech-debt.md`.
@@ -197,7 +186,7 @@
 
 Сетка `SUPER+<буква>` почти забита в обоих ригах. Реально свободно:
 
-- **`SUPER+O`** — свободен в ilyamiro (в caelestia = PiP).
+- **`SUPER+O`** — свободен в serpantinum (в caelestia = PiP).
 - **`SUPER+U`** — освобождён (был дубль лаунчера).
 - **`SUPER+CTRL+стрелки`** — освобождены (был легаси movewindow).
 

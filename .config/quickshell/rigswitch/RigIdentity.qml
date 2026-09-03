@@ -7,14 +7,13 @@ import QtQuick
 //
 // Три известных рига — акцент НЕ выдуман, это их собственный реальный цвет:
 //   caelestia   — primary из scheme/current.lua (та же плашка, что красит рамки окон)
-//   ilyamiro    — active_border из hypr/colors.conf (matugen поверх текущих обоев)
 //   serpantinum — у рига пока нет отрендеренного matugen-вывода (свежий риг,
 //                 см. 2026-09-02-serpantinum-rig-design.md), поэтому взят
 //                 змеино-чешуйчатый тон вместо несуществующего файла.
 // Раскладки задают исходный "почерк":
 //   grid       — ровная сетка 3x2, детерминированное оседание (caelestia = work)
 //   serpentine — плашки вдоль синусоиды, пружинный вход (serpantinum = змея)
-//   drift      — спокойный вертикальный столбик (ilyamiro = daily, но ilyamiro
+//   drift      — спокойный вертикальный столбик (запасной стиль: риг без
 //                почти всегда даёт relogin, так что этот почерк реже всего виден живьём)
 //
 // Дроп-ин риг без записи в known не ломается: акцент получает через
@@ -27,7 +26,6 @@ Singleton {
     readonly property var known: ({
         caelestia:   { accent: "#9bd0cc", style: "grid" },
         serpantinum: { accent: "#8caa74", style: "serpentine" },
-        ilyamiro:    { accent: "#e0b95f", style: "drift" }
     })
     readonly property var styles: ["grid", "serpentine", "drift"]
 
