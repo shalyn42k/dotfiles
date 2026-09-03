@@ -41,8 +41,17 @@ fi
 echo "текущий:  $(git -C "$shell_dir" log --oneline -1 "$current")"
 echo "целевой:  $(git -C "$shell_dir" log --oneline -1 "$resolved")"
 echo
-echo "коммитов между ними: $(git -C "$shell_dir" rev-list --count "$current".."$resolved" 2>/dev/null || echo '?')"
-git -C "$shell_dir" log --oneline "$current".."$resolved" 2>/dev/null | head -20
+n_commits="$(git -C "$shell_dir" rev-list --count "$current".."$resolved" 2>/dev/null || echo '?')"
+echo "коммитов между ними: $n_commits"
+
+# Список читаем в переменную, а НЕ пайпим в head. С `set -o pipefail` head
+# закрывает пайп после своей двадцатой строки, git log получает SIGPIPE,
+# пайплайн возвращает ненулевой код — и `set -e` убивает скрипт молча, ровно
+# посередине работы. Ловилось только когда коммитов больше двадцати.
+changelog="$(git -C "$shell_dir" log --oneline -20 "$current".."$resolved" 2>/dev/null || true)"
+[[ -n "$changelog" ]] && printf '%s\n' "$changelog"
+[[ "$n_commits" =~ ^[0-9]+$ ]] && (( n_commits > 20 )) \
+    && echo "  … и ещё $(( n_commits - 20 ))"
 
 if $check_only; then
     echo
@@ -50,15 +59,22 @@ if $check_only; then
     exit 0
 fi
 
-# Локальные правки в сабмодуле — только наши патчи. Всё остальное здесь
-# случайно и потерялось бы молча при checkout, поэтому останавливаемся.
-if [[ -n "$(git -C "$shell_dir" status --porcelain)" ]]; then
-    echo
-    echo "rig-update: в сабмодуле есть незакоммиченные правки:" >&2
-    git -C "$shell_dir" status --short >&2
-    echo "  это ожидаемо, если там лежат наши патчи — они будут переналожены." >&2
-    echo "  но если правил руками, сохрани diff перед продолжением." >&2
-    read -rp "продолжить? [y/N] " ans
+# Сабмодуль почти всегда «грязный» — в нём лежат наши патчи, это нормальное
+# состояние. Спрашивать о нём каждый раз значит приучить отвечать «да» не
+# глядя. Поэтому сравниваем список изменённых файлов с тем, что трогают патчи:
+# совпало — молча продолжаем, что-то сверх того — это правка руками, и её
+# checkout затрёт без следа.
+patched_files="$(sed -n 's|^+++ b/||p' "$PROFILES/$rig"/patches/*.patch 2>/dev/null | sort -u)"
+dirty_files="$(git -C "$shell_dir" status --porcelain | awk '{print $2}' | sort -u)"
+unexpected="$(comm -23 <(echo "$dirty_files") <(echo "$patched_files") | grep -v '^$' || true)"
+
+if [[ -n "$unexpected" ]]; then
+    echo >&2
+    echo "rig-update: в сабмодуле есть правки СВЕРХ наших патчей:" >&2
+    printf '  %s\n' $unexpected >&2
+    echo "  checkout затрёт их без следа. Сохрани diff, если они нужны:" >&2
+    echo "    git -C $shell_dir diff > /tmp/my-changes.patch" >&2
+    read -rp "продолжить и потерять их? [y/N] " ans
     [[ "$ans" == [yY] ]] || exit 1
 fi
 
