@@ -17,8 +17,6 @@
 | **serpantinum** | hyprkcs (Lua) | 1) `shell/compositors/hyprland/config/keybinds.lua` — дефолты апстрима (submodule, НЕ править); 2) `profiles/serpantinum/hypr/overrides.lua` — **наши бинды**, снимают конфликтные комбо апстрима и вешают свои; 3) `.config/hypr-shared/contract-binds.lua` — контракт, последним |
 
 ⚠️ **Ловушки правки:**
-- caelestia: `profiles/caelestia/hypr/legacy-hyprlang/hyprland/keybinds.conf` — **МЁРТВЫЙ** (старый
-  до-hyprkcs сетап). Не грузится. Правь только `keybinds.lua`.
 - Контракт §2 живёт в ОДНОМ файле — `.config/hypr-shared/contract-binds.lua`
   (владелец `shared`, переживает свитч рига). Второй формат (hyprlang) больше не
   нужен: все риги на hyprkcs.
@@ -175,9 +173,6 @@
 
 ## 6. Known issues / проверить
 
-- **Два источника правды у caelestia.** Живой `keybinds.lua` и мёртвый `legacy-hyprlang/keybinds.conf`
-  расходятся (в legacy нет IJKL, нет яркости). Legacy стоит удалить/пометить, чтобы больше
-  никто не правил его по ошибке. См. `docs/tech-debt.md`.
 - **Свитчер в двух файлах.** `SUPER+SHIFT+D` в `binds.conf` и `hypr-user.lua` — держать в синхроне.
 
 ---
