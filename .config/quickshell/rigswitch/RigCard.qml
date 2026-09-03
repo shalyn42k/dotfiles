@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 
 // Строка рига в списке-пикере: лого рига + имя + сабтайтл (движок·режим),
@@ -41,15 +42,33 @@ Rectangle {
             width: 48; height: 36; radius: 9; clip: true
             color: Tokens.c.surfaceContainerLow
 
+            // Лого перекрашивается в акцент рига, а не рисуется как есть.
+            // Две причины. Ассеты у ригов чужие и про наш фон ничего не знают:
+            // у serpantinum основная фигура залита #000000 и на тёмной карточке
+            // просто пропадала. И вторая — так лого следует теме рига вместе с
+            // остальным свитчером, а не остаётся единственным местом, которое
+            // не меняется при смене схемы.
+            //
+            // colorization=1 берёт форму (альфу) и заливает её целиком, поэтому
+            // исходные цвета внутри SVG роли не играют — важен только силуэт.
             Image {
                 id: logo
                 anchors.fill: parent
                 anchors.margins: 6
                 source: row.logoPath
-                visible: status === Image.Ready
+                visible: false            // показывает эффект ниже
                 fillMode: Image.PreserveAspectFit
                 asynchronous: true
                 sourceSize.height: 64
+            }
+            MultiEffect {
+                anchors.fill: logo
+                source: logo
+                visible: logo.status === Image.Ready
+                colorization: 1.0
+                colorizationColor: RigIdentity.identityFor(row.rig.name, row.rig.role).accent
+                // Активная карточка ярче — глазу видно, где ты сейчас.
+                brightness: row.current ? 0.0 : -0.15
             }
             Text {
                 anchors.centerIn: parent

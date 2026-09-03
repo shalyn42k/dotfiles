@@ -5,11 +5,10 @@ import QtQuick
 // Идентичность рига для transition-анимации в shell.qml: акцент (цвет
 // "пришивается" собранным кусочкам) и почерк сборки (раскладка кусочков).
 //
-// Три известных рига — акцент НЕ выдуман, это их собственный реальный цвет:
-//   caelestia   — primary из scheme/current.lua (та же плашка, что красит рамки окон)
-//   serpantinum — у рига пока нет отрендеренного matugen-вывода (свежий риг,
-//                 см. 2026-09-02-serpantinum-rig-design.md), поэтому взят
-//                 змеино-чешуйчатый тон вместо несуществующего файла.
+// Акцент НЕ задан константой: он читается из ЖИВОЙ палитры рига (Palettes),
+// то есть меняется вместе с обоями. Раньше здесь лежали два зашитых хекса, и
+// после смены схемы риг в свитчере оставался прежнего цвета — свитчер врал о
+// том, как риг сейчас выглядит.
 // Раскладки задают исходный "почерк":
 //   grid       — ровная сетка 3x2, детерминированное оседание (caelestia = work)
 //   serpentine — плашки вдоль синусоиды, пружинный вход (serpantinum = змея)
@@ -23,9 +22,10 @@ import QtQuick
 Singleton {
     id: root
 
-    readonly property var known: ({
-        caelestia:   { accent: "#9bd0cc", style: "grid" },
-        serpantinum: { accent: "#8caa74", style: "serpentine" },
+    // Только почерк сборки. Цвет приходит из палитры рига.
+    readonly property var knownStyle: ({
+        caelestia:   "grid",
+        serpantinum: "serpentine"
     })
     readonly property var styles: ["grid", "serpentine", "drift"]
 
@@ -46,9 +46,14 @@ Singleton {
     function identityFor(name, role) {
         if (!name)
             return { accent: Tokens.c.primary, style: "drift" };
-        const k = root.known[name];
-        if (k)
-            return k;
+
+        const style = root.knownStyle[name];
+        if (style)
+            return { accent: Palettes.accentFor(name), style: style };
+
+        // Дроп-ин риг: палитры мы не знаем, поэтому акцент выводим из текущей
+        // сдвигом тона — стабильно для одного имени и заведомо не совпадёт с
+        // реальным акцентом известного рига.
         const seed = root.hashOf(role || name);
         return {
             accent: root.hueRotate(Tokens.c.primary, seed % 360),

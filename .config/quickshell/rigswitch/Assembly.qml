@@ -58,6 +58,59 @@ Item {
         width: 372
         height: 148
 
+        // ── Каркас ───────────────────────────────────────────────────────
+        // Связь между соседними кусочками: прорастает, когда приехал ВТОРОЙ из
+        // пары. Без неё стадии просто появляются по одной и читаются как
+        // список; со связью видно, что риг именно собирается — детали
+        // скручиваются друг с другом в том порядке, в каком их применяет
+        // dotprofile.
+        //
+        // Рисуется ПОД кусочками (объявлено раньше), поэтому линия уходит им
+        // под низ, а не перечёркивает подписи.
+        Repeater {
+            model: Math.max(0, root.stageOrder.length - 1)
+            delegate: Rectangle {
+                id: link
+                required property int index
+
+                readonly property var a: root.slots[index] || ({ x: 0, y: 0 })
+                readonly property var b: root.slots[index + 1] || ({ x: 0, y: 0 })
+                readonly property real dx: b.x - a.x
+                readonly property real dy: b.y - a.y
+                readonly property real len: Math.sqrt(dx * dx + dy * dy)
+
+                // Связь считается сделанной, только когда ОБА её конца на месте.
+                readonly property bool joined:
+                    root.stageState[root.stageOrder[index]] !== undefined &&
+                    root.stageState[root.stageOrder[index]] !== "pending" &&
+                    root.stageState[root.stageOrder[index + 1]] !== undefined &&
+                    root.stageState[root.stageOrder[index + 1]] !== "pending"
+
+                property real grown: joined ? 1 : 0
+                Behavior on grown {
+                    NumberAnimation {
+                        duration: root.styleMotion.dur
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: root.styleMotion.curve
+                    }
+                }
+
+                width: link.len * link.grown
+                height: 2
+                radius: 1
+                antialiasing: true
+                // Точка роста — конец уже стоящего кусочка, поэтому линия
+                // тянется ОТ него к следующему, а не появляется серединой.
+                x: cluster.width / 2 + link.a.x
+                y: cluster.height / 2 + link.a.y - height / 2
+                transformOrigin: Item.Left
+                rotation: Math.atan2(link.dy, link.dx) * 180 / Math.PI
+
+                color: root.accent
+                opacity: root.relogin ? 0.10 : 0.30 * link.grown
+            }
+        }
+
         Repeater {
             model: root.stageOrder
             delegate: Item {

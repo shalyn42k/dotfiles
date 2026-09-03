@@ -6,8 +6,12 @@ import QtQuick
 Singleton {
     id: root
 
-    // Дефолты = caelestia scheme.json (vibrant dark). Fallback при
-    // отсутствии/битом scheme.json. rigswitch всегда caelestia-палитра.
+    // Оверлей красится палитрой АКТИВНОГО рига, а не одного захардкоженного.
+    // Палитры всех ригов читает Palettes (у каждого свой формат файла), здесь
+    // только выбор нужной по симлинку profiles/active.
+    //
+    // Раньше тут был жёстко caelestia scheme.json — из-за этого свитчер
+    // выглядел одинаково в любом риге, хотя сами риги давно разные.
     readonly property var fallback: ({
         surface: "#0a0f0f",
         surfaceContainer: "#131b1a",
@@ -23,7 +27,8 @@ Singleton {
         onErrorContainer: "#ff9993"
     })
 
-    property var c: fallback
+    property string activeRig: ""
+    property var c: activeRig ? Palettes.paletteFor(activeRig) : fallback
 
     readonly property var springCurve: [0.38, 1.21, 0.22, 1, 1, 1]
     readonly property var effectsCurve: [0.34, 0.8, 0.34, 1, 1, 1]
@@ -39,31 +44,13 @@ Singleton {
     readonly property int radRow: 22
     readonly property int radPanel: 28
 
-    // Путь можно переопределить env RIGSWITCH_SCHEME (для теста fallback).
-    readonly property string schemePath:
-        Quickshell.env("RIGSWITCH_SCHEME") ||
-        (Quickshell.env("HOME") + "/.local/state/caelestia/scheme.json")
-
+    // Активный риг — цель симлинка profiles/active. basename, потому что
+    // readlink отдаёт относительное имя, а readlink -f — полный путь.
     Process {
-        command: ["cat", root.schemePath]
+        command: ["sh", "-c", "basename \"$(readlink -f \"$HOME/dotfiles/profiles/active\")\""]
         running: true
         stdout: StdioCollector {
-            onStreamFinished: root.parseScheme(this.text)
-        }
-    }
-
-    function parseScheme(txt) {
-        try {
-            const j = JSON.parse(txt);
-            const src = j.colours || {};
-            const out = {};
-            for (const k in root.fallback) {
-                const v = src[k];
-                out[k] = (typeof v === "string" && v.length >= 6) ? "#" + v : root.fallback[k];
-            }
-            root.c = out;
-        } catch (e) {
-            root.c = root.fallback;   // битый/пустой JSON — дефолты
+            onStreamFinished: root.activeRig = this.text.trim()
         }
     }
 }
