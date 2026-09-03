@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# rig-theme — перерисовать тему рабочего стола палитрой АКТИВНОГО рига.
+#
+# Проблема, которую он решает. Каждый риг красит свой шелл сам, но GTK, Qt,
+# kitty, cava и прочее живут вне шелла, и их темы рендерит matugen по конфигу
+# профиля (profiles/<риг>/matugen/config.toml). Запускать этот matugen было
+# некому: шелл serpantinum зовёт СВОЙ конфиг (для своего qs_colors.json), а
+# профильный не зовёт никто. В итоге ~/.cache/matugen/colors-gtk.css, который
+# импортирует profiles/serpantinum/gtk-3.0/gtk.css, оставался от того рига,
+# который трогал его последним. Выглядело как «тема не зависит от рига».
+#
+# caelestia сюда не попадает намеренно: у него своя схема — caelestia-cli пишет
+# hypr/scheme/current.lua и сам рендерит gtk.css с зашитыми цветами. Его
+# matugen/config.toml остался копией от удалённого рига и указывает в чужие
+# пути (шелл, которого нет; ~/.config/hypr/colors.conf, который у caelestia не
+# читается). Запусти его — и apply_rig_colors начнёт брать цвет рамок из
+# colors.conf вместо схемы. Поэтому признак не «есть config.toml», а «нет
+# собственной схемы».
+#
+# Зовётся из bin/dotprofile (стадия colors) и из rig-theme.path при смене
+# палитры рига.
+set -uo pipefail
+
+DOTFILES="$HOME/dotfiles"
+PROFILES="$DOTFILES/profiles"
+
+rig="${1:-}"
+[[ -n "$rig" ]] || rig="$(basename "$(readlink -f "$PROFILES/active")" 2>/dev/null)"
+[[ -n "$rig" && -d "$PROFILES/$rig" ]] || { echo "rig-theme: нет такого рига: '$rig'" >&2; exit 1; }
+
+# Только для АКТИВНОГО рига. Конфиги matugen ссылаются на шаблоны через
+# ~/.config/matugen — симлинк на profiles/active, — и выходы пишут в
+# ~/.config/{qt5ct,qt6ct,gtk-3.0}, тоже симлинки на активный риг. Запуск для
+# неактивного рига брал бы ЧУЖИЕ шаблоны и писал бы в ЧУЖИЕ каталоги.
+# На свитче это не ограничение: стадия links переставляет симлинки раньше
+# стадии colors, из которой мы и вызываемся.
+active="$(basename "$(readlink -f "$PROFILES/active")" 2>/dev/null)"
+if [[ "$rig" != "$active" ]]; then
+    echo "rig-theme: '$rig' не активен (активен '$active') — пропускаю" >&2
+    exit 0
+fi
+
+config="$PROFILES/$rig/matugen/config.toml"
+[[ -f "$config" ]] || exit 0
+# Риг со своей схемой красится сам — см. шапку.
+[[ -f "$PROFILES/$rig/hypr/scheme/current.lua" ]] && exit 0
+command -v matugen >/dev/null || exit 0
+
+# Обои активного рига. Пути риг-специфичны: caelestia держит путь текстом,
+# serpantinum — снимок одним PNG и для картинок, и для видео.
+wallpaper_of() {
+    case "$1" in
+        serpantinum) echo "$HOME/.cache/serpantinum/wallpaper/current_wallpaper.png" ;;
+        caelestia)   cat "$HOME/.local/state/caelestia/wallpaper/path.txt" 2>/dev/null ;;
+        *)           echo "" ;;
+    esac
+}
+
+wp="$(wallpaper_of "$rig")"
+if [[ -z "$wp" || ! -f "$wp" ]]; then
+    echo "rig-theme: у рига '$rig' не нашлось обоев — тема не перерисована" >&2
+    exit 0
+fi
+
+# --source-color-index 0 — тем же аргументом зовёт matugen шелл serpantinum.
+# Без него на многоцветных обоях matugen требует интерактивного выбора и
+# падает в сессии без терминала.
+exec matugen --config "$config" --source-color-index 0 -m dark image "$wp"

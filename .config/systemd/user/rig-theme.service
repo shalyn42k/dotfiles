@@ -1,0 +1,6 @@
+[Unit]
+Description=Repaint the desktop theme from the active rig's palette
+
+[Service]
+Type=oneshot
+ExecStart=%h/dotfiles/bin/rig-theme
