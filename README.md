@@ -67,7 +67,6 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 | :--- | :--- |
 | `bin/dotprofile` | Ядро: переключение ригов (симлинк `profiles/active`), рендер цветов/тем, снапшоты после чужих installer'ов |
 | `bin/rigdo` | Диспетчер действий по активному ригу: один бинд — разные команды (launcher, screenshot, lock…) |
-| `bin/hypr-exec` | Запуск команд через Hyprland независимо от конфиг-движка (`dispatch exec` сломан под lua) |
 | `bin/kbd-theme-sync` | Подсветка клавиатуры (ASUS TUF) плавно уезжает в доминирующий цвет обоев активного рига |
 | `bin/thunar-css-fix` | Возвращает канон `thunar.css` поверх рендера caelestia CLI (тот вшивает свои hex и ломающий панели fade-in) |
 | `profiles/<rig>/` | Полный снапшот рига: hypr, gtk, qt5ct/qt6ct, `session.sh` (старт/стоп шелла), `role`, `fastfetch.modules` |
@@ -83,7 +82,6 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 bin/
   dotprofile   переключатель ригов (switch/menu/status/update/colors)
   rigdo        риг-зависимый диспетчер действий (лаунчер, скриншот, лок...)
-  hypr-exec    запуск команды через Hyprland независимо от конфиг-движка
   kbd-theme-sync  подсветка клавиатуры за цветом обоев (bootstrap линкует
   thunar-css-fix  их в ~/.local/bin — юниты зовут по этому пути)
 profiles/
@@ -148,7 +146,6 @@ dotprofile colors          переприменить цвета активно�
   иначе правка файлов загруженного рига триггерит reload и ошибку `cannot open hyprland.lua`.
 - `hyprctl reload` не перечитывает закешированные `require()`-модули lua — изменения
   биндов caelestia требуют relogin.
-- `hyprctl dispatch exec` не работает под lua-провайдером — используйте `bin/hypr-exec`.
 - Анимации при свитче применяются из заранее переведённых файлов
   `profiles/*/animations-runtime.{lua,keywords}` (статическая трансляция).
 - `profiles/*/hypr/scripts/quickshell/calendar/.env` (API-ключ погоды) — только локально,
