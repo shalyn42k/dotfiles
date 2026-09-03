@@ -48,7 +48,7 @@ hl.bind(vars.kbCommunicationWs,
 hl.bind("SUPER + SHIFT + X", hl.dsp.window.move({ workspace = "e+0" }))  -- eject focused window from any special WS to current regular WS
 hl.bind(vars.kbTodoWs,
     hl.dsp.exec_cmd(
-        [[hyprctl clients | grep -qi 'class: obsidian' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("todo")' || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
+        [[hyprctl clients | grep -qi 'class:.*obsidian' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("todo")' || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
 hl.bind(vars.kbMessangerWs,
     hl.dsp.exec_cmd(
         [[pgrep -x AyuGram && hyprctl dispatch 'hl.dsp.workspace.toggle_special("messanger")' || AyuGram]]))

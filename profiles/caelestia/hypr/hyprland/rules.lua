@@ -25,7 +25,7 @@ hl.window_rule({ match = { class = "(?i)thunar" }, opacity = "0.90 0.90" })
 
 -- Obsidian/Feishin/AyuGram: без прозрачности Hyprland (переход при
 -- старте раздражает; override освобождает и от общего правила 0.95)
-hl.window_rule({ match = { class = "obsidian" }, opacity = "1.0 override 1.0 override" })
+hl.window_rule({ match = { class = "(?i).*obsidian.*" }, opacity = "1.0 override 1.0 override" })
 hl.window_rule({ match = { class = "feishin" }, opacity = "1.0 override 1.0 override" })
 hl.window_rule({ match = { class = "com.ayugram.desktop" }, opacity = "1.0 override 1.0 override" })
 
@@ -33,7 +33,10 @@ hl.window_rule({ match = { class = "com.ayugram.desktop" }, opacity = "1.0 overr
 hl.window_rule({ match = { class = "(?i)spotify" }, workspace = "special:music silent" })
 hl.window_rule({ match = { class = "(?i)vesktop" }, workspace = "special:communication silent" })
 hl.window_rule({ match = { class = "com.ayugram.desktop" }, workspace = "special:messanger silent" })
-hl.window_rule({ match = { class = "obsidian" }, workspace = "special:todo silent", no_initial_focus = true })
+-- Класс окна — md.obsidian.Obsidian (сменился в обновлении Obsidian; прежнее
+-- правило по "obsidian" перестало совпадать, и заметки открывались на
+-- обычном воркспейсе вместо спец-окна). Шаблон покрывает оба имени.
+hl.window_rule({ match = { class = "(?i).*obsidian.*" }, workspace = "special:todo silent", no_initial_focus = true })
 
 -- Zen Browser
 hl.window_rule({ match = { class = "^(zen-alpha)$" }, opacity = "0.85 0.85" })
@@ -62,7 +65,7 @@ hl.window_rule({ match = { class = "btop" }, workspace = "special:sysmon" })
 hl.window_rule({ match = { class = "feishin|Spotify|Supersonic|Cider|com.github.th_ch.youtube_music|Plexamp" }, workspace = "special:music" })
 hl.window_rule({ match = { initial_title = "Spotify( Free)?" }, workspace = "special:music" })
 hl.window_rule({ match = { class = "discord|equibop|vesktop|whatsapp" }, workspace = "special:communication" })
-hl.window_rule({ match = { class = "Todoist|obsidian" }, workspace = "special:todo" })
+hl.window_rule({ match = { class = "(?i).*(todoist|obsidian).*" }, workspace = "special:todo" })
 
 -- Dialogs (popups)
 hl.window_rule({ match = { title = "(Select|Open)( a)? (File|Folder)(s)?" }, float = true })

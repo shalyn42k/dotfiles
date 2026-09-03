@@ -94,7 +94,7 @@ rebind("SUPER + X",
         [[hyprctl clients | grep -qi 'class: vesktop' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("communication")' || vesktop]]))
 rebind("SUPER + C",
     hl.dsp.exec_cmd(
-        [[hyprctl clients | grep -qi 'class: obsidian' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("todo")' || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
+        [[hyprctl clients | grep -qi 'class:.*obsidian' && hyprctl dispatch 'hl.dsp.workspace.toggle_special("todo")' || obsidian "obsidian://open?vault=Shalyn_Vault"]]))
 rebind("SUPER + V",
     hl.dsp.exec_cmd(
         [[pgrep -x AyuGram && hyprctl dispatch 'hl.dsp.workspace.toggle_special("messanger")' || AyuGram]]))
