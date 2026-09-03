@@ -1,0 +1,12 @@
+[Unit]
+Description=Watch the active rig's palette and repaint GTK/Qt/terminal themes
+# Шелл рига перегенерирует свою палитру при смене обоев, но красит ТОЛЬКО себя.
+# Остальной рабочий стол (GTK, Qt, kitty, cava) рендерит matugen профиля —
+# его и запускаем по изменению палитры.
+
+[Path]
+PathChanged=%h/.local/state/serpantinum/qs_colors.json
+PathChanged=%h/.cache/serpantinum/wallpaper/current_wallpaper.png
+
+[Install]
+WantedBy=default.target

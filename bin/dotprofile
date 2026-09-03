@@ -76,6 +76,14 @@ ensure_links() {
 # scheme/current.lua (caelestia: primary/onSurfaceVariant).
 apply_rig_colors() {
     local name="$1" active="" inactive="" accent_hex=""
+
+    # Тема рабочего стола (GTK/Qt/kitty/cava/…) рендерится matugen'ом профиля.
+    # Запускать его было некому: шелл рига красит только СЕБЯ, своим конфигом.
+    # Без этого шага ~/.cache/matugen/colors-gtk.css, который импортирует
+    # gtk.css рига, оставался от того рига, кто трогал его последним — тема
+    # переставала зависеть от рига. Риг со своей схемой (caelestia) скрипт
+    # пропускает сам.
+    "$DOTFILES/bin/rig-theme" "$name" 2>/dev/null || true
     local cconf="$PROFILES/$name/hypr/colors.conf"
     local clua="$PROFILES/$name/hypr/scheme/current.lua"
     if [[ -f "$cconf" ]]; then
