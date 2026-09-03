@@ -137,7 +137,7 @@
             "activeIndicator": true,
             "activeLabel": "󰮯",
             "activeTrail": false,
-            "capitalisation": "preserve",
+            "capitalisation": "Preserve",
             "label": "  ",
             "maxWindowIcons": 0,
             "occupiedBg": true,
@@ -436,7 +436,7 @@
         "defaultExpireTimeout": 5000,
         "expandThreshold": 1,
         "expire": true,
-        "fullscreen": "on",
+        "fullscreen": "On",
         "groupPreviewNum": 1,
         "openExpanded": false
     },
@@ -559,8 +559,10 @@
             "enabled": false,
             "provider": [
                 {
+                    "id": "vpn-mtlhsoxp-13hhc"
                 }
-            ]
+            ],
+            "selectedProvider": "vpn-mtlhsoxp-13hhc"
         }
     }
 }

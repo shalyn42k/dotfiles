@@ -7,18 +7,15 @@
 | Риг | База | Роль | Конфиг-движок | Шелл |
 | :--- | :--- | :--- | :--- | :--- |
 | **caelestia** | [caelestia-dots](https://github.com/caelestia-dots/caelestia) | work | lua (`hyprland.lua`) | caelestia shell (quickshell) |
-| **ilyamiro** | [ilyamiro/imperative-dots](https://github.com/ilyamiro/imperative-dots) | daily | hyprlang (`hyprland.conf`) | кастомный quickshell |
 | **serpantinum** | [ilyamiro/serpantinum](https://github.com/ilyamiro/serpantinum) (submodule) | third | lua (`hyprland.lua`) | serpantinumd + quickshell |
 
 Переключение — `SUPER+SHIFT+D` (overlay-пикер). В SDDM одна запись,
 «Hyprland (rig)»: она читает `profiles/active`, поэтому запоминать риг греетеру
 не нужно.
 
-**caelestia ↔ serpantinum** — оба на lua-провайдере, значит свитч однодвижковый
-и идёт без релогина. **ilyamiro** на hyprlang: Hyprland выбирает движок один раз
-при старте, поэтому переход в него и из него — всегда релогин. Он остаётся
-вторым рабочим ригом, пока serpantinum не отработает как daily; после этого
-hyprlang-ветка уходит из репозитория целиком.
+Оба рига на lua-провайдере, значит свитч однодвижковый и идёт **без релогина**.
+Hyprlang-ветка ушла из репозитория вместе с ригом ilyamiro (2026-09-03) — с ней
+ушли ручные порты правил, анимаций и настроек WM на второй язык конфига.
 
 > Оговорка: бинды при горячем свитче пока НЕ переключаются — стадия отключена,
 > снос набора через хендлы роняет композитор. Цвета, анимации, правила окон и
@@ -47,7 +44,7 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
    → `profiles/active/*`, общие `~/.config/{caelestia,fish,foot,fastfetch}` →
    `.config/*` репозитория. Живые каталоги не затираются — бэкап в
    `*.pre-bootstrap`.
-4. **Matugen-шаблоны** — темы Discord/Obsidian рига ilyamiro в
+4. **Matugen-шаблоны** — темы Discord/Obsidian рига в
    `~/.config/matugen/`.
 5. **SDDM-сессии** — два `.desktop` в `/usr/share/wayland-sessions/`
    (с подстановкой твоего `$HOME`).
@@ -58,7 +55,7 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 После установки:
 
 1. Положи обои (jpg/png/mp4) в `~/Pictures/Wallpapers`.
-2. Relogin через SDDM → сессия «Hyprland (caelestia)» или «Hyprland (ilyamiro)».
+2. Relogin через SDDM → сессия «Hyprland (rig)», риг берётся из `profiles/active`.
 3. Переключение на лету: `SUPER+SHIFT+D`.
 
 > Hyprland нужен с lua config provider (0.55+, сборка CachyOS или git) —
@@ -90,13 +87,13 @@ bin/
   kbd-theme-sync  подсветка клавиатуры за цветом обоев (bootstrap линкует
   thunar-css-fix  их в ~/.local/bin — юниты зовут по этому пути)
 profiles/
-  active -> caelestia|ilyamiro   симлинк активного рига
+  active -> caelestia|serpantinum  симлинк активного рига
   caelestia/   снапшот рига: hypr, gtk-3.0/4.0, qt5ct/qt6ct + session.sh
                + role (work) + fastfetch.modules (дата/время)
-  ilyamiro/    то же + скрипты quickshell-шелла + matugen-шаблоны
+  serpantinum/ то же + вендоренный шелл (submodule) + matugen-шаблоны
                + role (daily) + fastfetch.modules (media, battery)
 .config/
-  hypr-shared/ общие бинды + порт-конфиги для ilyamiro (binds/rules/settings)
+  hypr-shared/ реестр владения биндами + кросс-риг контракт (lua)
   gtk-shared/  канон thunar.css (копии в профилях — цель записи caelestia CLI,
                path-юнит откатывает их к канону; симлинками делать нельзя)
   systemd/user/  path-юниты: kbd-theme-sync, thunar-css-fix
@@ -139,7 +136,7 @@ dotprofile colors          переприменить цвета активно�
   вставляется `profiles/<rig>/fastfetch.modules`. Строка `rig` динамическая —
   читает `profiles/active` + `profiles/<rig>/role` на каждом запуске.
 
-Вариант ilyamiro генерит matugen из обоев (шаблоны в `profiles/ilyamiro/matugen/`,
+Вариант serpantinum генерит matugen из обоев (шаблоны в `profiles/serpantinum/matugen/`,
 хук `dotprofile colors` дёргается при смене обоев); вариант caelestia — статические
 файлы в `profiles/caelestia/`.
 
