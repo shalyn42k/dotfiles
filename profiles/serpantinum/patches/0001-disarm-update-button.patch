@@ -1,0 +1,34 @@
+diff --git a/src/quickshell/guide/AboutTab.qml b/src/quickshell/guide/AboutTab.qml
+index ea212e8..fbd08fd 100644
+--- a/src/quickshell/guide/AboutTab.qml
++++ b/src/quickshell/guide/AboutTab.qml
+@@ -214,10 +214,26 @@ Item {
+                             iconFontSize: rootObj.s(16)
+                             fillDuration: 1200
+ 
++                            // ── ЛОКАЛЬНЫЙ ПАТЧ dotfiles ──────────────────────
++                            // Апстримовый обработчик пайпил install/install.sh
++                            // прямо в `eval`. Здесь шелл вендорится сабмодулем
++                            // с пином, и этот инсталлер сделал бы две вещи,
++                            // которых мы не хотим: `sudo pacman -Syyu
++                            // --noconfirm` (неинтерактивное обновление всей
++                            // системы) и раскладку своего конфига поверх
++                            // существующего — а существующий здесь и есть риг.
++                            //
++                            // Обновление рига делается осознанно, сдвигом пина:
++                            //   git -C profiles/serpantinum/shell fetch origin
++                            //   git -C profiles/serpantinum/shell checkout <sha>
++                            //   git add profiles/serpantinum/shell && git commit
++                            //
++                            // Кнопка теперь открывает страницу релизов, чтобы
++                            // было видно, что вышло. Патч переносится при смене
++                            // пина — см. docs/tech-debt.md.
+                             onTriggered: {
+-                                let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)\"'; fi";
+-                                Quickshell.execDetached(["bash", "-c", cmd]);
+-                                Quickshell.execDetached(["bash", rootObj.appPaths.serpantinumDir + "/scripts/qs_manager.sh", "close"]);
++                                Quickshell.execDetached(["xdg-open",
++                                    "https://github.com/ilyamiro/serpantinum/releases"]);
+                             }
+                         }
+                     }

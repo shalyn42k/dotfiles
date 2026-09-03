@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# rig-update — обновить вендоренный шелл рига до нового коммита апстрима.
+#
+#   rig-update serpantinum            — до origin/master
+#   rig-update serpantinum <ref>      — до конкретного коммита/тега
+#   rig-update serpantinum --check    — только показать, что нового, без правок
+#
+# Почему не кнопка «Update» в самом шелле: она пайпила install/install.sh в
+# eval, а тот делает `sudo pacman -Syyu --noconfirm` и раскладывает свой конфиг
+# поверх существующего — то есть поверх этого рига. Кнопка обезврежена, см.
+# docs/tech-debt.md п.11.
+#
+# Обновление здесь — это сдвиг пина сабмодуля плюс переналожение наших патчей.
+# Патчи живут в profiles/<риг>/patches/*.patch и НЕ переживают checkout сами:
+# апстрим возвращает свои файлы, поэтому их накат — часть этой процедуры, а не
+# то, что надо помнить руками.
+set -euo pipefail
+
+DOTFILES="$HOME/dotfiles"
+PROFILES="$DOTFILES/profiles"
+
+rig="${1:-}"
+[[ -n "$rig" ]] || { echo "usage: rig-update <риг> [ref|--check]" >&2; exit 1; }
+shell_dir="$PROFILES/$rig/shell"
+# .git у сабмодуля — ФАЙЛ с gitdir-указателем, а не каталог, отсюда -e.
+[[ -e "$shell_dir/.git" ]] || { echo "rig-update: у рига '$rig' нет вендоренного шелла" >&2; exit 1; }
+
+target="${2:-origin/master}"
+check_only=false
+[[ "$target" == "--check" ]] && { check_only=true; target="origin/master"; }
+
+current="$(git -C "$shell_dir" rev-parse HEAD)"
+git -C "$shell_dir" fetch --quiet origin
+resolved="$(git -C "$shell_dir" rev-parse "$target")"
+
+if [[ "$current" == "$resolved" ]]; then
+    echo "уже на $(git -C "$shell_dir" log --oneline -1 "$resolved")"
+    exit 0
+fi
+
+echo "текущий:  $(git -C "$shell_dir" log --oneline -1 "$current")"
+echo "целевой:  $(git -C "$shell_dir" log --oneline -1 "$resolved")"
+echo
+echo "коммитов между ними: $(git -C "$shell_dir" rev-list --count "$current".."$resolved" 2>/dev/null || echo '?')"
+git -C "$shell_dir" log --oneline "$current".."$resolved" 2>/dev/null | head -20
+
+if $check_only; then
+    echo
+    echo "(--check: ничего не менял)"
+    exit 0
+fi
+
+# Локальные правки в сабмодуле — только наши патчи. Всё остальное здесь
+# случайно и потерялось бы молча при checkout, поэтому останавливаемся.
+if [[ -n "$(git -C "$shell_dir" status --porcelain)" ]]; then
+    echo
+    echo "rig-update: в сабмодуле есть незакоммиченные правки:" >&2
+    git -C "$shell_dir" status --short >&2
+    echo "  это ожидаемо, если там лежат наши патчи — они будут переналожены." >&2
+    echo "  но если правил руками, сохрани diff перед продолжением." >&2
+    read -rp "продолжить? [y/N] " ans
+    [[ "$ans" == [yY] ]] || exit 1
+fi
+
+git -C "$shell_dir" checkout --quiet --force "$resolved"
+
+# Патчи рига поверх свежего апстрима.
+patches=("$PROFILES/$rig"/patches/*.patch)
+if [[ -e "${patches[0]}" ]]; then
+    echo
+    for p in "${patches[@]}"; do
+        if git -C "$shell_dir" apply --check "$p" 2>/dev/null; then
+            git -C "$shell_dir" apply "$p"
+            echo "патч наложен: $(basename "$p")"
+        else
+            echo "ПАТЧ НЕ ЛОЖИТСЯ: $(basename "$p")" >&2
+            echo "  апстрим переписал этот участок — патч надо пересобрать вручную." >&2
+            echo "  до тех пор кнопка Update в гайде снова запускает их инсталлер." >&2
+        fi
+    done
+fi
+
+echo
+echo "готово. Зафиксировать пин:"
+echo "  git -C $DOTFILES add profiles/$rig/shell"
+echo "  git -C $DOTFILES commit -m 'chore($rig): bump vendored shell to ${resolved:0:7}'"
+echo
+echo "перезапустить шелл: rigdo shell"
