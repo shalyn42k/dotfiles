@@ -203,6 +203,16 @@ trigger_relogin() {
 
 # Анимации живут в конфиг-движке — применяем набор активного рига runtime.
 # Свитч теперь только lua↔lua, поэтому единственная ветка — lua.
+# Настройки WM рига: general (гапсы, рамки), decoration (скругление, блюр),
+# group (вид вкладок), misc. До появления этой стадии они ставились ТОЛЬКО при
+# загрузке конфига, поэтому на горячем свитче оставались настройки того рига,
+# в который зашёл: вкладки, гапсы и скругления не менялись вовсе.
+apply_rig_settings() {
+    local name="$1"
+    local chunk="$PROFILES/$name/settings-runtime.lua"
+    [[ -f "$chunk" ]] && hyprctl eval "dofile('$chunk')" >/dev/null || true
+}
+
 apply_rig_animations() {
     local name="$1"
     local chunk="$PROFILES/$name/animations-runtime.lua"
@@ -355,6 +365,7 @@ cmd_switch() {
         # инстансе Hyprland, не в живой сессии.
         # stage binds      apply_rig_binds "$old" "$name"
         stage colors     apply_rig_colors "$name"
+        stage settings   apply_rig_settings "$name"
         stage animations apply_rig_animations "$name"
         stage rules      apply_rig_rules "$name"
     fi

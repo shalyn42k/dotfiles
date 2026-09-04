@@ -103,5 +103,28 @@ for rig, entry in pairs(ENTRYPOINTS) do
     end)
 end
 
+-- Свитч применяет слои рига runtime-чанками. Чанка нет — стадия молча ничего
+-- не делает, и слой остаётся от того рига, в который ты ЗАШЁЛ. Так у
+-- serpantinum потерялись сначала анимации, потом правила окон: обе стадии
+-- отрабатывали "успешно", просто применять было нечего.
+--
+-- rules-runtime не обязателен: риг может не иметь правил вовсе (у serpantinum
+-- их нет ни своих, ни апстримовских). Остальные — обязаны быть.
+local REQUIRED_CHUNKS = { "animations-runtime.lua", "settings-runtime.lua" }
+
+for rig in pairs(ENTRYPOINTS) do
+    it(rig .. ": has every runtime chunk the switch applies", function()
+        local missing = {}
+        for _, chunk in ipairs(REQUIRED_CHUNKS) do
+            local f = io.open(REPO .. "profiles/" .. rig .. "/" .. chunk, "r")
+            if f then f:close() else missing[#missing + 1] = chunk end
+        end
+        if #missing > 0 then
+            error(("нет чанков: %s — соответствующие стадии свитча будут no-op")
+                :format(table.concat(missing, ", ")), 2)
+        end
+    end)
+end
+
 print(("\n%d passed, %d failed"):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)
