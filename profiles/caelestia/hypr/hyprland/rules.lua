@@ -8,7 +8,7 @@ local vars = require("variables")
 hl.window_rule({ match = { fullscreen = false }, opacity = vars.windowOpacity .. " override" })
 
 -- Opacity exceptions (apps with their own background / colour-critical)
-hl.window_rule({ match = { class = "org\\.quickshell|imv|swappy|foot" }, opaque = true })
+hl.window_rule({ match = { class = "org\\.quickshell|imv|swappy|kitty" }, opaque = true })
 hl.window_rule({ match = { class = "krita|gimp|inkscape|darktable|resolve|kdenlive|shotcut|blender|godot" }, opaque = true })
 
 -- Center all floating windows (not xwayland, to avoid breaking context menus)
@@ -48,9 +48,11 @@ hl.window_rule({ match = { class = "org\\.gnome\\.FileRoller|file-roller" }, flo
 hl.window_rule({ match = { class = "com\\.github\\.GradienceTeam\\.Gradience" }, float = true })
 
 -- Float, resize and center (auto-size for system windows)
-hl.window_rule({ match = { class = "foot", title = "nmtui" }, float = true })
-hl.window_rule({ match = { class = "foot", title = "nmtui" }, size = "60% 70%" })
-hl.window_rule({ match = { class = "foot", title = "nmtui" }, center = true })
+-- Заголовок терминал берёт у программы; nmtui его сам не выставляет, поэтому
+-- запускать надо явно: `kitty --title nmtui nmtui`.
+hl.window_rule({ match = { class = "kitty", title = "nmtui" }, float = true })
+hl.window_rule({ match = { class = "kitty", title = "nmtui" }, size = "60% 70%" })
+hl.window_rule({ match = { class = "kitty", title = "nmtui" }, center = true })
 
 hl.window_rule({ match = { class = "org\\.gnome\\.Settings" }, float = true })
 hl.window_rule({ match = { class = "org\\.gnome\\.Settings" }, size = "70% 80%" })
@@ -96,9 +98,9 @@ hl.window_rule({ match = { xwayland = true, title = "win[0-9]+" }, no_dim = true
 hl.window_rule({ match = { xwayland = true, title = "win[0-9]+" }, no_shadow = true })
 hl.window_rule({ match = { xwayland = true, title = "win[0-9]+" }, rounding = 10 })
 
--- Foot terminal specific
-hl.window_rule({ match = { class = "foot" }, opacity = "1.0 override 1.0 override" })
-hl.window_rule({ match = { class = "foot" }, no_blur = true })
+-- Kitty terminal specific
+hl.window_rule({ match = { class = "kitty" }, opacity = "1.0 override 1.0 override" })
+hl.window_rule({ match = { class = "kitty" }, no_blur = true })
 
 -- Autodesk Fusion 360
 hl.window_rule({ match = { class = "fusion360\\.exe", title = "Fusion360|(Marking Menu)" }, no_blur = true })

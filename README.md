@@ -35,13 +35,13 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 раскладывает то, что уже есть:
 
 1. **Пакеты** — ставит недостающие (pacman → yay/paru): Hyprland-стек, шеллы,
-   foot/fish/fuzzel, matugen, утилиты. Список — в `PKGS` внутри скрипта.
+   kitty/fish/fuzzel, matugen, утилиты. Список — в `PKGS` внутри скрипта.
 2. **Caelestia shell** — единственный внешний компонент; если не найден,
    скрипт печатает варианты установки:
    `yay -S caelestia-shell-git` или сборка из
    [caelestia-dots/shell](https://github.com/caelestia-dots/shell).
 3. **Симлинки** — контестируемые каталоги `~/.config/{hypr,gtk-3.0,gtk-4.0,qt5ct,qt6ct}`
-   → `profiles/active/*`, общие `~/.config/{caelestia,fish,foot,fastfetch}` →
+   → `profiles/active/*`, общие `~/.config/{caelestia,fish,kitty,fastfetch}` →
    `.config/*` репозитория. Живые каталоги не затираются — бэкап в
    `*.pre-bootstrap`.
 4. **Matugen-шаблоны** — темы Discord/Obsidian рига в
@@ -73,7 +73,7 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
 | `.config/hypr-shared/` | Общие бинды и порт-конфиги, сорсятся обоими ригами |
 | `.config/gtk-shared/thunar.css` | Канон темы Thunar: один на оба рига (цвета из `@define-color` активного `gtk.css`, без hex) |
 | `.config/systemd/user/` | `*.path`-юниты: следят за обоями/схемами (kbd) и за перерендером `thunar.css` |
-| `.config/{fish,foot,fastfetch,caelestia}/` | Не-контестируемые конфиги — общие для всех ригов |
+| `.config/{fish,kitty,fastfetch,caelestia}/` | Не-контестируемые конфиги — общие для всех ригов |
 | Тем-пайплайн | Рамки, Discord, Obsidian, fastfetch следуют акценту активного рига |
 
 ## Структура
@@ -94,15 +94,33 @@ profiles/
   hypr-shared/ реестр владения биндами + кросс-риг контракт (lua)
   gtk-shared/  канон thunar.css (копии в профилях — цель записи caelestia CLI,
                path-юнит откатывает их к канону; симлинками делать нельзя)
+               + bookmarks.in — канон GTK-закладок на оба рига
   systemd/user/  path-юниты: kbd-theme-sync, thunar-css-fix
-  caelestia/ fish/ foot/ fastfetch/   не-контестируемые конфиги (общие)
+  caelestia/ fish/ kitty/ fastfetch/  не-контестируемые конфиги (общие)
 sddm/          .desktop-файлы двух wayland-сессий
-docs/specs/    спеки на фичи
-docs/plans/    планы реализации
+docs/specs/    2026-09-04-rig-contract-implementation.md — план выноса
+               свитчера в отдельный проект
+docs/tech-debt.md  живой список известно-кривого
 ```
 
 `~/.config/{hypr,gtk-3.0,gtk-4.0,qt5ct,qt6ct}` — симлинки на `profiles/active/*`,
 поэтому свитч рига = перекинуть один симлинк.
+
+### Файлы `*.in`
+
+GTK-закладки, `qt5ct/qt6ct.conf` и `@import` в `gtk.css` требуют **абсолютный**
+путь до `$HOME` — ни `~`, ни переменные окружения они не разворачивают. Хранить
+там чужой `/home/<кто-то>` нельзя, а подставить `$HOME` на лету некому: каталоги
+приезжают в `~/.config` целиком симлинком.
+
+Поэтому в репо лежит `<файл>.in` с плейсхолдером `__HOME__`, а живой `<файл>`
+раскрывается шагом 3 `bootstrap.sh` и сидит в `.gitignore`. Правишь `.in`,
+не результат — иначе правку затрёт следующий bootstrap.
+
+Так же устроены и личные конфиги: `.config/caelestia/shell.json` шелл
+перезаписывает сам (и держит город погоды, VPN, избранные приложения), поэтому
+трекается только обезличенный `shell.json.in` — и он рендерится **один раз**,
+если живого файла ещё нет.
 
 ## dotprofile
 

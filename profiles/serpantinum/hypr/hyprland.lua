@@ -26,6 +26,7 @@ require("config/keybinds")
 -- settings-runtime.lua на горячем свитче, а overrides.lua туда нельзя:
 -- ре-бинд стекается и наплодил бы дубли.
 dofile(rig .. "/hypr/input.lua")
+dofile(rig .. "/hypr/group.lua")
 dofile(rig .. "/hypr/overrides.lua")
 
 -- Шелл рига по АБСОЛЮТНОМУ пути.

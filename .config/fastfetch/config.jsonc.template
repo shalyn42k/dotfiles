@@ -42,7 +42,7 @@
             "type": "command",
             "key": "󰜗 rig  ",
             "keyColor": "{{ACCENT}}",
-            "text": "n=$(basename $(readlink -f ~/dotfiles/profiles/active)); r=$(cat ~/dotfiles/profiles/$n/role 2>/dev/null); echo \"$n${r:+ · $r}\""
+            "text": "basename $(readlink -f ~/dotfiles/profiles/active)"
         },
         {
             "type": "command",
