@@ -1,6 +1,23 @@
 [Unit]
 Description=Repaint the desktop theme from the active rig's palette
 
+# Без этого перелистывание обоев убивает вотчер НАСОВСЕМ. Дефолт systemd —
+# 5 стартов за 10 секунд, а шелл на одну смену обоев трогает оба наблюдаемых
+# файла; несколько смен подряд выбирают лимит мгновенно. Замерено 2026-09-04:
+#   rig-theme.service: Start request repeated too quickly.
+#   rig-theme.service: Failed with result 'start-limit-hit'.
+# После этого .path тоже уходит в failed и не поднимается сам — темы просто
+# перестают меняться, молча, до ручного `systemctl --user reset-failed`.
+#
+# Снимать лимит безопасно: петли обратной связи нет. Вотчер смотрит на файлы,
+# которые пишет ШЕЛЛ (qs_colors.json, current_wallpaper.png), а matugen отсюда
+# пишет в kitty/gtk/qt/cava/swayosd/hypr/discord/obsidian — пересечения пусты,
+# сам себя этот сервис перезапустить не может.
+#
+# Секция [Unit], а не [Service]: с systemd v229 ключ живёт здесь, в сервисной
+# секции он молча игнорируется.
+StartLimitIntervalSec=0
+
 [Service]
 Type=oneshot
 ExecStart=%h/dotfiles/bin/rig-theme
