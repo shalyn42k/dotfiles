@@ -70,8 +70,15 @@ local RIG_ONLY = {
     },
 }
 
-local function combos_of(rig)
-    local hl, live = hl_stub.new()
+-- Настройки, которые обязаны совпадать у всех ригов. Раскладка — такой же
+-- контракт, как комбо: у serpantinum апстрим ставил одну "us", и смена языка
+-- в риге просто не работала, а комбо переключения отличалось от caelestia.
+-- Проверяется здесь, потому что это ровно тот же класс расхождения, только не
+-- в биндах, а в input.
+local SHARED_SETTINGS = { "kb_layout", "kb_options" }
+
+local function load_rig(rig)
+    local hl, live, cfg = hl_stub.new()
     _G.hl = hl
     _G.__rig = nil
     _G.HOME = os.getenv("HOME")
@@ -97,6 +104,11 @@ local function combos_of(rig)
 
     local set = {}
     for _, rec in ipairs(live) do set[rec.keys] = true end
+    return set, cfg
+end
+
+local function combos_of(rig)
+    local set = load_rig(rig)
     return set
 end
 
@@ -115,6 +127,23 @@ local function assert_covers(from, to)
             :format(#missing, from, to, table.concat(missing, ", "), to), 3)
     end
 end
+
+it("rigs agree on the shared input settings", function()
+    local _, a = load_rig("caelestia")
+    local _, b = load_rig("serpantinum")
+    local diff = {}
+    for _, key in ipairs(SHARED_SETTINGS) do
+        local va = a.input and a.input[key]
+        local vb = b.input and b.input[key]
+        if va ~= vb then
+            diff[#diff + 1] = ("%s: caelestia=%s serpantinum=%s")
+                :format(key, tostring(va), tostring(vb))
+        end
+    end
+    if #diff > 0 then
+        error("настройки ввода разошлись:\n       " .. table.concat(diff, "\n       "), 2)
+    end
+end)
 
 it("serpantinum covers caelestia's contract combos", function()
     assert_covers("caelestia", "serpantinum")

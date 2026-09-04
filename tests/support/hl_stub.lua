@@ -11,11 +11,31 @@
 --   * unbind(комба) снимает бинд по строке.
 local M = {}
 
--- Собрать свежий стаб. Возвращает (hl, live), где live — список живых биндов
--- в порядке создания; тесты смотрят в него как в `hyprctl binds`.
+-- Собрать свежий стаб. Возвращает (hl, live, config):
+--   live   — список живых биндов в порядке создания (как `hyprctl binds`)
+--   config — слитый результат hl.config(...), чтобы можно было проверять
+--            настройки, а не только бинды
 function M.new()
     local live = {}
+    local config = {}          -- слитый результат всех hl.config(...)
     local hl = {}
+
+    -- hl.config сливает по листьям, а не заменяет ветку: apply_rig_colors
+    -- шлёт только general.col и не сносит остальной general. Стаб повторяет
+    -- это, иначе оверрайд рига выглядел бы как полная замена настроек.
+    local function deep_merge(dst, src)
+        for k, v in pairs(src) do
+            if type(v) == "table" and type(dst[k]) == "table" then
+                deep_merge(dst[k], v)
+            else
+                dst[k] = v
+            end
+        end
+    end
+
+    function hl.config(tbl)
+        if type(tbl) == "table" then deep_merge(config, tbl) end
+    end
 
     -- live[i] = { handle = <хендл>, keys = <строка комбы> }. Строку держим
     -- ЗДЕСЬ, а не на хендле: настоящий HL.Keybind — userdata, у него нет полей
@@ -115,7 +135,7 @@ function M.new()
         __index = function(_, key) return auto(tostring(key)) end,
     })
 
-    return hl, live
+    return hl, live, config
 end
 
 return M
