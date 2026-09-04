@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# rig-logs — показать ошибки текущей сессии: композитора и всех шеллов.
+#
+#   rig-logs           — только ошибки (обычный случай)
+#   rig-logs -a        — весь хвост каждого лога, если ошибок не видно
+#
+# Зачем отдельная команда. Логи quickshell лежат в
+# /run/user/1000/quickshell/by-id/<случайное>/log.qslog — путь не угадать, и
+# они ДВОИЧНЫЕ, обычный grep по ним молчит (нужен strings). Плюс `ls -t` тут
+# не работает: в этой системе ls — алиас на eza, у которого -t это
+# `--time <поле>`, а не сортировка. Каждый разбор ошибки начинался с борьбы
+# с этим вместо самой ошибки.
+#
+# И главное: логи живут в /run, то есть ИСЧЕЗАЮТ при перезапуске сессии.
+# Увидел ошибку — снимай сразу, после релогина смотреть будет нечего.
+set -uo pipefail
+
+all=false
+[[ "${1:-}" == "-a" ]] && all=true
+
+RUN="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+# Шум, который печатается всегда и ошибкой не является.
+NOISE='UPower|WarningLevel|StatusNotifier|Blackholed|intercept|Scanning qml|ToplevelHandle|Received event|got toplevel|qmldir'
+
+echo "── композитор"
+if command -v hyprctl >/dev/null; then
+    out="$(hyprctl configerrors 2>&1 | grep -v '^$')"
+    [[ -n "$out" ]] && printf '%s\n' "$out" || echo "  ошибок конфига нет"
+else
+    echo "  hyprctl недоступен"
+fi
+
+echo
+echo "── шеллы (свежие сверху)"
+found=false
+while read -r _ log; do
+    [[ -n "$log" ]] || continue
+    found=true
+    cfg="$(strings "$log" 2>/dev/null | grep -m1 'Launching config' | sed 's/.*config: //; s/"//g')"
+    printf '\n  %s  %s\n' "$(stat -c '%y' "$log" | cut -d. -f1)" "${cfg:-<неизвестный конфиг>}"
+
+    if $all; then
+        strings "$log" | grep -vE "$NOISE" | tail -15 | sed 's/^/      /'
+        continue
+    fi
+
+    # "caused by" ловит вторую строку quickshell'ного отчёта — там имя файла и
+    # позиция, то есть самое полезное.
+    hits="$(strings "$log" 2>/dev/null \
+        | grep -iE "Failed to load|caused by|error|invalid|cannot|undefined" \
+        | grep -viE "$NOISE" | head -6)"
+    [[ -n "$hits" ]] && printf '      %s\n' "$hits" || echo "      чисто"
+done < <(find "$RUN/quickshell/by-id" -name log.qslog -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -4)
+
+$found || echo "  логов нет — ни один quickshell в этой сессии не стартовал"
