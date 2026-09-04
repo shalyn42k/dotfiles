@@ -24,6 +24,23 @@ local function resize_active_window(x, y)
     return { x = x, y = y, relative = true }
 end
 
+-- Раскладка клавиатуры.
+--
+-- Апстрим ставит ОДНУ раскладку ("us") — переключать нечего, поэтому смена
+-- языка в этом риге просто не работала. И комбо у него своё (alt+shift), то
+-- есть даже с двумя раскладками мышечная память из caelestia не сработала бы.
+--
+-- Значения те же, что в profiles/caelestia/hypr/hyprland/input.lua: раскладка
+-- — часть того, что обязано совпадать между ригами, ровно как комбо контракта.
+-- Остальной input апстрима (accel_profile, тачпад) не трогаем — hl.config
+-- сливает по листьям, а не заменяет ветку целиком.
+hl.config({
+    input = {
+        kb_layout  = "pl, ru",
+        kb_options = "grp:win_space_toggle",
+    },
+})
+
 -- §2.2 Окна
 rebind("SUPER + Q",           hl.dsp.window.close())
 rebind("SUPER + F",           hl.dsp.window.fullscreen({ mode = "fullscreen" }))
