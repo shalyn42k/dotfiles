@@ -10,7 +10,7 @@ local specialcycle = cscripts .. "/specialcycle.fish"
 
 -- Shell & Caelestia actions (риг-зависимые — через rigdo, чтобы работали
 -- и после горячего свитча на ilyamiro)
-local rigdo = os.getenv("HOME") .. "/dotfiles/bin/rigdo "
+local rigdo = os.getenv("HOME") .. "/.config/hypr-shared/bin/rigdo "
 hl.bind("SUPER + ALT + Escape", hl.dsp.exec_cmd("systemctl poweroff"))                                -- Full off
 
 -- Window state & layout

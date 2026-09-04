@@ -16,7 +16,7 @@ hl.config({
 
 -- Абсолютный путь, как у rigbinds/contract-binds в hypr/hyprland.lua: package.path
 -- этого рига указывает внутрь profiles/caelestia/hypr, а общий файл лежит вне его.
-local apply_groupbar = dofile(os.getenv("HOME") .. "/dotfiles/.config/hypr-shared/groupbar.lua")
+local apply_groupbar = dofile(os.getenv("HOME") .. "/.config/hypr-shared/groupbar.lua")
 
 apply_groupbar({
     active          = "rgba(" .. scheme.primary .. "d4)",

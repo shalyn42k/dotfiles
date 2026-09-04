@@ -32,7 +32,7 @@ local c = read_colors(rig .. "/hypr/colors.conf")
 local active   = c.gb_active   or c.active_border   or "rgba(7171acd4)"
 local inactive = c.gb_inactive or c.inactive_border or "rgba(47464fd4)"
 
-local apply_groupbar = dofile(os.getenv("HOME") .. "/dotfiles/.config/hypr-shared/groupbar.lua")
+local apply_groupbar = dofile(os.getenv("HOME") .. "/.config/hypr-shared/groupbar.lua")
 
 apply_groupbar({
     active          = active,
