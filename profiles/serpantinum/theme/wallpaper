@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Путь к текущим обоям serpantinum.
+#
+# Шелл держит один снапшот по фиксированному пути вне зависимости от монитора:
+# для картинок — копию файла, для видео — кадр через ffmpeg. Каталог строит
+# Caching.getCacheDir("wallpaper"), мы его не переопределяем.
+set -u
+echo "$HOME/.cache/serpantinum/wallpaper/current_wallpaper.png"

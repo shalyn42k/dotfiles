@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Шелл держит QML в памяти: рестарт это kill + повторный запуск демоном.
+qs -c caelestia kill
+exec qs -c caelestia -d

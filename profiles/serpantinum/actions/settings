@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Отдельного таргета "settings" нет: qs_manager.sh отдаёт только "guide" —
+# тот же экран (WindowRegistry.js: id "guide", name "Settings").
+exec "$(dirname "$(readlink -f "$0")")/../shell/bin/serpantinum" msg toggle guide
