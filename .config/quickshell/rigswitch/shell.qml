@@ -17,15 +17,16 @@ ShellRoot {
     // (сегфолтит композитор), см. её комментарий там же.
     //
     // Если hyprctl недоступен, dotprofile целиком пропускает стадии
-    // colors/animations/rules — они там внутри `if command -v hyprctl`.
+    // colors/settings/animations/rules/reload — они там внутри
+    // `if command -v hyprctl`.
     // В этом случае соответствующие кусочки останутся pending до самого
     // конца свитча (links/daemons/state всё равно приходят). Это косметика,
     // не зависание: watchdog и content-сигнал (active:/relogin ->) не зависят
     // от того, сколько стадий реально напечаталось.
-    readonly property var stageOrder: ["links", "colors", "animations", "rules", "daemons", "state"]
+    readonly property var stageOrder: ["links", "colors", "settings", "animations", "rules", "reload", "daemons", "state"]
     property var stageState: ({
-        links: "pending", colors: "pending", animations: "pending",
-        rules: "pending", daemons: "pending", state: "pending"
+        links: "pending", colors: "pending", settings: "pending", animations: "pending",
+        rules: "pending", reload: "pending", daemons: "pending", state: "pending"
     })
     property bool anyFailed: false
     property bool switchDone: false
@@ -63,8 +64,8 @@ ShellRoot {
         root.targetRelogin = rig ? rig.relogin : false;
         root.direction = root.computeDirection(root.fromName, root.target);
         root.stageState = {
-            links: "pending", colors: "pending", animations: "pending",
-            rules: "pending", daemons: "pending", state: "pending"
+            links: "pending", colors: "pending", settings: "pending", animations: "pending",
+            rules: "pending", reload: "pending", daemons: "pending", state: "pending"
         };
         root.anyFailed = false;
         root.switchDone = false;
