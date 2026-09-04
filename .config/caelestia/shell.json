@@ -170,7 +170,7 @@
             "capitalisation": "Preserve",
             "label": "  ",
             "maxWindowIcons": 0,
-            "occupiedBg": false,
+            "occupiedBg": true,
             "occupiedLabel": "󰮯",
             "perMonitorWorkspaces": true,
             "showWindows": false,
