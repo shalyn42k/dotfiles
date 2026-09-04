@@ -61,7 +61,11 @@ rebind("SUPER + mouse_down", hl.dsp.focus({ workspace = "-1" }))
 rebind("SUPER + mouse_up",   hl.dsp.focus({ workspace = "+1" }))
 for i = 1, 10 do
     local key = i % 10 -- 10 → клавиша 0
-    rebind("SUPER + " .. key,         hl.dsp.workspace(tostring(i)))
+    -- hl.dsp.workspace — ПРОСТРАНСТВО ИМЁН (change_id/move/rename/
+    -- swap_monitors/toggle_special), а не функция; вызов его как функции роняет
+    -- весь файл, а с ним и всё, что подключается после. Переход на номерной
+    -- воркспейс — тот же focus, что и относительный выше.
+    rebind("SUPER + " .. key,         hl.dsp.focus({ workspace = tostring(i) }))
     rebind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ workspace = tostring(i) }))
 end
 

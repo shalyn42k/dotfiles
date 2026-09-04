@@ -76,12 +76,33 @@ function M.new()
     -- `win.size.x * (x / 100)` в resize_active_window (caelestia
     -- functions.lua). Заглушка обязана пережить такие выражения,
     -- иначе файл не догрузится и часть биндов останется невидимой тесту.
+    -- Пространства имён РЕАЛЬНОГО hl — таблицы, вызвать их нельзя. Список снят
+    -- с /usr/share/hypr/stubs/hl.meta.lua (поля вида `@field X HL.*Namespace`).
+    --
+    -- Без этого стаб делал вызываемым всё подряд, и `hl.dsp.workspace("3")`
+    -- проходил на столе, а в живой сессии ронял весь файл конфига:
+    -- "attempt to call a table value (field 'workspace')". Всё, что шло после
+    -- падения — воркспейсы, скретчпады, приложения, мышь и контракт — просто
+    -- не грузилось. Стаб обязан быть строже реальности в этом месте, иначе он
+    -- пропускает ровно тот класс ошибок, ради которого написан.
+    local NAMESPACES = {
+        ["dsp"] = true, ["layout"] = true, ["notification"] = true, ["plugin"] = true,
+        ["dsp.cursor"] = true, ["dsp.group"] = true, ["dsp.window"] = true,
+        ["dsp.workspace"] = true,
+    }
+
     local function auto(name)
         local mt
         local function arith() return auto(name .. "<arith>") end
         mt = {
             __index = function(_, key) return auto(name .. "." .. tostring(key)) end,
-            __call = function() return auto(name .. "()") end,
+            __call = function()
+                if NAMESPACES[name] then
+                    error(("attempt to call a table value (field '%s')")
+                        :format(name:match("[^.]+$") or name), 2)
+                end
+                return auto(name .. "()")
+            end,
             __tostring = function() return "<hl." .. name .. ">" end,
             __add = arith, __sub = arith, __mul = arith, __div = arith,
             __mod = arith, __pow = arith, __unm = arith, __idiv = arith,
