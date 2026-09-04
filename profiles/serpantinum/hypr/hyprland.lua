@@ -22,7 +22,10 @@ require("config/monitors")
 require("config/settings")
 require("config/keybinds")
 
--- Наше поверх их базы: наши бинды и правила.
+-- Наше поверх их базы. input отдельным файлом — его переприменяет
+-- settings-runtime.lua на горячем свитче, а overrides.lua туда нельзя:
+-- ре-бинд стекается и наплодил бы дубли.
+dofile(rig .. "/hypr/input.lua")
 dofile(rig .. "/hypr/overrides.lua")
 
 -- Шелл рига по АБСОЛЮТНОМУ пути.
