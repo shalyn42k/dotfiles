@@ -44,7 +44,7 @@ if status is-interactive
 end
 
 # 5. Переменные окружения (вне блока interactive)
-set -gx PATH $PATH /home/shalyn42k/.local/bin
+set -gx PATH $PATH $HOME/.local/bin
 fish_add_path /usr/lib/qt6/bin
 set -gx QT_QPA_PLATFORM "wayland;xcb"
 set -gx QT_QPA_PLATFORMTHEME qt6ct

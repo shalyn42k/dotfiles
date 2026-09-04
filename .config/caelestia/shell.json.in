@@ -100,8 +100,7 @@
                 "id": "power"
             }
         ],
-        "excludedScreens": [
-        ],
+        "excludedScreens": [],
         "persistent": true,
         "popouts": {
             "activeWindow": true,
@@ -157,10 +156,8 @@
         "tray": {
             "background": true,
             "compact": true,
-            "hiddenIcons": [
-            ],
-            "iconSubs": [
-            ],
+            "hiddenIcons": [],
+            "iconSubs": [],
             "recolour": false
         },
         "workspaces": {
@@ -176,8 +173,7 @@
             "showWindows": false,
             "showWindowsOnSpecialWorkspaces": false,
             "shown": 5,
-            "specialWorkspaceIcons": [
-            ],
+            "specialWorkspaceIcons": [],
             "windowIcons": [
                 {
                     "icon": "sports_esports",
@@ -217,7 +213,7 @@
                 "mpv"
             ],
             "terminal": [
-                "foot"
+                "kitty"
             ]
         },
         "battery": {
@@ -433,14 +429,8 @@
         "dragThreshold": 50,
         "enableDangerousActions": true,
         "enabled": true,
-        "favouriteApps": [
-            "steam",
-            "pandora-launcher",
-            "rog-control-center",
-            "czkawka-gui"
-        ],
-        "hiddenApps": [
-        ],
+        "favouriteApps": [],
+        "hiddenApps": [],
         "maxShown": 7,
         "maxWallpapers": 9,
         "showOnHover": false,
@@ -478,16 +468,16 @@
     },
     "paths": {
         "lockNoNotifsPic": "root:/assets/dino.png",
-        "lyricsDir": "/home/shalyn42k/Music/lyrics/",
-        "mediaGif": "/home/shalyn42k/Pictures/Gifs/hyde.gif",
+        "lyricsDir": "__HOME__/Music/lyrics/",
+        "mediaGif": "__HOME__/Pictures/Gifs/hyde.gif",
         "noNotifsPic": "root:/assets/dino.png",
-        "sessionGif": "/home/shalyn42k/Pictures/Gifs/sam-hyde.gif",
-        "wallpaperDir": "/home/shalyn42k/Pictures/Wallpapers"
+        "sessionGif": "__HOME__/Pictures/Gifs/sam-hyde.gif",
+        "wallpaperDir": "__HOME__/Pictures/Wallpapers"
     },
     "services": {
         "audioIncrement": 0.1,
         "brightnessIncrement": 0.1,
-        "defaultPlayer": "Feishin",
+        "defaultPlayer": "",
         "gpuType": "Auto",
         "lyricsBackend": "NetEase",
         "maxVolume": 1,
@@ -502,7 +492,7 @@
         "useFahrenheitPerformance": false,
         "useTwelveHourClock": true,
         "visualiserBars": 45,
-        "weatherLocation": "Katowice"
+        "weatherLocation": ""
     },
     "session": {
         "commands": {
@@ -587,12 +577,8 @@
         },
         "vpn": {
             "enabled": false,
-            "provider": [
-                {
-                    "id": "vpn-mtlhsoxp-13hhc"
-                }
-            ],
-            "selectedProvider": "vpn-mtlhsoxp-13hhc"
+            "provider": [],
+            "selectedProvider": ""
         }
     }
 }

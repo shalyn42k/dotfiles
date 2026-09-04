@@ -9,7 +9,7 @@ DOTFILES="$HOME/dotfiles"
 cd "$DOTFILES"
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 1/7 Пакеты =="
+echo "== 1/8 Пакеты =="
 # ВАЖНО: hyprland нужен с lua config provider (0.55+; сборка CachyOS или git) —
 # профиль caelestia использует hyprland.lua.
 PKGS=(
@@ -18,7 +18,7 @@ PKGS=(
     # шеллы обоих ригов
     quickshell caelestia-cli
     # терминал/шелл/лаунчер
-    foot fish fuzzel
+    kitty fish fuzzel starship
     # обои (awww = форк swww; mpvpaper = видео)
     awww mpvpaper
     # скриншоты, тема
@@ -58,7 +58,7 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 2/7 Caelestia shell =="
+echo "== 2/8 Caelestia shell =="
 if [[ -d /etc/xdg/quickshell/caelestia || -d "$HOME/.config/quickshell/caelestia" ]]; then
     echo "caelestia shell найден"
 else
@@ -69,7 +69,34 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 3/7 Симлинки профилей =="
+echo "== 3/8 Раскрытие __HOME__ =="
+# Часть конфигов обязана нести АБСОЛЮТНЫЙ путь до $HOME: GTK-закладки,
+# qt5ct/qt6ct.conf и @import в gtk.css не понимают ни ~, ни $HOME. Хранить там
+# захардкоженный /home/<кто-то> нельзя — у чужого клона всё промахнётся, поэтому
+# в репо лежит <файл>.in с плейсхолдером, а живой <файл> рендерится здесь и
+# сидит в .gitignore. Симлинк-подход тут не сработал бы: каталоги едут в
+# ~/.config целиком симлинком, подставлять $HOME на лету некому.
+render_home() {
+    local out="${1%.in}"
+    sed "s|__HOME__|$HOME|g" "$1" > "$out"
+}
+rendered=0
+while IFS= read -r tpl; do
+    render_home "$tpl"
+    rendered=$((rendered + 1))
+done < <(find "$DOTFILES/.config" "$DOTFILES/profiles" -name '*.in' \
+    -not -path '*/shell/*' -not -name 'shell.json.in')
+echo "раскрыто шаблонов: $rendered"
+
+# shell.json caelestia перезаписывает сам, поэтому рендерим ТОЛЬКО первый раз —
+# иначе каждый bootstrap затирал бы настройки, накликанные в GUI шелла.
+if [[ ! -f "$DOTFILES/.config/caelestia/shell.json" ]]; then
+    render_home "$DOTFILES/.config/caelestia/shell.json.in"
+    echo "создан .config/caelestia/shell.json из шаблона"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────
+echo "== 4/8 Симлинки профилей =="
 [[ -L "$DOTFILES/profiles/active" ]] || ln -sfn caelestia "$DOTFILES/profiles/active"
 # CONTESTED-каталоги (см. bin/dotprofile): свой у каждого рига, симлинк на active.
 # matugen тоже контестируемый — риги держат разные config.toml, пишущие в общие
@@ -81,12 +108,22 @@ for d in hypr gtk-3.0 gtk-4.0 qt5ct qt6ct matugen; do
     fi
     ln -sfn "$DOTFILES/profiles/active/$d" "$HOME/.config/$d"
 done
-for d in caelestia fish foot fastfetch; do
+for d in caelestia fish kitty fastfetch; do
     [[ -d "$DOTFILES/.config/$d" ]] || continue
     if [[ -e "$HOME/.config/$d" && ! -L "$HOME/.config/$d" ]]; then
         mv "$HOME/.config/$d" "$HOME/.config/$d.pre-bootstrap"
     fi
     ln -sfn "$DOTFILES/.config/$d" "$HOME/.config/$d"
+done
+# Общие одиночные файлы: своего каталога в ~/.config у них нет, поэтому мимо
+# цикла выше. starship.toml — промпт, общий для обоих ригов (fish дёргает
+# starship init в .config/fish/config.fish).
+for f in starship.toml; do
+    [[ -f "$DOTFILES/.config/$f" ]] || continue
+    if [[ -e "$HOME/.config/$f" && ! -L "$HOME/.config/$f" ]]; then
+        mv "$HOME/.config/$f" "$HOME/.config/$f.pre-bootstrap"
+    fi
+    ln -sfn "$DOTFILES/.config/$f" "$HOME/.config/$f"
 done
 
 # rigswitch — overlay-свитчер ригов, вложен в ~/.config/quickshell рядом с
@@ -101,7 +138,7 @@ if [[ -f "$DOTFILES/.gitmodules" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 4/7 Каталоги =="
+echo "== 5/8 Каталоги =="
 mkdir -p "$HOME/Pictures/Wallpapers"
 xdg-user-dirs-update 2>/dev/null || true
 
@@ -110,7 +147,7 @@ xdg-user-dirs-update 2>/dev/null || true
 # не нужно. Discord/Obsidian-шаблоны и их [templates.*] лежат в профиле рига.
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 5/7 Скрипты и systemd-юниты =="
+echo "== 6/8 Скрипты и systemd-юниты =="
 # Скрипты живут в репо; ~/.local/bin — симлинки на них, потому что юниты и
 # session.sh зовут их по %h/.local/bin/<имя>.
 mkdir -p "$HOME/.local/bin" "$HOME/.config/systemd/user"
@@ -134,11 +171,12 @@ systemctl --user enable --now kbd-theme-sync.path thunar-css-fix.path 2>/dev/nul
     || echo ">>> нет systemd --user сессии — юниты включатся после relogin"
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 6/7 SDDM-сессии =="
-# В репо Exec захардкожен на /home/shalyn42k — подставляем текущий $HOME.
+echo "== 7/8 SDDM-сессии =="
+# В репо Exec несёт __HOME__ (см. шаг 3) — раскрываем в текущий $HOME. Рендерим
+# во временный каталог, потому что итог уезжает в /usr/share, а не в ~/.config.
 tmpd="$(mktemp -d)"
 for f in "$DOTFILES"/sddm/hyprland-*.desktop; do
-    sed "s|/home/shalyn42k|$HOME|g" "$f" > "$tmpd/$(basename "$f")"
+    sed "s|__HOME__|$HOME|g" "$f" > "$tmpd/$(basename "$f")"
 done
 # Цель — РОВНО две записи в греетере: наша «Hyprland (rig)» и plasma как
 # запасное DE. Остальное убираем: прежние per-rig записи промахиваются мимо
@@ -181,7 +219,7 @@ fi
 rm -rf "$tmpd"
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 7/7 Статус =="
+echo "== 8/8 Статус =="
 # первичный рендер генерируемых конфигов (fastfetch)
 "$DOTFILES/bin/dotprofile" colors 2>/dev/null || true
 "$DOTFILES/bin/dotprofile" status

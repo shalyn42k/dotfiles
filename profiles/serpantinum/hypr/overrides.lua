@@ -127,11 +127,21 @@ rebind("CTRL + L", hl.dsp.exec_cmd(scripts .. "/specialcycle.fish next"))
 --
 -- app2unit — как у caelestia: приложение уезжает в свой systemd-скоуп и не
 -- умирает вместе с процессом, который его запустил.
-rebind("SUPER + TAB", hl.dsp.exec_cmd("app2unit -- foot"))
+rebind("SUPER + TAB", hl.dsp.exec_cmd("app2unit -- kitty"))
 rebind("SUPER + W",   hl.dsp.exec_cmd("app2unit -- zen-browser"))
 rebind("SUPER + R",   hl.dsp.exec_cmd("app2unit -- codium"))
 rebind("SUPER + E",   hl.dsp.exec_cmd("app2unit -- thunar"))
 rebind("SUPER + T",   hl.dsp.exec_cmd("app2unit -- hyprkcs"))
+
+-- SUPER+SPACE переключает раскладку — это xkb-опция grp:win_space_toggle из
+-- input.lua, и обрабатывает её xkb, а не биндер (в `hyprctl binds` её не
+-- видно). Апстрим вешает на ту же комбу playerctl play-pause, и срабатывали
+-- оба: смена языка заодно снимала плеер с паузы. В caelestia раскладка сидит
+-- на этом же комбо и одна, так что расхождение — то самое «одна клавиша
+-- значит в ригах разное», ради которого написан блок выше.
+-- rebind здесь не подходит: своего действия у комбы нет, xkb справляется сам.
+-- play-pause не теряется — апстрим тут же вешает XF86AudioPlay/XF86AudioPause.
+hl.unbind("SUPER + SPACE")
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- §2.5 Мышь
