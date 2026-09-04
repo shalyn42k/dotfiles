@@ -7,6 +7,11 @@ Description=Watch the active rig's palette and repaint GTK/Qt/terminal themes
 [Path]
 PathChanged=%h/.local/state/serpantinum/qs_colors.json
 PathChanged=%h/.cache/serpantinum/wallpaper/current_wallpaper.png
+# caelestia перегенерит свою палитру сам (caelestia-cli), matugen профиля для
+# него не запускается — но фазу «перечитать приложениям» он не делает никто,
+# и GTK-окна оставались на старых цветах до перезапуска. Путь его обоев здесь
+# ровно ради этой фазы, см. reload_desktop_apps в bin/rig-theme.
+PathChanged=%h/.local/state/caelestia/wallpaper/path.txt
 
 [Install]
 WantedBy=default.target

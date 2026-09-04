@@ -9,16 +9,23 @@
 # импортирует profiles/serpantinum/gtk-3.0/gtk.css, оставался от того рига,
 # который трогал его последним. Выглядело как «тема не зависит от рига».
 #
-# caelestia сюда не попадает намеренно: у него своя схема — caelestia-cli пишет
-# hypr/scheme/current.lua и сам рендерит gtk.css с зашитыми цветами. Его
-# matugen/config.toml остался копией от удалённого рига и указывает в чужие
-# пути (шелл, которого нет; ~/.config/hypr/colors.conf, который у caelestia не
-# читается). Запусти его — и apply_rig_colors начнёт брать цвет рамок из
-# colors.conf вместо схемы. Поэтому признак не «есть config.toml», а «нет
-# собственной схемы».
+# Скрипт из двух фаз, и охват у них РАЗНЫЙ.
+#
+# regenerate_theme — только риги без собственной схемы. caelestia исключён
+# намеренно: у него своя схема, caelestia-cli пишет hypr/scheme/current.lua и
+# сам рендерит gtk.css с зашитыми цветами. Его matugen/config.toml остался
+# копией от удалённого рига и указывает в чужие пути (шелл, которого нет;
+# ~/.config/hypr/colors.conf, который у caelestia не читается). Запусти его —
+# и apply_rig_colors начнёт брать цвет рамок из colors.conf вместо схемы.
+# Поэтому признак не «есть config.toml», а «нет собственной схемы».
+#
+# reload_desktop_apps — ВСЕ риги, включая caelestia. Перерисовать файлы мало:
+# уже открытые GTK-окна держат старый CSS, пока им не скажут перечитать, а не
+# говорил никто. На caelestia это была единственная недостающая часть — файлы
+# ему обновляет свой шелл.
 #
 # Зовётся из bin/dotprofile (стадия colors) и из rig-theme.path при смене
-# палитры рига.
+# палитры рига или его обоев.
 set -uo pipefail
 
 DOTFILES="$HOME/dotfiles"
@@ -40,12 +47,6 @@ if [[ "$rig" != "$active" ]]; then
     exit 0
 fi
 
-config="$PROFILES/$rig/matugen/config.toml"
-[[ -f "$config" ]] || exit 0
-# Риг со своей схемой красится сам — см. шапку.
-[[ -f "$PROFILES/$rig/hypr/scheme/current.lua" ]] && exit 0
-command -v matugen >/dev/null || exit 0
-
 # Обои активного рига. Пути риг-специфичны: caelestia держит путь текстом,
 # serpantinum — снимок одним PNG и для картинок, и для видео.
 wallpaper_of() {
@@ -56,13 +57,55 @@ wallpaper_of() {
     esac
 }
 
-wp="$(wallpaper_of "$rig")"
-if [[ -z "$wp" || ! -f "$wp" ]]; then
-    echo "rig-theme: у рига '$rig' не нашлось обоев — тема не перерисована" >&2
-    exit 0
-fi
+# ── Фаза 1: перерисовать файлы темы ──────────────────────────────────────
+# Только для ригов БЕЗ собственной схемы — почему, см. шапку.
+regenerate_theme() {
+    local config="$PROFILES/$rig/matugen/config.toml"
+    [[ -f "$config" ]] || return 0
+    [[ -f "$PROFILES/$rig/hypr/scheme/current.lua" ]] && return 0
+    command -v matugen >/dev/null || return 0
 
-# --source-color-index 0 — тем же аргументом зовёт matugen шелл serpantinum.
-# Без него на многоцветных обоях matugen требует интерактивного выбора и
-# падает в сессии без терминала.
-exec matugen --config "$config" --source-color-index 0 -m dark image "$wp"
+    local wp; wp="$(wallpaper_of "$rig")"
+    if [[ -z "$wp" || ! -f "$wp" ]]; then
+        echo "rig-theme: у рига '$rig' не нашлось обоев — тема не перерисована" >&2
+        return 0
+    fi
+
+    # --source-color-index 0 — тем же аргументом зовёт matugen шелл serpantinum.
+    # Без него на многоцветных обоях matugen требует интерактивного выбора и
+    # падает в сессии без терминала.
+    matugen --config "$config" --source-color-index 0 -m dark image "$wp"
+}
+
+# ── Фаза 2: заставить приложения перечитать написанное ────────────────────
+# Идёт ВСЕГДА, в том числе для ригов со своей схемой: caelestia-cli переписывает
+# gtk.css сам, но сказать уже открытым окнам перечитать его тоже некому.
+#
+# Что сюда НЕ входит и почему:
+#   kitty — уже покрыт: post_hook обоих matugen-конфигов шлёт ему SIGUSR1.
+#           Это единственное, что до сих пор реально перекрашивалось на лету,
+#           и потому единственное, что менялось на глазах (заодно и промпт
+#           starship — у него цвета заданы именами ANSI, то есть палитрой
+#           терминала, а не своими значениями).
+#   cava  — сигнала перезагрузки не имеет: `strings $(command -v cava)` не даёт
+#           ни одного упоминания SIGUSR. Остаётся только рестарт, а гасить
+#           работающий визуализатор ради цвета — хуже болезни.
+#   Qt    — qt5ct/qt6ct читают палитру на старте приложения и живьём её не
+#           перечитывают; тыкать нечего.
+reload_desktop_apps() {
+    command -v gsettings >/dev/null || return 0
+
+    # GTK3/4 перечитывают пользовательский CSS (~/.config/gtk-3.0/gtk.css, а с
+    # ним и @import matugen'а) по сигналу смены темы. Штатного «перечитай» у них
+    # нет, поэтому снимаем имя темы и тут же возвращаем — окна ловят изменение
+    # и перезагружают CSS.
+    local theme
+    theme="$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")"
+    [[ -n "$theme" ]] || return 0
+
+    gsettings set org.gnome.desktop.interface gtk-theme "" 2>/dev/null || return 0
+    gsettings set org.gnome.desktop.interface gtk-theme "$theme" 2>/dev/null || true
+}
+
+regenerate_theme
+reload_desktop_apps
