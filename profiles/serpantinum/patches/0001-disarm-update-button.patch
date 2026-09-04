@@ -1,8 +1,8 @@
 diff --git a/src/quickshell/guide/AboutTab.qml b/src/quickshell/guide/AboutTab.qml
-index ea212e8..d03910c 100644
+index ea212e8..9250fab 100644
 --- a/src/quickshell/guide/AboutTab.qml
 +++ b/src/quickshell/guide/AboutTab.qml
-@@ -214,10 +214,40 @@ Item {
+@@ -214,10 +214,39 @@ Item {
                              iconFontSize: rootObj.s(16)
                              fillDuration: 1200
  
@@ -37,8 +37,7 @@ index ea212e8..d03910c 100644
 +                                // именно приезжает, и чтобы можно было
 +                                // отказаться.
 +                                let upd = "$HOME/dotfiles/bin/rig-update serpantinum";
-+                                let cmd = "if command -v foot >/dev/null 2>&1; then foot -- bash -c '" + upd + "; read -p \"Enter…\"'; "
-+                                        + "elif command -v kitty >/dev/null 2>&1; then kitty --hold bash -c '" + upd + "'; "
++                                let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c '" + upd + "'; "
 +                                        + "else ${TERM:-xterm} -hold -e bash -c '" + upd + "'; fi";
                                  Quickshell.execDetached(["bash", "-c", cmd]);
 -                                Quickshell.execDetached(["bash", rootObj.appPaths.serpantinumDir + "/scripts/qs_manager.sh", "close"]);

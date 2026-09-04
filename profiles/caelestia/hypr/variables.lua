@@ -6,7 +6,7 @@ return {
     ------------------
 
     -- Apps
-    terminal                   = "foot",
+    terminal                   = "kitty",
     browser                    = "zen-browser",
     editor                     = "codium",
     fileExplorer               = "thunar",

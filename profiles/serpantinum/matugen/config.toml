@@ -9,6 +9,10 @@ reload_apps = false
 [templates.kitty]
 input_path = "~/.config/matugen/templates/kitty-colors.conf.template"
 output_path = "~/.config/kitty/kitty-matugen-colors.conf"
+# kitty перечитывает конфиг по SIGUSR1 (reload_conf_in_all_kitties в его utils.py),
+# иначе новая тема доедет только до окон, открытых после смены обоев.
+# `|| true`: без запущенного kitty pkill выходит с 1 и роняет хук.
+post_hook = "pkill -USR1 kitty || true"
 
 [templates.neovim]
 input_path = "~/.config/matugen/templates/nvim-colors.lua.template"
