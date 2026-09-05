@@ -6,7 +6,9 @@
 # (sudo pacman -Syyu --noconfirm + отбрасывание существующего конфига).
 set -u
 
-RIG="$HOME/dotfiles/profiles/serpantinum"
+# Свой каталог, а не путь внутри dotfiles: риг обязан работать там, куда его
+# положили.
+RIG="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 export SERPANTINUM_DIR="$RIG/shell/src"
 SERPANTINUMD="$RIG/shell/bin/serpantinumd"
 

@@ -5,7 +5,9 @@
 dofile(os.getenv("HOME") .. "/.config/hypr-shared/rigbinds.lua")
 __rig.begin("serpantinum")
 
-local rig = os.getenv("HOME") .. "/dotfiles/profiles/serpantinum"
+-- Каталог рига — от собственного файла, а не от ~/dotfiles: риг обязан
+-- работать там, куда его положили, включая свой отдельный репозиторий.
+local rig = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/.."
 
 -- Конфиг композитора апстрима написан тем же hl-API, что у нас, поэтому берём
 -- его как базу вместо порта. Резолвим require из вендоренной копии.

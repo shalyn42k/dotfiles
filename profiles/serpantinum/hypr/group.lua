@@ -8,7 +8,9 @@
 -- в hypr/colors.conf (автоген matugen'а профиля). Формат тот же, что уже жуёт
 -- awk-ом bin/dotprofile apply_rig_colors, поэтому парсим его же: одна строка —
 -- `$имя = значение`.
-local rig = os.getenv("HOME") .. "/dotfiles/profiles/serpantinum"
+-- Каталог рига — от собственного файла, а не от ~/dotfiles: риг обязан
+-- работать там, куда его положили, включая свой отдельный репозиторий.
+local rig = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/.."
 
 local function read_colors(path)
     local vars = {}
