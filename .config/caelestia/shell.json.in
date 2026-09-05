@@ -113,16 +113,6 @@
             "workspaces": true
         },
         "showOnHover": true,
-        "status": {
-            "showAudio": true,
-            "showBattery": true,
-            "showBluetooth": true,
-            "showKbLayout": true,
-            "showLockStatus": false,
-            "showMicrophone": true,
-            "showNetwork": true,
-            "showWifi": true
-        },
         "statusIcons": [
             {
                 "enabled": true,
