@@ -11,7 +11,11 @@
 -- group.lua — наш, апстрим группы не задаёт вовсе. Без него вкладки на свитче
 -- оставались от caelestia: apply_rig_colors в bin/dotprofile переприменяет
 -- только group.col.border_*, а плашку (group.groupbar) — никто.
-local rig = os.getenv("HOME") .. "/rigger/profiles/serpantinum"
+-- Свой каталог, а не путь через $HOME: риг обязан работать там, куда его
+-- положили, включая отдельный репозиторий.
+local rigdir = debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or "."
+
+local rig = rigdir .. ""
 
 -- require внутри их конфига резолвится от каталога compositors/hyprland
 package.path = rig .. "/shell/compositors/hyprland/?.lua;" .. package.path
