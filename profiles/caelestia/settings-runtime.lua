@@ -14,9 +14,9 @@
 -- ~/.config/hypr уже указывает сюда, но модуль мог остаться в кеше от прежнего
 -- рига — путь добавляем явно, как в rules-runtime.lua.
 local home = os.getenv("HOME")
-package.path = package.path .. ";" .. home .. "/dotfiles/profiles/caelestia/hypr/?.lua"
+package.path = package.path .. ";" .. home .. "/rigger/profiles/caelestia/hypr/?.lua"
 
-local base = home .. "/dotfiles/profiles/caelestia/hypr/hyprland/"
+local base = home .. "/rigger/profiles/caelestia/hypr/hyprland/"
 for _, f in ipairs({ "general", "decoration", "group", "misc" }) do
     dofile(base .. f .. ".lua")
 end

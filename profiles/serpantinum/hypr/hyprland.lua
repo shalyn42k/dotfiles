@@ -5,7 +5,7 @@
 dofile(os.getenv("HOME") .. "/.config/hypr-shared/rigbinds.lua")
 __rig.begin("serpantinum")
 
--- Каталог рига — от собственного файла, а не от ~/dotfiles: риг обязан
+-- Каталог рига — от собственного файла, а не от ~/rigger: риг обязан
 -- работать там, куда его положили, включая свой отдельный репозиторий.
 local rig = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/.."
 

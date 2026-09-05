@@ -1,4 +1,4 @@
-# Shalyn42k — dual-rig Hyprland dotfiles
+# Rigger — dual-rig Hyprland dotfiles
 
 ![Preview](preview.png)
 
@@ -26,8 +26,8 @@ Hyprlang-ветка ушла из репозитория вместе с риг�
 Нужно: Arch-подобная система, `git`, AUR-хелпер (`yay`/`paru`), sudo.
 
 ```bash
-git clone git@github.com:shalyn42k/dotfiles.git ~/dotfiles
-~/dotfiles/bootstrap.sh
+git clone git@github.com:shalyn42k/dotfiles.git ~/rigger
+~/rigger/bootstrap.sh
 ```
 
 **Чужие dotfiles качать не надо** — репозиторий содержит полные снапшоты обоих

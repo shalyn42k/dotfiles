@@ -23,5 +23,5 @@
 reload_apps = false
 
 [templates.quickshell]
-input_path = "~/dotfiles/profiles/serpantinum/shell/src/assets/matugen/templates/serpantinum_matugen_colors.json.template"
+input_path = "~/rigger/profiles/serpantinum/shell/src/assets/matugen/templates/serpantinum_matugen_colors.json.template"
 output_path = "~/.local/state/serpantinum/qs_colors.json"

@@ -11,7 +11,7 @@ local function rebind(keys, dispatcher, opts)
 end
 
 local home    = os.getenv("HOME")
--- Скрипты лежат рядом с этим файлом. Абсолютный путь через ~/dotfiles
+-- Скрипты лежат рядом с этим файлом. Абсолютный путь через ~/rigger
 -- привязывал риг к месту, где лежит свистелка.
 local scripts = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/scripts"
 

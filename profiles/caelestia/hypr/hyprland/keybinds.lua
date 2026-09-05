@@ -4,7 +4,7 @@ local home = os.getenv("HOME")
 -- Absolute profile paths: ~/.config/hypr is the ACTIVE rig's symlink — after
 -- a hot switch to ilyamiro these scripts vanish from there and the binds
 -- silently break.
-local cscripts     = home .. "/dotfiles/profiles/caelestia/hypr/scripts"
+local cscripts     = home .. "/rigger/profiles/caelestia/hypr/scripts"
 local wsaction     = cscripts .. "/wsaction.fish"
 local specialcycle = cscripts .. "/specialcycle.fish"
 

@@ -36,7 +36,7 @@ index ea212e8..9250fab 100644
 +                                // шелл. Терминал нужен, чтобы было видно, что
 +                                // именно приезжает, и чтобы можно было
 +                                // отказаться.
-+                                let upd = "$HOME/dotfiles/bin/rig-update serpantinum";
++                                let upd = "$HOME/rigger/bin/rig-update serpantinum";
 +                                let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c '" + upd + "'; "
 +                                        + "else ${TERM:-xterm} -hold -e bash -c '" + upd + "'; fi";
                                  Quickshell.execDetached(["bash", "-c", cmd]);

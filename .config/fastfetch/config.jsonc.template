@@ -42,7 +42,7 @@
             "type": "command",
             "key": "󰜗 rig  ",
             "keyColor": "{{ACCENT}}",
-            "text": "~/dotfiles/bin/rig-active"
+            "text": "~/rigger/bin/rig-active"
         },
         {
             "type": "command",
