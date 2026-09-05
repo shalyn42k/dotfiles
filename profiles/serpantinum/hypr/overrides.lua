@@ -11,7 +11,9 @@ local function rebind(keys, dispatcher, opts)
 end
 
 local home    = os.getenv("HOME")
-local scripts = home .. "/dotfiles/profiles/serpantinum/hypr/scripts"
+-- Скрипты лежат рядом с этим файлом. Абсолютный путь через ~/rigger
+-- привязывал риг к месту, где лежит свистелка.
+local scripts = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/scripts"
 
 -- Относительный ресайз активного окна на x%/y% от его текущего размера.
 -- serpantinum не вендорит аналог caelestia/hypr/hyprland/functions.lua,

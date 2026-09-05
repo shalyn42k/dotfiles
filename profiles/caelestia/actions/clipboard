@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# fuzzel уже открыт — закрыть его, иначе открыть буфер обмена.
+pkill fuzzel || exec caelestia clipboard

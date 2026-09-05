@@ -8,7 +8,9 @@
 -- в hypr/colors.conf (автоген matugen'а профиля). Формат тот же, что уже жуёт
 -- awk-ом bin/dotprofile apply_rig_colors, поэтому парсим его же: одна строка —
 -- `$имя = значение`.
-local rig = os.getenv("HOME") .. "/dotfiles/profiles/serpantinum"
+-- Каталог рига — от собственного файла, а не от ~/rigger: риг обязан
+-- работать там, куда его положили, включая свой отдельный репозиторий.
+local rig = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/.."
 
 local function read_colors(path)
     local vars = {}
@@ -32,7 +34,7 @@ local c = read_colors(rig .. "/hypr/colors.conf")
 local active   = c.gb_active   or c.active_border   or "rgba(7171acd4)"
 local inactive = c.gb_inactive or c.inactive_border or "rgba(47464fd4)"
 
-local apply_groupbar = dofile(os.getenv("HOME") .. "/dotfiles/.config/hypr-shared/groupbar.lua")
+local apply_groupbar = dofile(os.getenv("HOME") .. "/.config/hypr-shared/groupbar.lua")
 
 apply_groupbar({
     active          = active,

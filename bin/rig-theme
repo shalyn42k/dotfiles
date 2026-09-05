@@ -28,7 +28,7 @@
 # палитры рига или его обоев.
 set -uo pipefail
 
-DOTFILES="$HOME/dotfiles"
+DOTFILES="$HOME/rigger"
 PROFILES="$DOTFILES/profiles"
 
 rig="${1:-}"

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# global-диспатчер шелла: действие живёт внутри quickshell, не в CLI.
+exec hyprctl dispatch 'hl.dsp.global("caelestia:screenshotFreeze")'

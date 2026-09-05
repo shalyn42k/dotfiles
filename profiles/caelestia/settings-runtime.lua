@@ -13,10 +13,14 @@
 -- package.path: файлы делают require("variables"); при свитче из другого рига
 -- ~/.config/hypr уже указывает сюда, но модуль мог остаться в кеше от прежнего
 -- рига — путь добавляем явно, как в rules-runtime.lua.
-local home = os.getenv("HOME")
-package.path = package.path .. ";" .. home .. "/dotfiles/profiles/caelestia/hypr/?.lua"
+-- Свой каталог, а не путь через $HOME: риг обязан работать там, куда его
+-- положили, включая отдельный репозиторий.
+local rigdir = debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or "."
 
-local base = home .. "/dotfiles/profiles/caelestia/hypr/hyprland/"
+local home = os.getenv("HOME")
+package.path = package.path .. ";" .. rigdir .. "/hypr/?.lua"
+
+local base = rigdir .. "/hypr/hyprland/"
 for _, f in ipairs({ "general", "decoration", "group", "misc" }) do
     dofile(base .. f .. ".lua")
 end

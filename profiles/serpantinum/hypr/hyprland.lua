@@ -2,10 +2,12 @@
 -- ПЕРВОЙ строкой: всё, что забайндится до неё, останется без хендла и станет
 -- несносимым при переключении рига.
 -- Спека: docs/superpowers/specs/2026-09-02-rig-switch-binds-ownership-design.md
-dofile(os.getenv("HOME") .. "/dotfiles/.config/hypr-shared/rigbinds.lua")
+dofile(os.getenv("HOME") .. "/.config/hypr-shared/rigbinds.lua")
 __rig.begin("serpantinum")
 
-local rig = os.getenv("HOME") .. "/dotfiles/profiles/serpantinum"
+-- Каталог рига — от собственного файла, а не от ~/rigger: риг обязан
+-- работать там, куда его положили, включая свой отдельный репозиторий.
+local rig = (debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") or ".") .. "/.."
 
 -- Конфиг композитора апстрима написан тем же hl-API, что у нас, поэтому берём
 -- его как базу вместо порта. Резолвим require из вендоренной копии.
@@ -48,4 +50,4 @@ end)
 -- ── Кросс-риг контракт ───────────────────────────────────────────────────
 -- ПОСЛЕДНИМ: снимает комбу перед своим биндом, поэтому обязан идти после
 -- набора рига. Владелец "shared" — переживает переключение ригов.
-dofile(os.getenv("HOME") .. "/dotfiles/.config/hypr-shared/contract-binds.lua")
+dofile(os.getenv("HOME") .. "/.config/hypr-shared/contract-binds.lua")

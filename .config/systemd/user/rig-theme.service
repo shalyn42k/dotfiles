@@ -20,4 +20,4 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
-ExecStart=%h/dotfiles/bin/rig-theme
+ExecStart=%h/rigger/bin/rig-theme

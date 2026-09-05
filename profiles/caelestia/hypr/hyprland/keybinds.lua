@@ -4,13 +4,13 @@ local home = os.getenv("HOME")
 -- Absolute profile paths: ~/.config/hypr is the ACTIVE rig's symlink — after
 -- a hot switch to ilyamiro these scripts vanish from there and the binds
 -- silently break.
-local cscripts     = home .. "/dotfiles/profiles/caelestia/hypr/scripts"
+local cscripts     = home .. "/rigger/profiles/caelestia/hypr/scripts"
 local wsaction     = cscripts .. "/wsaction.fish"
 local specialcycle = cscripts .. "/specialcycle.fish"
 
 -- Shell & Caelestia actions (риг-зависимые — через rigdo, чтобы работали
 -- и после горячего свитча на ilyamiro)
-local rigdo = os.getenv("HOME") .. "/dotfiles/bin/rigdo "
+local rigdo = os.getenv("HOME") .. "/.config/hypr-shared/bin/rigdo "
 hl.bind("SUPER + ALT + Escape", hl.dsp.exec_cmd("systemctl poweroff"))                                -- Full off
 
 -- Window state & layout

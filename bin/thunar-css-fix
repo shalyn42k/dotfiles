@@ -18,7 +18,7 @@
 # расхождении, иначе запись сама себя перевызовет по циклу.
 set -euo pipefail
 
-CANON="$HOME/dotfiles/.config/gtk-shared/thunar.css"
+CANON="$HOME/rigger/.config/gtk-shared/thunar.css"
 [[ -r $CANON ]] || exit 0
 
 for f in "$HOME/.config/gtk-3.0/thunar.css" "$HOME/.config/gtk-4.0/thunar.css"; do
