@@ -4,7 +4,16 @@ local home = os.getenv("HOME")
 -- Absolute profile paths: ~/.config/hypr is the ACTIVE rig's symlink — after
 -- a hot switch to ilyamiro these scripts vanish from there and the binds
 -- silently break.
-local cscripts     = home .. "/rigger/profiles/caelestia/hypr/scripts"
+-- Путь ОБЯЗАН быть абсолютным и вести в каталог caelestia, а не в active:
+-- см. комментарий выше. Самолокация через debug.getinfo здесь не годится —
+-- hyprland грузит этот файл через ~/.config/hypr, то есть через симлинк на
+-- активный риг, и после горячего свитча она дала бы ровно тот путь, которого
+-- мы избегаем.
+--
+-- Было ~/rigger/profiles/… — вшитый путь пережил сплит свистелки в отдельный
+-- репозиторий, и обе комбы ниже (wsaction, specialcycle) звали файл, которого
+-- нет.
+local cscripts     = home .. "/dotfiles/profiles/caelestia/hypr/scripts"
 local wsaction     = cscripts .. "/wsaction.fish"
 local specialcycle = cscripts .. "/specialcycle.fish"
 

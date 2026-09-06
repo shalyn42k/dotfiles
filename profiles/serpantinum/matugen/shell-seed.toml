@@ -23,5 +23,10 @@
 reload_apps = false
 
 [templates.quickshell]
-input_path = "~/rigger/profiles/serpantinum/shell/src/assets/matugen/templates/serpantinum_matugen_colors.json.template"
+# Путь относительный — matugen резолвит его от каталога этого конфига, как и
+# соседний config.toml. Абсолютный ~/rigger/... пережил сплит свистелки в
+# отдельный репозиторий и указывал в пустоту: первый логин в риг поднимал шелл
+# без палитры (чёрный экран с невидимым баром — ровно то, ради чего засев и
+# писался).
+input_path = "../shell/src/assets/matugen/templates/serpantinum_matugen_colors.json.template"
 output_path = "~/.local/state/serpantinum/qs_colors.json"

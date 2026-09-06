@@ -15,7 +15,17 @@
 #
 # set -e сознательно нет: упасть здесь — значит не залогинить пользователя.
 # Любая неудача подготовки лучше чёрного экрана, поэтому до exec доходим всегда.
-DOTFILES="$HOME/rigger"
+# Риги лежат в ЭТОЙ репе, рядом со скриптом. Вшитый $HOME/rigger пережил сплит
+# свистелки в отдельный репозиторий: readlink на несуществующий active давал
+# пустое имя, валидация ниже подставляла caelestia — и КАЖДЫЙ логин молча
+# приземлялся в caelestia, чем бы ни закончилась прошлая сессия.
+DOTFILES="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+
+# dotprofile — команда свистелки. Её стабильный путь установки — тот же, по
+# которому её зовут бинды hypr; где при этом лежит её репозиторий, нас не
+# касается.
+DOTPROFILE="${XDG_CONFIG_HOME:-$HOME/.config}/hypr-shared/bin/dotprofile"
+
 name="${1:-}"
 
 case "$name" in
@@ -33,5 +43,5 @@ esac
 # active (риг удалён), и пустой .last-lua, и опечатку в аргументе.
 [[ -n "$name" && -d "$DOTFILES/profiles/$name" ]] || name=caelestia
 
-"$DOTFILES/bin/dotprofile" switch "$name" --links-only || true
+"$DOTPROFILE" switch "$name" --links-only || true
 exec /usr/bin/start-hyprland

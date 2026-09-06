@@ -18,8 +18,14 @@
 # расхождении, иначе запись сама себя перевызовет по циклу.
 set -euo pipefail
 
-CANON="$HOME/rigger/.config/gtk-shared/thunar.css"
-[[ -r $CANON ]] || exit 0
+# Канон лежит в ЭТОЙ репе, поэтому путь выводится от самого скрипта, а не
+# вшивается. Вшитый $HOME/rigger пережил сплит свистелки в отдельный
+# репозиторий и стал указывать в пустоту: guard ниже гасил скрипт молча, и
+# рендер caelestia оставался жить.
+# readlink -f обязателен: зовут нас по симлинку ~/.local/bin/thunar-css-fix.
+DOTFILES="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+CANON="$DOTFILES/.config/gtk-shared/thunar.css"
+[[ -r $CANON ]] || { echo "thunar-css-fix: нет канона $CANON" >&2; exit 1; }
 
 for f in "$HOME/.config/gtk-3.0/thunar.css" "$HOME/.config/gtk-4.0/thunar.css"; do
     [[ -w $f ]] || continue
