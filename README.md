@@ -1,4 +1,4 @@
-# Rigger — dual-rig Hyprland dotfiles
+# Личные dotfiles — dual-rig Hyprland
 
 ![Preview](preview.png)
 
@@ -26,9 +26,16 @@ Hyprlang-ветка ушла из репозитория вместе с риг�
 Нужно: Arch-подобная система, `git`, AUR-хелпер (`yay`/`paru`), sudo.
 
 ```bash
-git clone git@github.com:shalyn42k/dotfiles.git ~/rigger
-~/rigger/bootstrap.sh
+git clone --recurse-submodules git@github.com:shalyn42k/dotfiles.git ~/dotfiles
+git clone https://github.com/shalyn42k/rigger ~/Dev/rigger   # свистелка, отдельный репозиторий
+~/Dev/rigger/bin/rigswitch-install
+~/dotfiles/bootstrap.sh
 ```
+
+Свитчер ригов (`dotprofile`, `rigdo`, `kbm`, overlay-пикер) с 2026-09-05 живёт
+в отдельном репозитории **rigger**. Эта репа держит только личное: сами риги,
+общие конфиги и скрипты рабочего стола. Где лежит rigger, дотфайлы не знают —
+они зовут его по стабильному пути установки `~/.config/hypr-shared/bin/`.
 
 **Чужие dotfiles качать не надо** — репозиторий содержит полные снапшоты обоих
 ригов в `profiles/`. Скрипт ничего не клонирует со стороны, он только
@@ -36,10 +43,12 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/rigger
 
 1. **Пакеты** — ставит недостающие (pacman → yay/paru): Hyprland-стек, шеллы,
    kitty/fish/fuzzel, matugen, утилиты. Список — в `PKGS` внутри скрипта.
-2. **Caelestia shell** — единственный внешний компонент; если не найден,
-   скрипт печатает варианты установки:
-   `yay -S caelestia-shell-git` или сборка из
-   [caelestia-dots/shell](https://github.com/caelestia-dots/shell).
+2. **Шеллы ригов** — оба вендорятся сабмодулями `profiles/<риг>/shell`.
+   caelestia ставится хуком рига `profiles/caelestia/update.sh`
+   (`cmake --install` только QML, в `~/.config/quickshell/caelestia`, без sudo);
+   serpantinum запускается прямо из сабмодуля через `SERPANTINUM_DIR`.
+   C++-плагин caelestia — единственное, что требует sudo, и только когда
+   апстрим трогает C++.
 3. **Симлинки** — контестируемые каталоги `~/.config/{hypr,gtk-3.0,gtk-4.0,qt5ct,qt6ct}`
    → `profiles/active/*`, общие `~/.config/{caelestia,fish,kitty,fastfetch}` →
    `.config/*` репозитория. Живые каталоги не затираются — бэкап в
@@ -65,12 +74,13 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/rigger
 
 | Компонент | Зачем |
 | :--- | :--- |
-| `bin/dotprofile` | Ядро: переключение ригов (симлинк `profiles/active`), рендер цветов/тем, снапшоты после чужих installer'ов |
-| `bin/rigdo` | Диспетчер действий по активному ригу: один бинд — разные команды (launcher, screenshot, lock…) |
+| `~/.config/hypr-shared/bin/dotprofile` | Ядро свитчера (репа **rigger**): переключение ригов, рендер цветов/тем |
+| `~/.config/hypr-shared/bin/rigdo` | Диспетчер действий по активному ригу (репа **rigger**) |
+| `bin/rig-theme` | Перерисовать GTK/Qt/kitty палитрой активного рига и заставить открытые окна перечитать CSS |
 | `bin/kbd-theme-sync` | Подсветка клавиатуры (ASUS TUF) плавно уезжает в доминирующий цвет обоев активного рига |
 | `bin/thunar-css-fix` | Возвращает канон `thunar.css` поверх рендера caelestia CLI (тот вшивает свои hex и ломающий панели fade-in) |
 | `profiles/<rig>/` | Полный снапшот рига: hypr, gtk, qt5ct/qt6ct, `session.sh` (старт/стоп шелла), `role`, `fastfetch.modules` |
-| `.config/hypr-shared/` | Общие бинды и порт-конфиги, сорсятся обоими ригами |
+| `~/.config/hypr-shared/` | Общие бинды и контракт — симлинк в репозиторий **rigger**, ставится его `rigswitch-install` |
 | `.config/gtk-shared/thunar.css` | Канон темы Thunar: один на оба рига (цвета из `@define-color` активного `gtk.css`, без hex) |
 | `.config/systemd/user/` | `*.path`-юниты: следят за обоями/схемами (kbd) и за перерендером `thunar.css` |
 | `.config/{fish,kitty,fastfetch,caelestia}/` | Не-контестируемые конфиги — общие для всех ригов |
@@ -80,27 +90,26 @@ git clone git@github.com:shalyn42k/dotfiles.git ~/rigger
 
 ```
 bin/
-  dotprofile   переключатель ригов (switch/menu/status/update/colors)
-  rigdo        риг-зависимый диспетчер действий (лаунчер, скриншот, лок...)
   kbd-theme-sync  подсветка клавиатуры за цветом обоев (bootstrap линкует
   thunar-css-fix  их в ~/.local/bin — юниты зовут по этому пути)
+  rig-theme       перерисовать тему рабочего стола палитрой активного рига
+  rig-logs        логи шелла активного рига
+  start-hyprland-profile  точка входа SDDM-сессии «Hyprland (rig)»
 profiles/
   active -> caelestia|serpantinum  симлинк активного рига
   caelestia/   снапшот рига: hypr, gtk-3.0/4.0, qt5ct/qt6ct + session.sh
                + role (work) + fastfetch.modules (дата/время)
+               + вендоренный шелл (submodule) + update.sh (хук пересборки)
   serpantinum/ то же + вендоренный шелл (submodule) + matugen-шаблоны
-               + role (daily) + fastfetch.modules (media, battery)
+               + patches/ (правки апстрима) + role (third)
 .config/
-  hypr-shared/ реестр владения биндами + кросс-риг контракт (lua)
   gtk-shared/  канон thunar.css (копии в профилях — цель записи caelestia CLI,
                path-юнит откатывает их к канону; симлинками делать нельзя)
                + bookmarks.in — канон GTK-закладок на оба рига
   systemd/user/  path-юниты: kbd-theme-sync, thunar-css-fix
   caelestia/ fish/ kitty/ fastfetch/  не-контестируемые конфиги (общие)
 sddm/          .desktop-файлы двух wayland-сессий
-docs/specs/    2026-09-04-rig-contract-implementation.md — план выноса
-               свитчера в отдельный проект
-docs/tech-debt.md  живой список известно-кривого
+(docs/ и сам свитчер уехали в репозиторий rigger)
 ```
 
 `~/.config/{hypr,gtk-3.0,gtk-4.0,qt5ct,qt6ct}` — симлинки на `profiles/active/*`,
@@ -147,8 +156,10 @@ dotprofile colors          переприменить цвета активно�
 
 - **Discord** → `~/.config/{vesktop,equibop,Vencord}/themes/rig.theme.css`
 - **Obsidian** → `<vault>/.obsidian/snippets/rig-theme.css`
-- **fastfetch** → `.config/fastfetch/config.jsonc` из `config.jsonc.template`
-  (gitignored): баннер и ключи красятся в акцент рига, в `{{RIG_MODULES}}`
+- **fastfetch** → `.config/fastfetch/rig.jsonc` из `config.jsonc.template`
+  (gitignored; `config.jsonc` отдан matugen'у шелла serpantinum, поэтому
+  `fish_greeting` зовёт fastfetch с явным `-c`): баннер и ключи красятся
+  в акцент рига, в `{{RIG_MODULES}}`
   вставляется `profiles/<rig>/fastfetch.modules`. Строка `rig` динамическая —
   читает `profiles/active` + `profiles/<rig>/role` на каждом запуске.
 
