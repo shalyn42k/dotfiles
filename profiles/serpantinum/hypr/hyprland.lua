@@ -30,6 +30,10 @@ require("config/keybinds")
 dofile(rig .. "/hypr/input.lua")
 dofile(rig .. "/hypr/group.lua")
 dofile(rig .. "/hypr/overrides.lua")
+-- Правила окон: спец-воркспейсы для приложений, которые запускают комбы
+-- SUPER+Z/X/C/V из overrides.lua. Без них ветка «запустить» отправляла окно на
+-- текущий воркспейс — см. шапку rules.lua.
+dofile(rig .. "/hypr/rules.lua")
 
 -- Шелл рига по АБСОЛЮТНОМУ пути.
 --
