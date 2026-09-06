@@ -5,8 +5,14 @@
 # Идемпотентен: повторный запуск ничего не ломает.
 set -euo pipefail
 
-DOTFILES="$HOME/rigger"
+# Своё расположение, а не вшитый путь: репу могут склонировать куда угодно, и
+# до сплита свистелки отсюда это уже указывало в чужой каталог ($HOME/rigger).
+DOTFILES="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 cd "$DOTFILES"
+
+# Свистелка ригов — отдельный репозиторий. Она ставит СЕБЯ сама
+# (bin/rigswitch-install) и приносит свои команды; здесь нужен только путь.
+RIGGER="${RIGGER:-$HOME/Dev/rigger}"
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 1/8 Пакеты =="
@@ -58,14 +64,31 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
-echo "== 2/8 Caelestia shell =="
-if [[ -d /etc/xdg/quickshell/caelestia || -d "$HOME/.config/quickshell/caelestia" ]]; then
-    echo "caelestia shell найден"
+echo "== 2/8 Вендоренные шеллы ригов =="
+# Апстримовые шеллы обоих ригов — сабмодули (profiles/<риг>/shell). Клон репы
+# без --recurse-submodules оставляет их пустыми, и риги не стартуют. Инициация
+# идёт ПЕРЕД установкой caelestia ниже: ей нужен уже выкачанный сабмодуль.
+if [[ -f "$DOTFILES/.gitmodules" ]]; then
+    git -C "$DOTFILES" submodule update --init --recursive
+fi
+
+# Шелл вендорится сабмодулем (profiles/caelestia/shell) и ставится хуком рига
+# update.sh — тем же, что зовёт rig-update при обновлении. Одна процедура на
+# установку и на апдейт: расходиться нечему.
+#
+# Установка кладёт ТОЛЬКО QML и в юзерский XDG, поэтому здесь нет sudo.
+# C++-плагин (Caelestia в qt6/qml) и extras — системные, ставятся отдельно и
+# редко: пересборка нужна, лишь когда апстрим трогает C++.
+if [[ -x "$DOTFILES/profiles/caelestia/update.sh" ]]; then
+    "$DOTFILES/profiles/caelestia/update.sh"
 else
-    echo ">>> caelestia shell не установлен. Варианты:"
-    echo ">>>   yay -S caelestia-shell-git"
-    echo ">>>   или: git clone https://github.com/caelestia-dots/shell ~/caelestia"
-    echo ">>>        cd ~/caelestia && cmake -B build && cmake --build build && sudo cmake --install build"
+    echo ">>> нет profiles/caelestia/update.sh — забыт git submodule update --init"
+fi
+if [[ ! -d /usr/lib/qt6/qml/Caelestia ]]; then
+    echo ">>> C++-плагин caelestia не установлен. Один раз, с sudo:"
+    echo ">>>   cmake -S $DOTFILES/profiles/caelestia/shell -B /tmp/caelestia-plugin \\"
+    echo ">>>         -DENABLE_MODULES='extras;plugin' -DCMAKE_INSTALL_PREFIX=/usr"
+    echo ">>>   cmake --build /tmp/caelestia-plugin && sudo cmake --install /tmp/caelestia-plugin"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -126,15 +149,15 @@ for f in starship.toml; do
     ln -sfn "$DOTFILES/.config/$f" "$HOME/.config/$f"
 done
 
-# rigswitch — overlay-свитчер ригов, вложен в ~/.config/quickshell рядом с
-# конфигами шеллов ригов, поэтому не в списке выше.
-mkdir -p "$HOME/.config/quickshell"
-ln -sfn "$DOTFILES/.config/quickshell/rigswitch" "$HOME/.config/quickshell/rigswitch"
-
-# Вендоренный апстрим serpantinum. Клон репы без --recurse-submodules оставляет
-# profiles/serpantinum/shell пустым, и риг не стартует.
-if [[ -f "$DOTFILES/.gitmodules" ]]; then
-    git -C "$DOTFILES" submodule update --init --recursive
+# Поверхности свистелки (rigswitch, rigkbm) и общие lua-модули hypr-shared
+# ставит она сама — её файлы лежат в её репозитории, и знать их раскладку
+# отсюда значит держать второй источник правды.
+if [[ -x "$RIGGER/bin/rigswitch-install" ]]; then
+    "$RIGGER/bin/rigswitch-install"
+else
+    echo ">>> нет $RIGGER — свистелка ригов не установлена:"
+    echo ">>>   git clone https://github.com/shalyn42k/rigger $RIGGER"
+    echo ">>>   $RIGGER/bin/rigswitch-install"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -220,9 +243,12 @@ rm -rf "$tmpd"
 
 # ─────────────────────────────────────────────────────────────────────────
 echo "== 8/8 Статус =="
-# первичный рендер генерируемых конфигов (fastfetch)
-"$DOTFILES/bin/dotprofile" colors 2>/dev/null || true
-"$DOTFILES/bin/dotprofile" status
+# первичный рендер генерируемых конфигов (fastfetch); dotprofile — команда
+# свистелки, живёт в её репозитории
+if [[ -x "$RIGGER/bin/dotprofile" ]]; then
+    "$RIGGER/bin/dotprofile" colors 2>/dev/null || true
+    "$RIGGER/bin/dotprofile" status
+fi
 echo
 echo "Готово. Дальше:"
 echo "  1. Положи обои (jpg/png/mp4) в ~/Pictures/Wallpapers"

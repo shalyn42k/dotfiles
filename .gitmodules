@@ -1,3 +1,6 @@
 [submodule "profiles/serpantinum/shell"]
 	path = profiles/serpantinum/shell
 	url = https://github.com/ilyamiro/serpantinum.git
+[submodule "profiles/caelestia/shell"]
+	path = profiles/caelestia/shell
+	url = https://github.com/caelestia-dots/shell.git
