@@ -1,8 +1,8 @@
 diff --git a/src/quickshell/guide/AboutTab.qml b/src/quickshell/guide/AboutTab.qml
-index ea212e8..9250fab 100644
+index ea212e8..3d824b9 100644
 --- a/src/quickshell/guide/AboutTab.qml
 +++ b/src/quickshell/guide/AboutTab.qml
-@@ -214,10 +214,39 @@ Item {
+@@ -214,10 +214,41 @@ Item {
                              iconFontSize: rootObj.s(16)
                              fillDuration: 1200
  
@@ -36,7 +36,9 @@ index ea212e8..9250fab 100644
 +                                // шелл. Терминал нужен, чтобы было видно, что
 +                                // именно приезжает, и чтобы можно было
 +                                // отказаться.
-+                                let upd = "$HOME/rigger/bin/rig-update serpantinum";
++                                // Стабильный путь установки свистелки, а не её
++                                // репозиторий: где он лежит, риг не знает.
++                                let upd = "$HOME/.config/hypr-shared/bin/rig-update serpantinum";
 +                                let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c '" + upd + "'; "
 +                                        + "else ${TERM:-xterm} -hold -e bash -c '" + upd + "'; fi";
                                  Quickshell.execDetached(["bash", "-c", cmd]);

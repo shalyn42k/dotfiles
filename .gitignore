@@ -8,15 +8,18 @@ profiles/active
 profiles/.last-lua
 # секреты его виджетов (API-ключи) — живут только локально
 profiles/*/hypr/scripts/quickshell/calendar/.env
-# генерится dotprofile colors из config.jsonc.template
-.config/fastfetch/config.jsonc
+# генерится dotprofile colors из config.jsonc.template; fish_greeting зовёт
+# fastfetch с явным -c именно на него
+.config/fastfetch/rig.jsonc
 # рендерится matugen'ом рига на каждую смену темы (оба рига пишут сюда же)
 .config/kitty/kitty-matugen-colors.conf
 # то же самое, но пишет matugen ВЕНДОРЕННОГО шелла serpantinum
-# (src/assets/matugen/config-static.toml). ~/.config/fastfetch — симлинк в репо,
-# поэтому его генерация падает прямо в рабочее дерево.
+# (src/assets/matugen/config.toml и config-static.toml). ~/.config/fastfetch —
+# симлинк в репо, поэтому его генерация падает прямо в рабочее дерево. Оба
+# имени отданы апстриму целиком: мы их не читаем, и патчить его файлы не надо.
 # Соседний .config/kitty/colors.conf — из того же источника, но оставлен
 # отслеживаемым намеренно: kitty.conf делает на него безусловный include.
+.config/fastfetch/config.jsonc
 .config/fastfetch/fastfetch.jsonc
 
 # ── Машинное состояние: у каждого своё, в репо ему делать нечего ──────────
